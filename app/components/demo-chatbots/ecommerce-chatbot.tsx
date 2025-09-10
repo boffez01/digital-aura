@@ -1,93 +1,113 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Bot, User, Send, ShoppingCart, Star, Package } from "lucide-react"
+import { ShoppingCart, Star, Bot, Send } from "lucide-react"
 import { useLanguage } from "../../contexts/language-context"
 
 interface Message {
   id: string
-  type: "user" | "bot"
-  content: string
+  text: string
+  sender: "user" | "bot"
   timestamp: Date
-  products?: Product[]
-  options?: string[]
+  type?: "text" | "product" | "cart"
+  products?: Array<{
+    id: string
+    name: string
+    price: string
+    image: string
+    rating: number
+  }>
 }
-
-interface Product {
-  id: string
-  name: string
-  price: number
-  image: string
-  rating: number
-  inStock: boolean
-}
-
-const sampleProducts: Product[] = [
-  {
-    id: "1",
-    name: "Smartphone Pro Max",
-    price: 899,
-    image: "/modern-smartphone.png",
-    rating: 4.8,
-    inStock: true,
-  },
-  {
-    id: "2",
-    name: "Wireless Headphones",
-    price: 199,
-    image: "/diverse-people-listening-headphones.png",
-    rating: 4.6,
-    inStock: true,
-  },
-  {
-    id: "3",
-    name: "Smart Watch",
-    price: 299,
-    image: "/modern-smartwatch.png",
-    rating: 4.7,
-    inStock: false,
-  },
-]
 
 export default function EcommerceChatbot() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "bot",
-      content: "Ciao! Sono il tuo assistente shopping AI. Posso aiutarti a trovare i prodotti perfetti per te! 🛍️",
-      timestamp: new Date(),
-      options: ["Mostra prodotti popolari", "Cerca per categoria", "Offerte del giorno", "Il mio carrello"],
-    },
-  ])
+  const { language } = useLanguage()
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const [cart, setCart] = useState<Product[]>([])
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { language } = useLanguage()
+  const [cart, setCart] = useState<string[]>([])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const texts = {
+    en: {
+      title: "Shopping Assistant",
+      subtitle: "Find the perfect products",
+      greeting:
+        "Hi! I'm your shopping assistant. I can help you find products, check prices, and manage your cart. What are you looking for today?",
+      showProducts: "Here are some popular products:",
+      addedToCart: "Great! I've added that to your cart. Would you like to see more products or checkout?",
+      cartSummary: "Your cart summary:",
+      placeholder: "Ask about products...",
+      addToCart: "Add to Cart",
+      viewCart: "View Cart",
+      checkout: "Checkout",
+    },
+    it: {
+      title: "Assistente Shopping",
+      subtitle: "Trova i prodotti perfetti",
+      greeting:
+        "Ciao! Sono il tuo assistente shopping. Posso aiutarti a trovare prodotti, controllare prezzi e gestire il carrello. Cosa stai cercando oggi?",
+      showProducts: "Ecco alcuni prodotti popolari:",
+      addedToCart: "Perfetto! L'ho aggiunto al carrello. Vuoi vedere altri prodotti o procedere al checkout?",
+      cartSummary: "Riepilogo carrello:",
+      placeholder: "Chiedi sui prodotti...",
+      addToCart: "Aggiungi al Carrello",
+      viewCart: "Vedi Carrello",
+      checkout: "Checkout",
+    },
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, isTyping])
+  const t = texts[language]
 
-  const addMessage = (content: string, type: "user" | "bot", products?: Product[], options?: string[]) => {
+  const products = [
+    {
+      id: "1",
+      name: language === "en" ? "Wireless Headphones" : "Cuffie Wireless",
+      price: "€89.99",
+      image: "/wireless-headphones.png",
+      rating: 4.5,
+    },
+    {
+      id: "2",
+      name: language === "en" ? "Smart Watch" : "Smartwatch",
+      price: "€199.99",
+      image: "/modern-smartwatch.png",
+      rating: 4.8,
+    },
+    {
+      id: "3",
+      name: language === "en" ? "Laptop Stand" : "Supporto Laptop",
+      price: "€45.99",
+      image: "/laptop-stand.png",
+      rating: 4.3,
+    },
+  ]
+
+  useEffect(() => {
+    const initialMessage: Message = {
+      id: "1",
+      text: t.greeting,
+      sender: "bot",
+      timestamp: new Date(),
+    }
+    setMessages([initialMessage])
+  }, [language])
+
+  const addMessage = (
+    text: string,
+    sender: "user" | "bot",
+    type: "text" | "product" | "cart" = "text",
+    products?: any[],
+  ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
-      type,
-      content,
+      text,
+      sender,
       timestamp: new Date(),
+      type,
       products,
-      options,
     }
     setMessages((prev) => [...prev, newMessage])
   }
@@ -100,283 +120,160 @@ export default function EcommerceChatbot() {
     }, delay)
   }
 
-  const handleOptionClick = (option: string) => {
-    addMessage(option, "user")
+  const handleSend = (message: string) => {
+    if (!message.trim()) return
+
+    addMessage(message, "user")
+    setInputValue("")
+
     simulateTyping(() => {
-      switch (option) {
-        case "Mostra prodotti popolari":
-          addMessage(
-            "Ecco i nostri prodotti più popolari! Tutti con ottime recensioni e disponibili per la spedizione immediata:",
-            "bot",
-            sampleProducts.filter((p) => p.inStock),
-            ["Aggiungi al carrello", "Vedi dettagli", "Confronta prodotti"],
-          )
-          break
-        case "Cerca per categoria":
-          addMessage("In quale categoria sei interessato?", "bot", undefined, [
-            "Elettronica",
-            "Abbigliamento",
-            "Casa e Giardino",
-            "Sport e Tempo Libero",
-          ])
-          break
-        case "Offerte del giorno":
-          addMessage(
-            "🔥 Offerte speciali di oggi! Sconti fino al 50% su prodotti selezionati:",
-            "bot",
-            sampleProducts.slice(0, 2),
-            ["Acquista ora", "Aggiungi ai preferiti", "Condividi offerta"],
-          )
-          break
-        case "Il mio carrello":
-          if (cart.length === 0) {
-            addMessage("Il tuo carrello è vuoto. Vuoi dare un'occhiata ai nostri prodotti?", "bot", undefined, [
-              "Mostra prodotti popolari",
-              "Cerca per categoria",
-            ])
-          } else {
-            const total = cart.reduce((sum, item) => sum + item.price, 0)
-            addMessage(
-              `Il tuo carrello contiene ${cart.length} prodotti per un totale di €${total}. Vuoi procedere al checkout?`,
-              "bot",
-              cart,
-              ["Procedi al checkout", "Continua shopping", "Svuota carrello"],
-            )
-          }
-          break
-        case "Aggiungi al carrello":
-          if (sampleProducts[0]) {
-            setCart((prev) => [...prev, sampleProducts[0]])
-            addMessage(
-              `✅ ${sampleProducts[0].name} aggiunto al carrello! Vuoi continuare a fare shopping?`,
-              "bot",
-              undefined,
-              ["Vai al checkout", "Continua shopping", "Vedi prodotti simili"],
-            )
-          }
-          break
-        default:
-          handleGeminiResponse(option)
+      if (
+        message.toLowerCase().includes("product") ||
+        message.toLowerCase().includes("show") ||
+        message.toLowerCase().includes("prodott")
+      ) {
+        addMessage(t.showProducts, "bot", "product", products)
+      } else if (message.toLowerCase().includes("cart") || message.toLowerCase().includes("carrello")) {
+        addMessage(t.cartSummary, "bot", "cart")
+      } else {
+        addMessage(
+          "I can help you find products, check your cart, or answer questions about our items. Try asking 'show products' or 'view cart'!",
+          "bot",
+        )
       }
     })
   }
 
-  const handleGeminiResponse = async (userMessage: string) => {
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          context: "ecommerce",
-          products: sampleProducts,
-          cart: cart,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        addMessage(data.response, "bot", undefined, ["Mostra prodotti", "Cerca altro", "Vai al carrello", "Supporto"])
-      } else {
-        addMessage(
-          "Mi dispiace, sto avendo problemi tecnici. Posso aiutarti con le opzioni qui sotto:",
-          "bot",
-          undefined,
-          ["Mostra prodotti popolari", "Supporto clienti", "FAQ"],
-        )
-      }
-    } catch (error) {
-      addMessage("Scusa, c'è stato un errore. Prova con una delle opzioni qui sotto:", "bot", undefined, [
-        "Mostra prodotti popolari",
-        "Il mio carrello",
-        "Supporto",
-      ])
-    }
-  }
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return
-    const message = inputValue.trim()
-    addMessage(message, "user")
-    setInputValue("")
-    simulateTyping(() => handleGeminiResponse(message))
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+  const addToCart = (productId: string) => {
+    setCart((prev) => [...prev, productId])
+    simulateTyping(() => {
+      addMessage(t.addedToCart, "bot")
+    }, 800)
   }
 
   return (
-    <Card className="h-[600px] flex flex-col bg-gradient-to-br from-blue-50 to-white border-blue-200">
-      <CardHeader className="border-b border-blue-200 bg-blue-600 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">E-commerce Assistant</CardTitle>
-              <p className="text-blue-100 text-sm">Il tuo shopping assistant AI</p>
-            </div>
-          </div>
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+        <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Badge className="bg-white/20 text-white border-white/30">
-              <Package className="w-3 h-3 mr-1" />
-              {cart.length}
-            </Badge>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            <ShoppingCart className="h-5 w-5" />
+            <div>
+              <div className="font-semibold">{t.title}</div>
+              <div className="text-sm opacity-90">{t.subtitle}</div>
+            </div>
           </div>
-        </div>
+          <Badge variant="secondary" className="bg-white/20 text-white">
+            {cart.length} {language === "en" ? "items" : "articoli"}
+          </Badge>
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] ${message.sender === "user" ? "bg-blue-600 text-white" : "bg-gray-100"} rounded-lg p-3`}
               >
-                <div
-                  className={`flex items-start space-x-2 max-w-[80%] ${
-                    message.type === "user" ? "flex-row-reverse space-x-reverse" : ""
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.type === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                    }`}
-                  >
-                    {message.type === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {message.sender === "bot" && (
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Bot className="h-4 w-4 text-blue-600" />
+                    <Badge variant="secondary" className="text-xs">
+                      Shopping Assistant
+                    </Badge>
                   </div>
+                )}
+                <p className="text-sm">{message.text}</p>
 
-                  <div
-                    className={`rounded-lg p-3 ${
-                      message.type === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white border border-blue-200 text-gray-800"
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-
-                    {/* Products Display */}
-                    {message.products && (
-                      <div className="mt-3 space-y-2">
-                        {message.products.map((product) => (
-                          <div
-                            key={product.id}
-                            className="bg-gray-50 rounded-lg p-3 flex items-center space-x-3 border"
-                          >
-                            <img
-                              src={product.image || "/placeholder.svg"}
-                              alt={product.name}
-                              className="w-12 h-12 object-cover rounded-lg"
-                            />
-                            <div className="flex-1">
-                              <h4 className="font-medium text-sm text-gray-900">{product.name}</h4>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <span className="text-lg font-bold text-blue-600">€{product.price}</span>
-                                <div className="flex items-center">
-                                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                  <span className="text-xs text-gray-600 ml-1">{product.rating}</span>
-                                </div>
-                                <Badge
-                                  className={`text-xs ${
-                                    product.inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {product.inStock ? "Disponibile" : "Esaurito"}
-                                </Badge>
+                {message.type === "product" && message.products && (
+                  <div className="mt-3 space-y-3">
+                    {message.products.map((product) => (
+                      <div key={product.id} className="border rounded-lg p-3 bg-white">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{product.name}</h4>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <div className="flex items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-3 w-3 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                  />
+                                ))}
+                                <span className="text-xs text-gray-600 ml-1">{product.rating}</span>
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                              disabled={!product.inStock}
-                              onClick={() => {
-                                if (product.inStock) {
-                                  setCart((prev) => [...prev, product])
-                                  addMessage(`✅ ${product.name} aggiunto al carrello!`, "bot", undefined, [
-                                    "Vai al checkout",
-                                    "Continua shopping",
-                                  ])
-                                }
-                              }}
-                            >
-                              <ShoppingCart className="w-3 h-3 mr-1" />
-                              {product.inStock ? "Aggiungi" : "Esaurito"}
-                            </Button>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="font-bold text-blue-600">{product.price}</span>
+                              <Button
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() => addToCart(product.id)}
+                              >
+                                {t.addToCart}
+                              </Button>
+                            </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    )}
-
-                    {/* Options */}
-                    {message.options && (
-                      <div className="mt-3 space-y-2">
-                        {message.options.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleOptionClick(option)}
-                            className="block w-full text-left p-2 rounded bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200 text-sm text-blue-800"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                )}
+
+                {message.type === "cart" && (
+                  <div className="mt-3 p-3 bg-white rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-900">
+                        {cart.length} {language === "en" ? "items in cart" : "articoli nel carrello"}
+                      </span>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        {t.checkout}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
 
           {isTyping && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-              <div className="flex items-start space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className="bg-white border border-blue-200 rounded-lg p-3">
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <Bot className="h-4 w-4 text-blue-600" />
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                       style={{ animationDelay: "0.1s" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                       style={{ animationDelay: "0.2s" }}
                     ></div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-blue-200 p-4 bg-blue-50">
+        <div className="border-t p-4">
           <div className="flex space-x-2">
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Scrivi il tuo messaggio..."
-              className="flex-1 border-blue-200 focus:border-blue-400"
+              placeholder={t.placeholder}
+              onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
+              className="flex-1"
             />
-            <Button onClick={handleSendMessage} className="bg-blue-600 hover:bg-blue-700">
-              <Send className="w-4 h-4" />
+            <Button onClick={() => handleSend(inputValue)} className="bg-blue-600 hover:bg-blue-700">
+              <Send className="h-4 w-4" />
             </Button>
           </div>
         </div>

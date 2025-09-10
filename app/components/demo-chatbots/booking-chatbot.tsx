@@ -1,553 +1,539 @@
 "use client"
 
+import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Send, Calendar, CheckCircle } from "lucide-react"
+import { Calendar } from "@/components/ui/calendar"
+import { Bot, User, Send, CalendarIcon, Clock, CheckCircle, Phone, Mail } from "lucide-react"
 
 interface Message {
   id: string
-  content: string
-  sender: "user" | "bot"
+  text: string
+  isUser: boolean
   timestamp: Date
-  source?: "booking" | "ai" | "confirmation"
+  type?: "text" | "service-selection" | "date-selection" | "time-selection" | "form" | "confirmation"
+  data?: any
 }
 
 interface BookingData {
-  service?: string
-  date?: string
-  time?: string
-  name?: string
-  email?: string
-  phone?: string
-  notes?: string
+  service: string
+  date: string
+  time: string
+  name: string
+  email: string
+  phone: string
+  message: string
+}
+
+const timeSlots = [
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+]
+
+const translations = {
+  it: {
+    title: "Assistente Prenotazioni",
+    subtitle: "Con controllo disponibilità",
+    welcome:
+      "👋 Ciao! Sono l'assistente per le prenotazioni di Digital Aura. Ti aiuto a prenotare un appuntamento con controllo disponibilità in tempo reale!",
+    serviceQuestion: "Per quale servizio vorresti prenotare?",
+    dateSelection: "Perfetto! Ora seleziona la data per il tuo appuntamento:",
+    timeSelection: "Ottimo! Scegli l'orario che preferisci:",
+    formRequest: "Perfetto! Ora ho bisogno dei tuoi dati per completare la prenotazione:",
+    confirming: "Sto confermando la tua prenotazione...",
+    confirmed: "Prenotazione Confermata!",
+    placeholder: "Scrivi un messaggio...",
+    generalResponse: "Grazie per il tuo messaggio! Per prenotare un appuntamento, usa i pulsanti qui sopra.",
+    formPlaceholders: {
+      name: "Nome e Cognome *",
+      email: "Email *",
+      phone: "Telefono *",
+      message: "Note aggiuntive (opzionale)",
+    },
+    confirmButton: "Conferma Prenotazione",
+    services: [
+      { name: "🤖 AI Automation", description: "Automazione intelligente per il tuo business" },
+      { name: "🌐 Web Development", description: "Siti web moderni e performanti" },
+      { name: "💬 Chatbot AI", description: "Assistenti virtuali personalizzati" },
+      { name: "📊 AI Marketing", description: "Marketing automatizzato con intelligenza artificiale" },
+    ],
+  },
+  en: {
+    title: "Booking Assistant",
+    subtitle: "With availability check",
+    welcome:
+      "👋 Hello! I'm Digital Aura's booking assistant. I'll help you book an appointment with real-time availability checking!",
+    serviceQuestion: "Which service would you like to book?",
+    dateSelection: "Perfect! Now select the date for your appointment:",
+    timeSelection: "Great! Choose your preferred time:",
+    formRequest: "Perfect! Now I need your details to complete the booking:",
+    confirming: "Confirming your booking...",
+    confirmed: "Booking Confirmed!",
+    placeholder: "Type a message...",
+    generalResponse: "Thank you for your message! To book an appointment, use the buttons above.",
+    formPlaceholders: {
+      name: "Full Name *",
+      email: "Email *",
+      phone: "Phone *",
+      message: "Additional notes (optional)",
+    },
+    confirmButton: "Confirm Booking",
+    services: [
+      { name: "🤖 AI Automation", description: "Intelligent automation for your business" },
+      { name: "🌐 Web Development", description: "Modern and performant websites" },
+      { name: "💬 AI Chatbot", description: "Personalized virtual assistants" },
+      { name: "📊 AI Marketing", description: "Automated marketing with artificial intelligence" },
+    ],
+  },
 }
 
 export default function BookingChatbot() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [bookingData, setBookingData] = useState<BookingData>({})
-  const [bookingStep, setBookingStep] = useState<string | null>(null)
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>({})
+  const [currentStep, setCurrentStep] = useState("welcome")
+  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [language, setLanguage] = useState<"it" | "en">("it")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+  // Get current translations
+  const t = translations[language]
+
+  useEffect(() => {
+    const checkLanguage = () => {
+      const savedLanguage = localStorage.getItem("language")
+      if (savedLanguage === "it" || savedLanguage === "en") {
+        setLanguage(savedLanguage)
+      }
+    }
+
+    checkLanguage()
+    const interval = setInterval(checkLanguage, 500)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    // Reset messages when language changes - show only ONE welcome and ONE service selection
+    const welcomeMessage: Message = {
+      id: `welcome-${language}-${Date.now()}`,
+      text: t.welcome,
+      isUser: false,
+      timestamp: new Date(),
+      type: "text",
+    }
+
+    const serviceMessage: Message = {
+      id: `service-selection-${language}-${Date.now()}`,
+      text: t.serviceQuestion,
+      isUser: false,
+      timestamp: new Date(),
+      type: "service-selection",
+    }
+
+    // Set both messages at once to avoid duplication
+    setMessages([welcomeMessage, serviceMessage])
+
+    // Reset booking state when language changes
+    setCurrentStep("welcome")
+    setBookingData({})
+    setSelectedDate(undefined)
+  }, [language, t.welcome, t.serviceQuestion])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
 
-  useEffect(() => {
-    const welcomeMessage: Message = {
-      id: "1",
-      content:
-        "📅 Benvenuto nel sistema di prenotazioni! Sono qui per aiutarti a prenotare il servizio perfetto per le tue esigenze. Che tipo di appuntamento vorresti prenotare?",
-      sender: "bot",
-      timestamp: new Date(),
-      source: "booking",
-    }
-    setMessages([welcomeMessage])
-  }, [])
-
-  const services = [
-    { id: "consultation", name: "Consulenza Generale", duration: "30 min", price: "Gratuita" },
-    { id: "ai-automation", name: "AI Automation", duration: "60 min", price: "€150" },
-    { id: "chatbot-dev", name: "Sviluppo Chatbot", duration: "45 min", price: "€120" },
-    { id: "web-dev", name: "Sviluppo Web", duration: "60 min", price: "€150" },
-    { id: "ai-marketing", name: "AI Marketing", duration: "45 min", price: "€120" },
-  ]
-
-  const timeSlots = [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-  ]
-
-  const findBookingResponse = (message: string): { response: string; source: string; nextStep?: string } | null => {
-    const lowerMessage = message.toLowerCase()
-
-    // Saluti e inizio prenotazione
-    if (lowerMessage.includes("ciao") || lowerMessage.includes("salve") || lowerMessage.includes("hello")) {
-      return {
-        response: "👋 Ciao! Perfetto, sei nel posto giusto per prenotare un appuntamento. Che servizio ti interessa?",
-        source: "booking",
-        nextStep: "service",
-      }
-    }
-
-    // Servizi specifici
-    if (lowerMessage.includes("consulenza") || lowerMessage.includes("consultation")) {
-      setBookingData((prev) => ({ ...prev, service: "Consulenza Generale (30 min) - Gratuita" }))
-      return {
-        response:
-          "✅ Perfetto! Hai scelto una **Consulenza Generale** (30 min, gratuita).\n\nQuando preferiresti l'appuntamento? Puoi dirmi una data specifica o scegliere tra:\n• Oggi\n• Domani\n• Questa settimana\n• La prossima settimana",
-        source: "booking",
-        nextStep: "date",
-      }
-    }
-
-    if (lowerMessage.includes("chatbot")) {
-      setBookingData((prev) => ({ ...prev, service: "Sviluppo Chatbot (45 min) - €120" }))
-      return {
-        response:
-          "🤖 Ottima scelta! **Sviluppo Chatbot** (45 min, €120).\n\nQuando ti va bene? Dimmi una data o scegli:\n• Oggi\n• Domani\n• Questa settimana\n• La prossima settimana",
-        source: "booking",
-        nextStep: "date",
-      }
-    }
-
-    if (lowerMessage.includes("web") || lowerMessage.includes("sito")) {
-      setBookingData((prev) => ({ ...prev, service: "Sviluppo Web (60 min) - €150" }))
-      return {
-        response:
-          "🌐 Fantastico! **Sviluppo Web** (60 min, €150).\n\nQuando preferisci l'appuntamento?\n• Oggi\n• Domani\n• Questa settimana\n• La prossima settimana",
-        source: "booking",
-        nextStep: "date",
-      }
-    }
-
-    // Gestione date
-    if (
-      bookingStep === "date" &&
-      (lowerMessage.includes("oggi") || lowerMessage.includes("domani") || lowerMessage.includes("settimana"))
-    ) {
-      let dateText = ""
-      if (lowerMessage.includes("oggi")) dateText = "Oggi"
-      else if (lowerMessage.includes("domani")) dateText = "Domani"
-      else if (lowerMessage.includes("questa settimana")) dateText = "Questa settimana"
-      else if (lowerMessage.includes("prossima settimana")) dateText = "Prossima settimana"
-
-      setBookingData((prev) => ({ ...prev, date: dateText }))
-      return {
-        response: `📅 Perfetto! ${dateText}.\n\nOra scegli l\'orario che preferisci:\n\n🌅 **Mattina**: 09:00, 09:30, 10:00, 10:30, 11:00, 11:30\n🌞 **Pomeriggio**: 14:00, 14:30, 15:00, 15:30, 16:00, 16:30, 17:00\n\nQuale orario ti va meglio?`,
-        source: "booking",
-        nextStep: "time",
-      }
-    }
-
-    // Gestione orari
-    if (bookingStep === "time" && timeSlots.some((slot) => lowerMessage.includes(slot))) {
-      const selectedTime = timeSlots.find((slot) => lowerMessage.includes(slot))
-      setBookingData((prev) => ({ ...prev, time: selectedTime }))
-      return {
-        response: `🕐 Ottimo! Orario selezionato: **${selectedTime}**.\n\nOra ho bisogno dei tuoi dati per completare la prenotazione. Come ti chiami?`,
-        source: "booking",
-        nextStep: "name",
-      }
-    }
-
-    // Gestione nome
-    if (bookingStep === "name" && !lowerMessage.includes("email") && !lowerMessage.includes("@")) {
-      setBookingData((prev) => ({ ...prev, name: message.trim() }))
-      return {
-        response: `👤 Piacere di conoscerti, ${message.trim()}!\n\nOra mi serve la tua email per inviarti la conferma dell\'appuntamento:`,
-        source: "booking",
-        nextStep: "email",
-      }
-    }
-
-    // Gestione email
-    if (bookingStep === "email" && lowerMessage.includes("@")) {
-      setBookingData((prev) => ({ ...prev, email: message.trim() }))
-      return {
-        response: `📧 Email registrata: ${message.trim()}\n\nVuoi aggiungere un numero di telefono? (opzionale ma consigliato per eventuali comunicazioni urgenti)`,
-        source: "booking",
-        nextStep: "phone",
-      }
-    }
-
-    // Gestione telefono
-    if (bookingStep === "phone") {
-      if (lowerMessage.includes("no") || lowerMessage.includes("skip") || lowerMessage.includes("salta")) {
-        return {
-          response:
-            "Nessun problema! Procediamo senza telefono.\n\nHai qualche nota particolare o richiesta speciale per l'appuntamento? (opzionale)",
-          source: "booking",
-          nextStep: "notes",
-        }
-      } else {
-        setBookingData((prev) => ({ ...prev, phone: message.trim() }))
-        return {
-          response: `📱 Telefono registrato: ${message.trim()}\n\nHai qualche nota particolare o richiesta speciale per l\'appuntamento? (opzionale)`,
-          source: "booking",
-          nextStep: "notes",
-        }
-      }
-    }
-
-    // Gestione note e conferma finale
-    if (bookingStep === "notes") {
-      if (!lowerMessage.includes("no") && !lowerMessage.includes("niente") && message.trim().length > 3) {
-        setBookingData((prev) => ({ ...prev, notes: message.trim() }))
-      }
-      return {
-        response: "Perfetto! Ora ho tutti i dati necessari. Vuoi confermare la prenotazione?",
-        source: "booking",
-        nextStep: "confirm",
-      }
-    }
-
-    return null
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return
-
-    const userMessage: Message = {
+  const addMessage = (text: string, isUser: boolean, type = "text", data?: any) => {
+    const message: Message = {
       id: Date.now().toString(),
-      content: content.trim(),
-      sender: "user",
+      text,
+      isUser,
       timestamp: new Date(),
+      type: type as any,
+      data,
     }
+    setMessages((prev) => [...prev, message])
+  }
 
-    setMessages((prev) => [...prev, userMessage])
+  const handleServiceSelection = (service: any) => {
+    setBookingData((prev) => ({ ...prev, service: service.name }))
+    addMessage(`${language === "en" ? "I chose:" : "Ho scelto:"} ${service.name}`, true)
+
+    setTimeout(() => {
+      addMessage(t.dateSelection, false, "date-selection")
+      setCurrentStep("date-selection")
+    }, 500)
+  }
+
+  const handleDateSelection = (date: Date) => {
+    setSelectedDate(date)
+    const dateString = date.toLocaleDateString(language === "en" ? "en-US" : "it-IT")
+    setBookingData((prev) => ({ ...prev, date: dateString }))
+    addMessage(`${language === "en" ? "Selected date:" : "Data selezionata:"} ${dateString}`, true)
+
+    setTimeout(() => {
+      addMessage(t.timeSelection, false, "time-selection")
+      setCurrentStep("time-selection")
+    }, 500)
+  }
+
+  const handleTimeSelection = (time: string) => {
+    setBookingData((prev) => ({ ...prev, time }))
+    addMessage(`${language === "en" ? "Selected time:" : "Orario selezionato:"} ${time}`, true)
+
+    setTimeout(() => {
+      addMessage(t.formRequest, false, "form")
+      setCurrentStep("form")
+    }, 500)
+  }
+
+  const handleFormSubmit = (formData: any) => {
+    const updatedBookingData = { ...bookingData, ...formData }
+    setBookingData(updatedBookingData)
+    addMessage(language === "en" ? "Details entered correctly" : "Dati inseriti correttamente", true)
+
+    setTimeout(() => {
+      addMessage(t.confirming, false)
+      setIsLoading(true)
+
+      // Simulate booking confirmation
+      setTimeout(() => {
+        setIsLoading(false)
+        addMessage("", false, "confirmation", updatedBookingData)
+        setCurrentStep("completed")
+      }, 2000)
+    }, 500)
+  }
+
+  const handleSendMessage = () => {
+    if (!inputValue.trim()) return
+
+    addMessage(inputValue, true)
     setInputValue("")
-    setIsLoading(true)
 
-    try {
-      // Prima cerca risposte di prenotazione
-      const bookingResponse = findBookingResponse(content)
-
-      if (bookingResponse) {
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: bookingResponse.response,
-          sender: "bot",
-          timestamp: new Date(),
-          source: bookingResponse.source as any,
-        }
-        setMessages((prev) => [...prev, botMessage])
-
-        if (bookingResponse.nextStep) {
-          setBookingStep(bookingResponse.nextStep)
-        }
-
-        // Se è conferma, completa la prenotazione
-        if (
-          bookingStep === "confirm" &&
-          (content.toLowerCase().includes("sì") ||
-            content.toLowerCase().includes("si") ||
-            content.toLowerCase().includes("yes") ||
-            content.toLowerCase().includes("conferma"))
-        ) {
-          setTimeout(() => {
-            const confirmationMessage: Message = {
-              id: Date.now().toString(),
-              content: `✅ **PRENOTAZIONE CONFERMATA!**\n\n📋 **Riepilogo:**\n• **Servizio**: ${bookingData.service}\n• **Data**: ${bookingData.date}\n• **Orario**: ${bookingData.time}\n• **Nome**: ${bookingData.name}\n• **Email**: ${bookingData.email}${bookingData.phone ? `\n• **Telefono**: ${bookingData.phone}` : ""}${bookingData.notes ? `\n• **Note**: ${bookingData.notes}` : ""}\n\n📧 **Riceverai una email di conferma a breve**\n📱 **Ti contatteremo 24h prima per conferma**\n\n🎉 Grazie per aver scelto Digital Aura!`,
-              sender: "bot",
-              timestamp: new Date(),
-              source: "confirmation",
-            }
-            setMessages((prev) => [...prev, confirmationMessage])
-            setBookingStep(null)
-          }, 1000)
-        }
-      } else {
-        // Usa AI per domande generali
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: `Come assistente prenotazioni, rispondi a: ${content}`,
-            language: "it",
-          }),
-        })
-
-        const data = await response.json()
-
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: data.response || "Posso aiutarti con la prenotazione di un appuntamento. Che servizio ti interessa?",
-          sender: "bot",
-          timestamp: new Date(),
-          source: "ai",
-        }
-
-        setMessages((prev) => [...prev, botMessage])
-      }
-    } catch (error) {
-      console.error("Chat error:", error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          "Mi dispiace, si è verificato un errore. Puoi riprovare o contattarci direttamente al +39 02 1234 5678.",
-        sender: "bot",
-        timestamp: new Date(),
-        source: "booking",
-      }
-      setMessages((prev) => [...prev, errorMessage])
-    } finally {
-      setIsLoading(false)
-    }
+    // Simple responses for general questions
+    setTimeout(() => {
+      addMessage(t.generalResponse, false)
+    }, 500)
   }
 
-  const selectService = (service: any) => {
-    const serviceText = `${service.name} (${service.duration}) - ${service.price}`
-    setBookingData((prev) => ({ ...prev, service: serviceText }))
-    sendMessage(service.name)
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString(language === "en" ? "en-US" : "it-IT", { hour: "2-digit", minute: "2-digit" })
   }
 
-  const selectQuickOption = (option: string) => {
-    sendMessage(option)
-  }
-
-  const getSourceBadge = (source?: string) => {
-    if (!source) return null
-
-    const badges = {
-      booking: { label: "Booking", color: "bg-green-500" },
-      ai: { label: "AI", color: "bg-purple-500" },
-      confirmation: { label: "Confermato", color: "bg-blue-500" },
+  const renderMessage = (message: Message) => {
+    if (message.type === "service-selection") {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-700 mb-3">{message.text}</p>
+          <div className="grid grid-cols-1 gap-2">
+            {t.services.map((service, index) => (
+              <Button
+                key={index}
+                onClick={() => handleServiceSelection(service)}
+                className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg text-left h-auto"
+                disabled={currentStep !== "welcome"}
+              >
+                <div>
+                  <div className="font-semibold">{service.name}</div>
+                  <div className="text-sm text-blue-100">{service.description}</div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )
     }
 
-    const badge = badges[source as keyof typeof badges]
-    if (!badge) return null
+    if (message.type === "date-selection") {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-700 mb-3">{message.text}</p>
+          <div className="bg-white border rounded-lg p-4">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && handleDateSelection(date)}
+              disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
+              locale={language}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )
+    }
 
-    return <Badge className={`${badge.color} text-white text-xs ml-2`}>{badge.label}</Badge>
+    if (message.type === "time-selection") {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-700 mb-3">{message.text}</p>
+          <div className="grid grid-cols-3 gap-2">
+            {timeSlots.map((time) => (
+              <Button
+                key={time}
+                onClick={() => handleTimeSelection(time)}
+                className="bg-green-500 hover:bg-green-600 text-white"
+                disabled={currentStep !== "time-selection"}
+              >
+                {time}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    if (message.type === "form") {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-700 mb-3">{message.text}</p>
+          <BookingForm onSubmit={handleFormSubmit} disabled={currentStep !== "form"} language={language} />
+        </div>
+      )
+    }
+
+    if (message.type === "confirmation") {
+      return (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center mb-3">
+            <CheckCircle className="w-6 h-6 text-green-500 mr-2" />
+            <h3 className="font-bold text-green-800">{t.confirmed}</h3>
+          </div>
+          <div className="space-y-2 text-sm text-green-700">
+            <div className="flex items-center">
+              <CalendarIcon className="w-4 h-4 mr-2" />
+              <span>
+                <strong>{language === "en" ? "Service:" : "Servizio:"}</strong> {message.data.service}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <Clock className="w-4 h-4 mr-2" />
+              <span>
+                <strong>{language === "en" ? "Date and Time:" : "Data e Ora:"}</strong> {message.data.date}{" "}
+                {language === "en" ? "at" : "alle"} {message.data.time}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-2" />
+              <span>
+                <strong>{language === "en" ? "Name:" : "Nome:"}</strong> {message.data.name}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <Mail className="w-4 h-4 mr-2" />
+              <span>
+                <strong>Email:</strong> {message.data.email}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <Phone className="w-4 h-4 mr-2" />
+              <span>
+                <strong>{language === "en" ? "Phone:" : "Telefono:"}</strong> {message.data.phone}
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-green-100 rounded-lg">
+            <p className="text-sm text-green-800">
+              <strong>{language === "en" ? "Booking ID:" : "ID Prenotazione:"}</strong> #BOOK-
+              {Date.now().toString().slice(-6)}
+            </p>
+            <p className="text-sm text-green-700 mt-1">
+              {language === "en"
+                ? "You will receive a confirmation email shortly. We will contact you to confirm the details."
+                : "Riceverai una email di conferma a breve. Ti contatteremo per confermare i dettagli."}
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    return <p className="text-sm text-gray-700">{message.text}</p>
   }
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
-      <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
+    <div className="flex flex-col h-full bg-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-lg">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5" />
-              <span>Booking Assistant</span>
-            </CardTitle>
-            <p className="text-sm text-white/80">Prenota il tuo appuntamento</p>
-          </div>
-          {bookingData.service && (
-            <Badge className="bg-white/20 text-white">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              In corso
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-
-      <CardContent className="flex-1 p-0 flex flex-col" style={{ minHeight: 0 }}>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: 0 }}>
-          {messages.map((message) => (
-            <div key={message.id}>
-              <div className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.sender === "user"
-                      ? "bg-gradient-to-r from-green-600 to-teal-600 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                  {message.sender === "bot" && (
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs opacity-60">
-                        {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                      {getSourceBadge(message.source)}
-                    </div>
-                  )}
-                </div>
-              </div>
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-white/20 rounded-full">
+              <CalendarIcon className="w-5 h-5" />
             </div>
-          ))}
+            <div>
+              <h3 className="font-bold text-lg">{t.title}</h3>
+              <p className="text-blue-100 text-sm">{t.subtitle}</p>
+            </div>
+          </div>
+          <Badge className="bg-green-500 text-white border-0">
+            <div className="w-2 h-2 bg-white rounded-full mr-2"></div>
+            {language === "en" ? "Online" : "Online"}
+          </Badge>
+        </div>
+      </div>
 
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 p-3 rounded-lg">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
+            <div className="max-w-[85%]">
+              {!message.isUser && (
+                <div className="flex items-start space-x-2">
+                  <div className="p-2 bg-blue-100 rounded-full mt-1 flex-shrink-0">
+                    <Bot className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border">
+                    {renderMessage(message)}
+                    <div className="text-xs text-gray-500 mt-2">{formatTime(message.timestamp)}</div>
+                  </div>
+                </div>
+              )}
+              {message.isUser && (
+                <div className="flex items-start space-x-2 justify-end">
+                  <div className="bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-3 shadow-sm">
+                    <div className="text-sm">{message.text}</div>
+                    <div className="text-xs text-blue-100 mt-2">{formatTime(message.timestamp)}</div>
+                  </div>
+                  <div className="p-2 bg-blue-500 rounded-full mt-1 flex-shrink-0">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="flex items-start space-x-2">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Bot className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
                     style={{ animationDelay: "0.1s" }}
                   ></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
                     style={{ animationDelay: "0.2s" }}
                   ></div>
                 </div>
               </div>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Services Selection */}
-        {!bookingData.service && (
-          <div className="p-4 border-t bg-gray-50">
-            <p className="text-xs text-gray-600 mb-3">Seleziona un servizio:</p>
-            <div className="space-y-2">
-              {services.map((service) => (
-                <Button
-                  key={service.id}
-                  variant="outline"
-                  className="w-full justify-between text-left h-auto py-3 bg-transparent"
-                  onClick={() => selectService(service)}
-                >
-                  <div>
-                    <div className="font-medium">{service.name}</div>
-                    <div className="text-xs text-gray-500">{service.duration}</div>
-                  </div>
-                  <Badge variant={service.price === "Gratuita" ? "default" : "secondary"}>{service.price}</Badge>
-                </Button>
-              ))}
-            </div>
           </div>
         )}
 
-        {/* Quick Actions */}
-        {bookingData.service && bookingStep && (
-          <div className="p-4 border-t bg-gray-50">
-            <p className="text-xs text-gray-600 mb-3">Opzioni rapide:</p>
-            <div className="grid grid-cols-2 gap-2">
-              {bookingStep === "date" && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Oggi")}
-                  >
-                    📅 Oggi
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Domani")}
-                  >
-                    📅 Domani
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Questa settimana")}
-                  >
-                    📅 Questa settimana
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Prossima settimana")}
-                  >
-                    📅 Prossima settimana
-                  </Button>
-                </>
-              )}
-              {bookingStep === "time" && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("09:00")}
-                  >
-                    🌅 09:00
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("10:00")}
-                  >
-                    🌅 10:00
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("14:00")}
-                  >
-                    🌞 14:00
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("15:00")}
-                  >
-                    🌞 15:00
-                  </Button>
-                </>
-              )}
-              {bookingStep === "confirm" && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Sì, conferma")}
-                  >
-                    ✅ Conferma
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8 bg-transparent"
-                    onClick={() => selectQuickOption("Modifica")}
-                  >
-                    ✏️ Modifica
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Input */}
-        <div className="p-4 border-t flex-shrink-0">
-          <div className="flex space-x-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder={
-                bookingStep === "name"
-                  ? "Il tuo nome..."
-                  : bookingStep === "email"
-                    ? "la-tua-email@esempio.com"
-                    : bookingStep === "phone"
-                      ? "Il tuo telefono (opzionale)..."
-                      : bookingStep === "notes"
-                        ? "Note aggiuntive (opzionale)..."
-                        : "Scrivi un messaggio..."
-              }
-              onKeyPress={(e) => {
-                if (e.key === "Enter" && !isLoading) {
-                  sendMessage(inputValue)
-                }
-              }}
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button
-              onClick={() => sendMessage(inputValue)}
-              disabled={isLoading || !inputValue.trim()}
-              size="icon"
-              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* Input */}
+      <div className="p-4 bg-white border-t">
+        <div className="flex space-x-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            placeholder={t.placeholder}
+            className="flex-1"
+          />
+          <Button onClick={handleSendMessage} className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Send className="w-4 h-4" />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  )
+}
+
+function BookingForm({
+  onSubmit,
+  disabled,
+  language,
+}: { onSubmit: (data: any) => void; disabled: boolean; language: "it" | "en" }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  })
+
+  const t = translations[language]
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (formData.name && formData.email && formData.phone) {
+      onSubmit(formData)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <Input
+          placeholder={t.formPlaceholders.name}
+          value={formData.name}
+          onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+          required
+          disabled={disabled}
+        />
+      </div>
+      <div>
+        <Input
+          type="email"
+          placeholder={t.formPlaceholders.email}
+          value={formData.email}
+          onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+          required
+          disabled={disabled}
+        />
+      </div>
+      <div>
+        <Input
+          type="tel"
+          placeholder={t.formPlaceholders.phone}
+          value={formData.phone}
+          onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+          required
+          disabled={disabled}
+        />
+      </div>
+      <div>
+        <Input
+          placeholder={t.formPlaceholders.message}
+          value={formData.message}
+          onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+          disabled={disabled}
+        />
+      </div>
+      <Button
+        type="submit"
+        className="w-full bg-green-500 hover:bg-green-600 text-white"
+        disabled={disabled || !formData.name || !formData.email || !formData.phone}
+      >
+        <CheckCircle className="w-4 h-4 mr-2" />
+        {t.confirmButton}
+      </Button>
+    </form>
   )
 }

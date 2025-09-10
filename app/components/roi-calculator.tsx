@@ -1,402 +1,634 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingUp, Clock, Users, Zap, Target, Euro } from "lucide-react"
+import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { useLanguage } from "../contexts/language-context"
-
-interface ROIData {
-  service: string
-  employees: number
-  hourlyRate: number
-  hoursPerWeek: number
-  monthlyCosts: number
-  efficiencyGoal: number
-  currentRevenue: number
-  growthTarget: number
-}
+import {
+  Calculator,
+  Lightbulb,
+  Award,
+  BarChart3,
+  Users,
+  Euro,
+  TrendingUp,
+  Zap,
+  Target,
+  Clock,
+  Sparkles,
+  Brain,
+  Rocket,
+  DollarSign,
+  PiggyBank,
+  Calendar,
+} from "lucide-react"
 
 export default function ROICalculator() {
   const { language } = useLanguage()
-  const [formData, setFormData] = useState<ROIData>({
-    service: "",
-    employees: 50,
-    hourlyRate: 25,
-    hoursPerWeek: 40,
-    monthlyCosts: 25000,
-    efficiencyGoal: 30,
-    currentRevenue: 50000,
-    growthTarget: 25,
-  })
+  const [activeTab, setActiveTab] = useState("calculator")
 
-  const [results, setResults] = useState({
-    annualSavings: 0,
-    roi: 0,
-    paybackMonths: 0,
-    productivityGain: 0,
-    investmentCost: 0,
-    annualReturn: 0,
-    netProfit: 0,
-  })
+  // Calculator state
+  const [employees, setEmployees] = useState([50])
+  const [avgSalary, setAvgSalary] = useState(45000)
+  const [currentEfficiency, setCurrentEfficiency] = useState([70])
+  const [expectedImprovement, setExpectedImprovement] = useState([35])
+  const [implementationCost, setImplementationCost] = useState(15000)
+  const [monthlyCost, setMonthlyCost] = useState(2500)
 
-  const serviceOptions = {
-    en: [
-      { value: "chatbot", label: "Smart Chatbot", cost: 2500, efficiency: 40, revenue: 20 },
-      { value: "automation", label: "AI Automation", cost: 5000, efficiency: 50, revenue: 35 },
-      { value: "website", label: "Web Development", cost: 3000, efficiency: 25, revenue: 30 },
-      { value: "marketing", label: "AI Marketing", cost: 1500, efficiency: 35, revenue: 45 },
-    ],
-    it: [
-      { value: "chatbot", label: "Chatbot Intelligente", cost: 2500, efficiency: 40, revenue: 20 },
-      { value: "automation", label: "Automazione AI", cost: 25000, efficiency: 50, revenue: 35 },
-      { value: "website", label: "Sviluppo Web", cost: 3000, efficiency: 25, revenue: 30 },
-      { value: "marketing", label: "Marketing AI", cost: 1500, efficiency: 35, revenue: 45 },
-    ],
-  }
+  // Calculations
+  const totalSalaryCost = employees[0] * avgSalary
+  const inefficiencyLoss = totalSalaryCost * ((100 - currentEfficiency[0]) / 100)
+  const potentialSavings = inefficiencyLoss * (expectedImprovement[0] / 100)
+  const annualSavings = potentialSavings
+  const totalFirstYearCost = implementationCost + monthlyCost * 12
+  const roi = ((annualSavings - totalFirstYearCost) / totalFirstYearCost) * 100
+  const paybackMonths = totalFirstYearCost / (annualSavings / 12)
 
-  const calculateROI = () => {
-    const selectedService = serviceOptions[language].find((s) => s.value === formData.service)
-    if (!selectedService) return
+  const tabs = [
+    {
+      id: "calculator",
+      label: language === "it" ? "Calcolatore" : "Calculator",
+      icon: <Calculator className="h-5 w-5" />,
+      gradient: "from-blue-500 to-indigo-600",
+      bgGradient: "from-blue-50 to-indigo-50",
+    },
+    {
+      id: "how-it-works",
+      label: language === "it" ? "Come Funziona" : "How It Works",
+      icon: <Lightbulb className="h-5 w-5" />,
+      gradient: "from-purple-500 to-pink-600",
+      bgGradient: "from-purple-50 to-pink-50",
+    },
+    {
+      id: "what-you-get",
+      label: language === "it" ? "Cosa Ottieni" : "What You Get",
+      icon: <Award className="h-5 w-5" />,
+      gradient: "from-green-500 to-emerald-600",
+      bgGradient: "from-green-50 to-emerald-50",
+    },
+    {
+      id: "insights",
+      label: "Insights",
+      icon: <BarChart3 className="h-5 w-5" />,
+      gradient: "from-orange-500 to-red-600",
+      bgGradient: "from-orange-50 to-red-50",
+    },
+  ]
 
-    // Calcoli base
-    const monthlyLabourCost = formData.employees * formData.hourlyRate * formData.hoursPerWeek * 4.33
-    const efficiencyMultiplier = (formData.efficiencyGoal + selectedService.efficiency) / 100
-    const monthlySavings = monthlyLabourCost * efficiencyMultiplier + formData.monthlyCosts * 0.2
-    const annualSavings = monthlySavings * 12
+  const howItWorksSteps = [
+    {
+      icon: <Users className="h-12 w-12" />,
+      title: language === "it" ? "Inserisci Parametri" : "Enter Parameters",
+      description:
+        language === "it"
+          ? "Inserisci i dati aziendali inclusi dimensione team, costi e livelli di efficienza attuali"
+          : "Enter business data including team size, costs and current efficiency levels",
+      gradient: "from-blue-500 to-cyan-500",
+    },
+    {
+      icon: <Brain className="h-12 w-12" />,
+      title: language === "it" ? "Analisi AI" : "AI Analysis",
+      description:
+        language === "it"
+          ? "Il nostro algoritmo calcola i potenziali risparmi basati sui benefici comprovati dell'automazione"
+          : "Our algorithm calculates potential savings based on proven automation benefits",
+      gradient: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: <TrendingUp className="h-12 w-12" />,
+      title: language === "it" ? "Ottieni Risultati" : "Get Results",
+      description:
+        language === "it"
+          ? "Ricevi proiezioni ROI dettagliate con timeline di implementazione e breakdown dei costi"
+          : "Receive detailed ROI projections with implementation timeline and cost breakdown",
+      gradient: "from-green-500 to-emerald-500",
+    },
+  ]
 
-    // Calcoli ROI
-    const initialInvestment = selectedService.cost
-    const roi = ((annualSavings - initialInvestment) / initialInvestment) * 100
-    const paybackMonths = initialInvestment / monthlySavings
+  const benefits = [
+    {
+      icon: <Target className="h-8 w-8" />,
+      title: language === "it" ? "Riduzione Costi Operativi" : "Operational Cost Reduction",
+      description:
+        language === "it"
+          ? "Automatizza le attività ripetitive e riduci i costi del customer service fino al 60%"
+          : "Automate repetitive tasks and reduce customer service costs by up to 60%",
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+    },
+    {
+      icon: <Clock className="h-8 w-8" />,
+      title: language === "it" ? "Risposta Immediata 24/7" : "Immediate 24/7 Response",
+      description:
+        language === "it"
+          ? "Rispondi ai clienti istantaneamente senza tempi di attesa, migliorando la soddisfazione"
+          : "Respond to customers instantly without waiting times, improving satisfaction",
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+    },
+    {
+      icon: <Sparkles className="h-8 w-8" />,
+      title: language === "it" ? "Esperienza Cliente Superiore" : "Superior Customer Experience",
+      description:
+        language === "it"
+          ? "Offri un servizio personalizzato e sempre disponibile che supera le aspettative"
+          : "Provide personalized and always available service that exceeds expectations",
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
+    },
+    {
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: language === "it" ? "Insights Avanzati" : "Advanced Insights",
+      description:
+        language === "it"
+          ? "Ottieni dati preziosi sui comportamenti e preferenze dei clienti per decisioni strategiche"
+          : "Get valuable data on customer behaviors and preferences for strategic decisions",
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+    },
+  ]
 
-    // Impatto revenue
-    const revenueMultiplier = (formData.growthTarget + selectedService.revenue) / 100
-    const annualRevenueIncrease = formData.currentRevenue * revenueMultiplier * 12
+  const insightFactors = [
+    {
+      title: language === "it" ? "Complessità Processi" : "Process Complexity",
+      description:
+        language === "it"
+          ? "Processi più complessi tipicamente generano maggiori benefici dall'automazione AI"
+          : "More complex processes typically generate greater benefits from AI automation",
+      icon: <Target className="h-6 w-6" />,
+      impact: language === "it" ? "Alto impatto" : "High impact",
+      color: "text-green-600",
+    },
+    {
+      title: language === "it" ? "Adozione Team" : "Team Adoption",
+      description:
+        language === "it"
+          ? "Il tasso di adozione degli utenti impatta significativamente il successo del progetto"
+          : "User adoption rate significantly impacts project success",
+      icon: <Users className="h-6 w-6" />,
+      impact: language === "it" ? "Impatto critico" : "Critical impact",
+      color: "text-red-600",
+    },
+    {
+      title: language === "it" ? "Qualità Dati" : "Data Quality",
+      description:
+        language === "it"
+          ? "Dati puliti e strutturati abilitano implementazioni AI più efficaci e precise"
+          : "Clean and structured data enables more effective and accurate AI implementations",
+      icon: <BarChart3 className="h-6 w-6" />,
+      impact: language === "it" ? "Medio impatto" : "Medium impact",
+      color: "text-blue-600",
+    },
+    {
+      title: language === "it" ? "Livello Integrazione" : "Integration Level",
+      description:
+        language === "it"
+          ? "Integrazione più profonda dei sistemi fornisce maggiori guadagni di efficienza"
+          : "Deeper system integration provides greater efficiency gains",
+      icon: <Zap className="h-6 w-6" />,
+      impact: language === "it" ? "Alto impatto" : "High impact",
+      color: "text-purple-600",
+    },
+  ]
 
-    // Produttività
-    const productivityGain = efficiencyMultiplier * 100
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "calculator":
+        return (
+          <div className="space-y-8">
+            {/* Business Parameters */}
+            <Card className="border-0 shadow-2xl bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white pb-6">
+                <CardTitle className="flex items-center text-2xl font-bold">
+                  <Users className="h-8 w-8 mr-3" />
+                  {language === "it" ? "Parametri Aziendali" : "Business Parameters"}
+                </CardTitle>
+                <p className="text-blue-100 text-lg">
+                  {language === "it"
+                    ? "Inserisci i dati della tua azienda per calcolare il ROI personalizzato"
+                    : "Enter your company data to calculate personalized ROI"}
+                </p>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                {/* Employees */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl text-white">
+                        <Users className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                          {language === "it" ? "Numero di Dipendenti" : "Number of Employees"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {language === "it"
+                            ? "Team coinvolto nel customer service"
+                            : "Team involved in customer service"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 text-lg font-bold">
+                      {employees[0]}
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={employees}
+                    onValueChange={setEmployees}
+                    max={1000}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>1</span>
+                    <span>1000</span>
+                  </div>
+                </div>
 
-    // Calcoli finali
-    const annualReturn = annualSavings + annualRevenueIncrease
-    const netProfit = annualReturn - initialInvestment
+                {/* Average Salary */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl text-white">
+                      <Euro className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-bold text-gray-900">
+                        {language === "it" ? "Stipendio Annuale Medio (€)" : "Average Annual Salary (€)"}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {language === "it" ? "Costo medio per dipendente" : "Average cost per employee"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Euro className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-600" />
+                    <Input
+                      type="number"
+                      value={avgSalary}
+                      onChange={(e) => setAvgSalary(Number(e.target.value))}
+                      className="pl-12 h-14 text-lg font-semibold border-2 border-green-200 focus:border-green-500 bg-white/80"
+                      placeholder="45000"
+                    />
+                  </div>
+                </div>
 
-    setResults({
-      annualSavings: Math.round(annualSavings),
-      roi: Math.round(roi),
-      paybackMonths: Math.round(paybackMonths * 10) / 10,
-      productivityGain: Math.round(productivityGain),
-      investmentCost: initialInvestment,
-      annualReturn: Math.round(annualReturn),
-      netProfit: Math.round(netProfit),
-    })
-  }
+                {/* Current Efficiency */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white">
+                        <TrendingUp className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                          {language === "it" ? "Efficienza Processi Attuali (%)" : "Current Process Efficiency (%)"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {language === "it"
+                            ? "Quanto sono efficienti i tuoi processi ora"
+                            : "How efficient are your processes now"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 text-lg font-bold">
+                      {currentEfficiency[0]}%
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={currentEfficiency}
+                    onValueChange={setCurrentEfficiency}
+                    max={95}
+                    min={10}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>10%</span>
+                    <span>95%</span>
+                  </div>
+                </div>
 
-  useEffect(() => {
-    if (formData.service) {
-      calculateROI()
+                {/* Expected Improvement */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-white">
+                        <Rocket className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                          {language === "it" ? "Miglioramento Atteso (%)" : "Expected Improvement (%)"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {language === "it" ? "Quanto miglioramento ti aspetti" : "How much improvement do you expect"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 text-lg font-bold">
+                      {expectedImprovement[0]}%
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={expectedImprovement}
+                    onValueChange={setExpectedImprovement}
+                    max={80}
+                    min={5}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>5%</span>
+                    <span>80%</span>
+                  </div>
+                </div>
+
+                {/* Implementation and Monthly Costs */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl text-white">
+                        <DollarSign className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                          {language === "it" ? "Costo Implementazione (€)" : "Implementation Cost (€)"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {language === "it" ? "Investimento iniziale" : "Initial investment"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <Euro className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-cyan-600" />
+                      <Input
+                        type="number"
+                        value={implementationCost}
+                        onChange={(e) => setImplementationCost(Number(e.target.value))}
+                        className="pl-12 h-14 text-lg font-semibold border-2 border-cyan-200 focus:border-cyan-500 bg-white/80"
+                        placeholder="15000"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl text-white">
+                        <Calendar className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                          {language === "it" ? "Manutenzione Mensile (€)" : "Monthly Maintenance (€)"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {language === "it" ? "Costo ricorrente" : "Recurring cost"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <Euro className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-pink-600" />
+                      <Input
+                        type="number"
+                        value={monthlyCost}
+                        onChange={(e) => setMonthlyCost(Number(e.target.value))}
+                        className="pl-12 h-14 text-lg font-semibold border-2 border-pink-200 focus:border-pink-500 bg-white/80"
+                        placeholder="2500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Results */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl text-white mb-4 inline-flex">
+                    <PiggyBank className="h-8 w-8" />
+                  </div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">€{annualSavings.toLocaleString()}</div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {language === "it" ? "Risparmio Annuale" : "Annual Savings"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {language === "it" ? "Risparmi stimati nel primo anno" : "Estimated savings in first year"}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl text-white mb-4 inline-flex">
+                    <TrendingUp className="h-8 w-8" />
+                  </div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    {roi > 0 ? "+" : ""}
+                    {roi.toFixed(1)}%
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">ROI</h4>
+                  <p className="text-sm text-gray-600">
+                    {language === "it" ? "Ritorno sull'investimento" : "Return on investment"}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl text-white mb-4 inline-flex">
+                    <Clock className="h-8 w-8" />
+                  </div>
+                  <div className="text-3xl font-bold text-purple-600 mb-2">{paybackMonths.toFixed(1)}</div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {language === "it" ? "Mesi Payback" : "Payback Months"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {language === "it" ? "Tempo per recuperare l'investimento" : "Time to recover investment"}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl text-white mb-4 inline-flex">
+                    <Euro className="h-8 w-8" />
+                  </div>
+                  <div className="text-3xl font-bold text-orange-600 mb-2">€{totalFirstYearCost.toLocaleString()}</div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {language === "it" ? "Costo Totale" : "Total Cost"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {language === "it" ? "Investimento primo anno" : "First year investment"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )
+
+      case "how-it-works":
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                {language === "it" ? "Come Funziona il Processo" : "How the Process Works"}
+              </h3>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {language === "it"
+                  ? "Il nostro processo strutturato garantisce il successo del tuo progetto chatbot"
+                  : "Our structured process ensures the success of your chatbot project"}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {howItWorksSteps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                >
+                  <Card className="h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/90 backdrop-blur-sm group overflow-hidden">
+                    <CardContent className="p-8 text-center relative">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full -translate-y-12 translate-x-12" />
+
+                      <div className="relative z-10 mb-6">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                          {index + 1}
+                        </div>
+                        <div
+                          className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${step.gradient} text-white group-hover:scale-110 transition-transform duration-300`}
+                        >
+                          {step.icon}
+                        </div>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">{step.title}</h3>
+                      <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case "what-you-get":
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                {language === "it" ? "Cosa Ottieni con i Nostri Chatbot" : "What You Get with Our Chatbots"}
+              </h3>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {language === "it"
+                  ? "I vantaggi tangibili che otterrai implementando un chatbot AI nella tua attività"
+                  : "The tangible benefits you'll get by implementing an AI chatbot in your business"}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {benefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start space-x-6 p-8 bg-white/90 backdrop-blur-sm rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className={`p-4 ${benefit.bgColor} rounded-2xl ${benefit.color} flex-shrink-0`}>
+                    {benefit.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-3 text-xl">{benefit.title}</h4>
+                    <p className="text-gray-600 leading-relaxed text-lg">{benefit.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case "insights":
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                {language === "it" ? "Fattori Chiave per il Successo" : "Key Success Factors"}
+              </h3>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {language === "it"
+                  ? "Elementi che influenzano significativamente il ROI e il successo del tuo chatbot"
+                  : "Elements that significantly influence the ROI and success of your chatbot"}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {insightFactors.map((factor, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start space-x-6 p-8 bg-white/90 backdrop-blur-sm rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className={`p-4 bg-gray-100 rounded-2xl ${factor.color} flex-shrink-0`}>{factor.icon}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-gray-900 text-xl">{factor.title}</h4>
+                      <Badge className={`${factor.color} bg-opacity-10 border-current`}>{factor.impact}</Badge>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed text-lg">{factor.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+
+      default:
+        return null
     }
-  }, [formData, language])
-
-  const handleInputChange = (field: keyof ROIData, value: number | string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-              <Calculator className="w-8 h-8 text-white" />
+    <div className="w-full max-w-7xl mx-auto">
+      {/* Tab Navigation */}
+      <div className="flex flex-wrap justify-center gap-4 mb-12">
+        {tabs.map((tab) => (
+          <Button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            variant={activeTab === tab.id ? "default" : "outline"}
+            size="lg"
+            className={`px-8 py-4 text-lg font-semibold transition-all duration-300 ${
+              activeTab === tab.id
+                ? `bg-gradient-to-r ${tab.gradient} text-white shadow-xl hover:shadow-2xl border-0 scale-105`
+                : "bg-white/80 hover:bg-gray-50 border-2 border-gray-200 text-gray-700 hover:border-gray-300 hover:scale-105"
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              {tab.icon}
+              <span>{tab.label}</span>
             </div>
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            {language === "it" ? "Calcolatore ROI Automazione" : "ROI Automation Calculator"}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {language === "it"
-              ? "Scopri quanto puoi risparmiare automatizzando i tuoi processi aziendali."
-              : "Discover how much you can save by automating your business processes."}
-          </p>
-        </motion.div>
-
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-5 gap-8">
-            {/* Input Panel - 2 colonne */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="lg:col-span-2"
-            >
-              <Card className="shadow-xl border-0 bg-white rounded-3xl">
-                <CardHeader className="bg-gray-100 rounded-t-3xl">
-                  <CardTitle className="flex items-center text-gray-800">
-                    <Target className="w-6 h-6 mr-2" />
-                    {language === "it" ? "Parametri di Calcolo" : "Calculation Parameters"}
-                  </CardTitle>
-                  <p className="text-sm text-gray-600">
-                    {language === "it"
-                      ? "Regola i parametri per calcolare il tuo ROI personalizzato"
-                      : "Adjust parameters to calculate your personalized ROI"}
-                  </p>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                  {/* Service Selection */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-700">
-                      {language === "it" ? "Servizio di Interesse" : "Service of Interest"}
-                    </Label>
-                    <Select value={formData.service} onValueChange={(value) => handleInputChange("service", value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={language === "it" ? "Seleziona un servizio" : "Select a service"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {serviceOptions[language].map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{option.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Number of Employees */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                      <Users className="w-4 h-4 mr-2" />
-                      {language === "it" ? "Numero di Dipendenti" : "Number of Employees"}: {formData.employees}
-                    </Label>
-                    <Slider
-                      value={[formData.employees]}
-                      onValueChange={(value) => handleInputChange("employees", value[0])}
-                      max={500}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>1</span>
-                      <span>500</span>
-                    </div>
-                  </div>
-
-                  {/* Hourly Rate */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                      <Euro className="w-4 h-4 mr-2" />
-                      {language === "it" ? "Costo Orario Medio (€)" : "Average Hourly Rate (€)"}
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.hourlyRate}
-                      onChange={(e) => handleInputChange("hourlyRate", Number.parseInt(e.target.value) || 0)}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Hours per Week */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                      <Clock className="w-4 h-4 mr-2" />
-                      {language === "it" ? "Ore Lavorative Settimanali" : "Working Hours per Week"}:{" "}
-                      {formData.hoursPerWeek}h
-                    </Label>
-                    <Slider
-                      value={[formData.hoursPerWeek]}
-                      onValueChange={(value) => handleInputChange("hoursPerWeek", value[0])}
-                      max={60}
-                      min={20}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Process Efficiency */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                      <Zap className="w-4 h-4 mr-2" />
-                      {language === "it" ? "% Processi Automatizzabili" : "% Automatable Processes"}:{" "}
-                      {formData.efficiencyGoal}%
-                    </Label>
-                    <Slider
-                      value={[formData.efficiencyGoal]}
-                      onValueChange={(value) => handleInputChange("efficiencyGoal", value[0])}
-                      max={80}
-                      min={10}
-                      step={5}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Implementation Cost */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-700">
-                      {language === "it" ? "Costo Implementazione (€)" : "Implementation Cost (€)"}
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.monthlyCosts}
-                      onChange={(e) => handleInputChange("monthlyCosts", Number.parseInt(e.target.value) || 0)}
-                      className="w-full"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Results Panel - 3 colonne */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="lg:col-span-3 space-y-6"
-            >
-              {/* Main Results Cards */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Annual Savings */}
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
-                  <CardContent className="p-6 text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <Euro className="w-8 h-8 text-green-600" />
-                    </div>
-                    <p className="text-sm text-green-700 mb-2">
-                      {language === "it" ? "Risparmio Annuale" : "Annual Savings"}
-                    </p>
-                    <div className="text-4xl font-bold text-green-600 mb-2">
-                      €{results.annualSavings.toLocaleString()}
-                    </div>
-                    <Badge className="bg-green-100 text-green-700 border-green-200">
-                      +{Math.round(results.annualSavings / 12).toLocaleString()}/mese
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                {/* ROI */}
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
-                  <CardContent className="p-6 text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <TrendingUp className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <p className="text-sm text-blue-700 mb-2">ROI</p>
-                    <div className="text-4xl font-bold text-blue-600 mb-2">{results.roi}%</div>
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                      {language === "it" ? "Ritorno investimento" : "Return on investment"}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                {/* Payback Period */}
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
-                  <CardContent className="p-6 text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <Clock className="w-8 h-8 text-orange-600" />
-                    </div>
-                    <p className="text-sm text-orange-700 mb-2">Payback Period</p>
-                    <div className="text-4xl font-bold text-orange-600 mb-2">
-                      {results.paybackMonths} {language === "it" ? "mesi" : "months"}
-                    </div>
-                    <Badge className="bg-orange-100 text-orange-700 border-orange-200">
-                      {results.paybackMonths < 6 ? "Veloce" : results.paybackMonths < 12 ? "Medio" : "Lungo"}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                {/* Productivity Gain */}
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
-                  <CardContent className="p-6 text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <Zap className="w-8 h-8 text-purple-600" />
-                    </div>
-                    <p className="text-sm text-purple-700 mb-2">
-                      {language === "it" ? "Guadagno Produttività" : "Productivity Gain"}
-                    </p>
-                    <div className="text-4xl font-bold text-purple-600 mb-2">{results.productivityGain}%</div>
-                    <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                      {language === "it" ? "Aumento efficienza" : "Efficiency increase"}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Investment Summary */}
-              <Card className="shadow-xl border-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-white text-center">
-                    {language === "it" ? "Riepilogo Investimento" : "Investment Summary"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="bg-white/20 rounded-lg p-4">
-                      <div className="text-sm opacity-90 mb-1">
-                        {language === "it" ? "Investimento Iniziale" : "Initial Investment"}
-                      </div>
-                      <div className="text-xl font-bold">€{results.investmentCost.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-white/20 rounded-lg p-4">
-                      <div className="text-sm opacity-90 mb-1">
-                        {language === "it" ? "Ritorno Annuale" : "Annual Return"}
-                      </div>
-                      <div className="text-xl font-bold">€{results.annualReturn.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-white/20 rounded-lg p-4">
-                      <div className="text-sm opacity-90 mb-1">
-                        {language === "it" ? "Profitto Netto (Anno 1)" : "Net Profit (Year 1)"}
-                      </div>
-                      <div className="text-xl font-bold">€{results.netProfit.toLocaleString()}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* CTA Button */}
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="text-center">
-                <Button
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => (window.location.href = "/appointments")}
-                >
-                  {language === "it" ? "Richiedi Consulenza Gratuita" : "Request Free Consultation"}
-                  <Calculator className="w-5 h-5 ml-2" />
-                </Button>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <p className="text-sm text-gray-500 max-w-2xl mx-auto">
-            {language === "it"
-              ? "* I risultati sono stime basate sui parametri inseriti e sui dati storici dei nostri progetti. I risultati effettivi possono variare in base alle specifiche implementazioni e condizioni di mercato."
-              : "* Results are estimates based on input parameters and historical data from our projects. Actual results may vary based on specific implementations and market conditions."}
-          </p>
-        </motion.div>
+          </Button>
+        ))}
       </div>
-    </section>
+
+      {/* Tab Content */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="min-h-[600px]"
+      >
+        {renderTabContent()}
+      </motion.div>
+    </div>
   )
 }

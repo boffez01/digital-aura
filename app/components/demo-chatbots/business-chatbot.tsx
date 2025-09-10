@@ -1,94 +1,106 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Bot, User, Send, Building2, Calendar, Clock } from "lucide-react"
+import { Briefcase, Bot, Send, Calendar } from "lucide-react"
 import { useLanguage } from "../../contexts/language-context"
 
 interface Message {
   id: string
-  type: "user" | "bot"
-  content: string
+  text: string
+  sender: "user" | "bot"
   timestamp: Date
-  services?: Service[]
-  options?: string[]
+  type?: "text" | "services" | "consultation"
 }
-
-interface Service {
-  id: string
-  name: string
-  duration: string
-  price: number
-  description: string
-  available: boolean
-}
-
-const sampleServices: Service[] = [
-  {
-    id: "1",
-    name: "Consulenza Strategica",
-    duration: "2 ore",
-    price: 200,
-    description: "Analisi completa della strategia aziendale",
-    available: true,
-  },
-  {
-    id: "2",
-    name: "Audit Digitale",
-    duration: "4 ore",
-    price: 350,
-    description: "Valutazione completa della presenza digitale",
-    available: true,
-  },
-  {
-    id: "3",
-    name: "Formazione Team",
-    duration: "1 giornata",
-    price: 800,
-    description: "Workshop di formazione per il team",
-    available: false,
-  },
-]
 
 export default function BusinessChatbot() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "bot",
-      content:
-        "Benvenuto! Sono l'assistente di Digital Aura Business Services. Posso aiutarti con prenotazioni, preventivi e informazioni sui nostri servizi. 💼",
-      timestamp: new Date(),
-      options: ["Prenota un servizio", "Richiedi preventivo", "I nostri servizi", "Supporto"],
-    },
-  ])
+  const { language } = useLanguage()
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const [appointments, setAppointments] = useState<any[]>([])
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { language } = useLanguage()
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const texts = {
+    en: {
+      title: "Business Consultant",
+      subtitle: "Grow your business with AI",
+      greeting:
+        "Hello! I'm your business consultant. I can help you understand our services, provide business insights, and schedule consultations. How can I help your business grow today?",
+      services: "Here are our main business services:",
+      consultation:
+        "I'd be happy to schedule a consultation for you. Our experts can provide personalized advice for your business needs.",
+      placeholder: "Ask about our services...",
+      bookConsultation: "Book Consultation",
+      learnMore: "Learn More",
+    },
+    it: {
+      title: "Consulente Business",
+      subtitle: "Fai crescere il tuo business con l'AI",
+      greeting:
+        "Ciao! Sono il tuo consulente business. Posso aiutarti a capire i nostri servizi, fornire insights aziendali e programmare consulenze. Come posso aiutare la tua azienda a crescere oggi?",
+      services: "Ecco i nostri principali servizi business:",
+      consultation:
+        "Sarò felice di programmare una consulenza per te. I nostri esperti possono fornire consigli personalizzati per le esigenze della tua azienda.",
+      placeholder: "Chiedi sui nostri servizi...",
+      bookConsultation: "Prenota Consulenza",
+      learnMore: "Scopri di Più",
+    },
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, isTyping])
+  const t = texts[language]
 
-  const addMessage = (content: string, type: "user" | "bot", services?: Service[], options?: string[]) => {
+  const services = [
+    {
+      id: "automation",
+      name: language === "en" ? "AI Automation" : "Automazione AI",
+      description:
+        language === "en"
+          ? "Streamline your processes with intelligent automation"
+          : "Ottimizza i tuoi processi con automazione intelligente",
+      icon: "🤖",
+      benefits: language === "en" ? "75% time reduction" : "75% riduzione tempo",
+    },
+    {
+      id: "analytics",
+      name: language === "en" ? "Business Analytics" : "Analytics Aziendali",
+      description:
+        language === "en"
+          ? "Data-driven insights for better decisions"
+          : "Insights basati sui dati per decisioni migliori",
+      icon: "📊",
+      benefits: language === "en" ? "300% ROI increase" : "300% aumento ROI",
+    },
+    {
+      id: "marketing",
+      name: language === "en" ? "AI Marketing" : "Marketing AI",
+      description:
+        language === "en"
+          ? "Personalized marketing campaigns that convert"
+          : "Campagne marketing personalizzate che convertono",
+      icon: "🎯",
+      benefits: language === "en" ? "180% conversion boost" : "180% aumento conversioni",
+    },
+  ]
+
+  useEffect(() => {
+    const initialMessage: Message = {
+      id: "1",
+      text: t.greeting,
+      sender: "bot",
+      timestamp: new Date(),
+    }
+    setMessages([initialMessage])
+  }, [language])
+
+  const addMessage = (text: string, sender: "user" | "bot", type: "text" | "services" | "consultation" = "text") => {
     const newMessage: Message = {
       id: Date.now().toString(),
-      type,
-      content,
+      text,
+      sender,
       timestamp: new Date(),
-      services,
-      options,
+      type,
     }
     setMessages((prev) => [...prev, newMessage])
   }
@@ -101,275 +113,155 @@ export default function BusinessChatbot() {
     }, delay)
   }
 
-  const handleOptionClick = (option: string) => {
-    addMessage(option, "user")
+  const handleSend = (message: string) => {
+    if (!message.trim()) return
+
+    addMessage(message, "user")
+    setInputValue("")
+
     simulateTyping(() => {
-      switch (option) {
-        case "Prenota un servizio":
-          addMessage(
-            "Perfetto! Ecco i nostri servizi disponibili per la prenotazione. Seleziona quello che ti interessa:",
-            "bot",
-            sampleServices.filter((s) => s.available),
-            ["Prenota ora", "Vedi dettagli", "Confronta servizi"],
-          )
-          break
-        case "Richiedi preventivo":
-          addMessage(
-            "Sarò felice di prepararti un preventivo personalizzato! Di che tipo di servizio hai bisogno?",
-            "bot",
-            undefined,
-            ["Consulenza", "Sviluppo", "Marketing", "Formazione", "Altro"],
-          )
-          break
-        case "I nostri servizi":
-          addMessage("Ecco una panoramica completa dei nostri servizi business:", "bot", sampleServices, [
-            "Prenota servizio",
-            "Richiedi info",
-            "Confronta prezzi",
-          ])
-          break
-        case "Supporto":
-          addMessage("Il nostro team di supporto è qui per aiutarti! Come posso assisterti?", "bot", undefined, [
-            "Problema tecnico",
-            "Modifica prenotazione",
-            "Fatturazione",
-            "Altro",
-          ])
-          break
-        case "Prenota ora":
-          if (sampleServices[0]) {
-            const service = sampleServices[0]
-            setAppointments((prev) => [...prev, service])
-            addMessage(
-              `✅ Prenotazione confermata per ${service.name}! Ti invieremo una email di conferma con tutti i dettagli. Hai bisogno di altro?`,
-              "bot",
-              undefined,
-              ["Prenota altro servizio", "Modifica prenotazione", "Vai al riepilogo"],
-            )
-          }
-          break
-        default:
-          handleGeminiResponse(option)
+      if (
+        message.toLowerCase().includes("service") ||
+        message.toLowerCase().includes("serviz") ||
+        message.toLowerCase().includes("help") ||
+        message.toLowerCase().includes("aiut")
+      ) {
+        addMessage(t.services, "bot", "services")
+      } else if (
+        message.toLowerCase().includes("consultation") ||
+        message.toLowerCase().includes("consulenz") ||
+        message.toLowerCase().includes("meeting") ||
+        message.toLowerCase().includes("appointment")
+      ) {
+        addMessage(t.consultation, "bot", "consultation")
+      } else {
+        const responses =
+          language === "en"
+            ? [
+                "I can help you understand how AI can transform your business. Would you like to see our services?",
+                "Our solutions have helped businesses increase efficiency by up to 75%. What's your biggest business challenge?",
+                "We specialize in AI automation, analytics, and marketing. Which area interests you most?",
+              ]
+            : [
+                "Posso aiutarti a capire come l'AI può trasformare la tua azienda. Vuoi vedere i nostri servizi?",
+                "Le nostre soluzioni hanno aiutato le aziende ad aumentare l'efficienza fino al 75%. Qual è la tua sfida aziendale più grande?",
+                "Siamo specializzati in automazione AI, analytics e marketing. Quale area ti interessa di più?",
+              ]
+        addMessage(responses[Math.floor(Math.random() * responses.length)], "bot")
       }
     })
   }
 
-  const handleGeminiResponse = async (userMessage: string) => {
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          context: "business",
-          services: sampleServices,
-          appointments: appointments,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        addMessage(data.response, "bot", undefined, [
-          "Prenota servizio",
-          "Richiedi preventivo",
-          "I nostri servizi",
-          "Supporto",
-        ])
-      } else {
-        addMessage(
-          "Mi dispiace, sto avendo problemi tecnici. Posso aiutarti con le opzioni qui sotto:",
-          "bot",
-          undefined,
-          ["I nostri servizi", "Supporto", "Richiedi preventivo"],
-        )
-      }
-    } catch (error) {
-      addMessage("Scusa, c'è stato un errore. Prova con una delle opzioni qui sotto:", "bot", undefined, [
-        "I nostri servizi",
-        "Prenota un servizio",
-        "Supporto",
-      ])
-    }
-  }
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return
-    const message = inputValue.trim()
-    addMessage(message, "user")
-    setInputValue("")
-    simulateTyping(() => handleGeminiResponse(message))
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
-
   return (
-    <Card className="h-[600px] flex flex-col bg-gradient-to-br from-green-50 to-white border-green-200">
-      <CardHeader className="border-b border-green-200 bg-green-600 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Business Services Bot</CardTitle>
-              <p className="text-green-100 text-sm">Il tuo assistente business</p>
-            </div>
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+        <CardTitle className="flex items-center space-x-2">
+          <Briefcase className="h-5 w-5" />
+          <div>
+            <div className="font-semibold">{t.title}</div>
+            <div className="text-sm opacity-90">{t.subtitle}</div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge className="bg-white/20 text-white border-white/30">
-              <Calendar className="w-3 h-3 mr-1" />
-              {appointments.length}
-            </Badge>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-          </div>
-        </div>
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] ${message.sender === "user" ? "bg-purple-600 text-white" : "bg-gray-100"} rounded-lg p-3`}
               >
-                <div
-                  className={`flex items-start space-x-2 max-w-[80%] ${
-                    message.type === "user" ? "flex-row-reverse space-x-reverse" : ""
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.type === "user"
-                        ? "bg-green-600 text-white"
-                        : "bg-gradient-to-r from-green-500 to-blue-500 text-white"
-                    }`}
-                  >
-                    {message.type === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {message.sender === "bot" && (
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Bot className="h-4 w-4 text-purple-600" />
+                    <Badge variant="secondary" className="text-xs">
+                      Business Consultant
+                    </Badge>
                   </div>
+                )}
+                <p className="text-sm">{message.text}</p>
 
-                  <div
-                    className={`rounded-lg p-3 ${
-                      message.type === "user"
-                        ? "bg-green-600 text-white"
-                        : "bg-white border border-green-200 text-gray-800"
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-
-                    {/* Services Display */}
-                    {message.services && (
-                      <div className="mt-3 space-y-2">
-                        {message.services.map((service) => (
-                          <div key={service.id} className="bg-gray-50 rounded-lg p-3 border">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-sm text-gray-900">{service.name}</h4>
-                                <p className="text-xs text-gray-600 mt-1">{service.description}</p>
-                                <div className="flex items-center space-x-3 mt-2">
-                                  <div className="flex items-center text-xs text-gray-500">
-                                    <Clock className="w-3 h-3 mr-1" />
-                                    {service.duration}
-                                  </div>
-                                  <span className="text-lg font-bold text-green-600">€{service.price}</span>
-                                  <Badge
-                                    className={`text-xs ${
-                                      service.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {service.available ? "Disponibile" : "Non disponibile"}
-                                  </Badge>
-                                </div>
-                              </div>
+                {message.type === "services" && (
+                  <div className="mt-3 space-y-3">
+                    {services.map((service) => (
+                      <div key={service.id} className="border rounded-lg p-3 bg-white">
+                        <div className="flex items-start space-x-3">
+                          <div className="text-2xl">{service.icon}</div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{service.name}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                                {service.benefits}
+                              </Badge>
                               <Button
                                 size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white ml-3"
-                                disabled={!service.available}
-                                onClick={() => {
-                                  if (service.available) {
-                                    setAppointments((prev) => [...prev, service])
-                                    addMessage(`✅ Prenotazione confermata per ${service.name}!`, "bot", undefined, [
-                                      "Prenota altro",
-                                      "Vai al riepilogo",
-                                    ])
-                                  }
-                                }}
+                                variant="outline"
+                                className="text-purple-600 border-purple-200 hover:bg-purple-50 bg-transparent"
                               >
-                                <Calendar className="w-3 h-3 mr-1" />
-                                {service.available ? "Prenota" : "Non disp."}
+                                {t.learnMore}
                               </Button>
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    )}
-
-                    {/* Options */}
-                    {message.options && (
-                      <div className="mt-3 space-y-2">
-                        {message.options.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleOptionClick(option)}
-                            className="block w-full text-left p-2 rounded bg-green-50 hover:bg-green-100 transition-colors border border-green-200 text-sm text-green-800"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                )}
+
+                {message.type === "consultation" && (
+                  <div className="mt-3 p-4 bg-white rounded-lg border border-purple-200">
+                    <div className="text-center">
+                      <Calendar className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                      <h4 className="font-medium text-gray-900 mb-2">
+                        {language === "en" ? "Free Business Consultation" : "Consulenza Business Gratuita"}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {language === "en"
+                          ? "30-minute session with our business experts"
+                          : "Sessione di 30 minuti con i nostri esperti business"}
+                      </p>
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700">{t.bookConsultation}</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
 
           {isTyping && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-              <div className="flex items-start space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className="bg-white border border-green-200 rounded-lg p-3">
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <Bot className="h-4 w-4 text-purple-600" />
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                       style={{ animationDelay: "0.1s" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                       style={{ animationDelay: "0.2s" }}
                     ></div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-green-200 p-4 bg-green-50">
+        <div className="border-t p-4">
           <div className="flex space-x-2">
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Scrivi il tuo messaggio..."
-              className="flex-1 border-green-200 focus:border-green-400"
+              placeholder={t.placeholder}
+              onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
+              className="flex-1"
             />
-            <Button onClick={handleSendMessage} className="bg-green-600 hover:bg-green-700">
-              <Send className="w-4 h-4" />
+            <Button onClick={() => handleSend(inputValue)} className="bg-purple-600 hover:bg-purple-700">
+              <Send className="h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -1,42 +1,138 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
-import { MessageCircle, X, Send, Loader2, Headphones, Calendar, HelpCircle, Briefcase } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
+import {
+  MessageCircle,
+  X,
+  Send,
+  User,
+  Bot,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Settings,
+  HelpCircle,
+  Calendar,
+  Headphones,
+  Minimize2,
+} from "lucide-react"
 
 interface Message {
   id: string
-  content: string
+  text: string
   isUser: boolean
   timestamp: Date
+  supportActive?: boolean
+  supportLevel?: number
 }
 
-interface ChatbotWidgetProps {
-  context?: "ecommerce" | "business" | "support"
-  products?: any[]
-  services?: any[]
-  faqs?: any[]
-  cart?: any[]
-  appointments?: any[]
+interface ChatResponse {
+  success: boolean
+  message: string
+  supportActive?: boolean
+  supportLevel?: number
+  context?: {
+    flow: string
+    step: number
+    hasUserInfo: boolean
+    needsHuman: boolean
+    escalationActive?: boolean
+  }
 }
 
-export default function ChatbotWidget({
-  context = "default",
-  products,
-  services,
-  faqs,
-  cart,
-  appointments,
-}: ChatbotWidgetProps) {
+export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [supportMode, setSupportMode] = useState({ active: false, level: 0 })
+  const [escalationActive, setEscalationActive] = useState(false)
+  const [sessionId, setSessionId] = useState("")
+  const [currentLanguage, setCurrentLanguage] = useState<"it" | "en">("it")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Generate session ID on mount
+  useEffect(() => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    setSessionId(newSessionId)
+  }, [])
+
+  // Monitor language changes from localStorage
+  useEffect(() => {
+    const checkLanguage = () => {
+      const savedLanguage = localStorage.getItem("language")
+      if (savedLanguage === "it" || savedLanguage === "en") {
+        setCurrentLanguage(savedLanguage)
+      }
+    }
+
+    // Check initial language
+    checkLanguage()
+
+    // Set up interval to check for language changes
+    const interval = setInterval(checkLanguage, 500)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Traduzioni complete per entrambe le lingue
+  const translations = {
+    it: {
+      title: "Digital Aura AI",
+      supportTitle: "Supporto Tecnico",
+      onlineNow: "Online ora",
+      placeholder: "Scrivi un messaggio...",
+      quickActions: "Azioni rapide:",
+      services: "Servizi",
+      faq: "FAQ",
+      book: "Prenota",
+      support: "Assistenza",
+      welcome: `👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura.**
+
+Posso aiutarti con:
+
+🤖 **Servizi AI** - Automazione e chatbots intelligenti
+🌐 **Sviluppo Web** - Siti moderni e e-commerce  
+📊 **AI Marketing** - Campagne automatizzate
+📅 **Prenotazioni** - Consulenze gratuite
+
+**Come posso aiutarti oggi?** 😊`,
+      connectionError: "Mi dispiace, ho problemi di connessione. Riprova tra poco o contattaci direttamente.",
+      supportHeader: "Assistenza Tecnica Attiva",
+      supportSubtext: "Sto analizzando il tuo problema per trovare la soluzione migliore",
+    },
+    en: {
+      title: "Digital Aura AI",
+      supportTitle: "Technical Support",
+      onlineNow: "Online now",
+      placeholder: "Type a message...",
+      quickActions: "Quick actions:",
+      services: "Services",
+      faq: "FAQ",
+      book: "Book",
+      support: "Support",
+      welcome: `👋 **Hello! I'm AuraBot, Digital Aura's AI assistant.**
+
+I can help you with:
+
+🤖 **AI Services** - Automation and intelligent chatbots
+🌐 **Web Development** - Modern websites and e-commerce
+📊 **AI Marketing** - Automated campaigns  
+📅 **Bookings** - Free consultations
+
+**How can I help you today?** 😊`,
+      connectionError: "Sorry, I'm having connection issues. Please try again or contact us directly.",
+      supportHeader: "Technical Support Active",
+      supportSubtext: "Analyzing your problem to find the best solution",
+    },
+  }
+
+  const t = translations[currentLanguage]
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -46,25 +142,28 @@ export default function ChatbotWidget({
     scrollToBottom()
   }, [messages])
 
+  // Show welcome message when opening chatbot or language changes
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen && !isMinimized) {
       const welcomeMessage: Message = {
-        id: "1",
-        content: "Ciao! Sono l'assistente virtuale di Digital Aura. Come posso aiutarti oggi?",
+        id: `welcome-${currentLanguage}-${Date.now()}`,
+        text: t.welcome,
         isUser: false,
         timestamp: new Date(),
+        supportActive: false,
+        supportLevel: 0,
       }
-
       setMessages([welcomeMessage])
     }
-  }, [isOpen, context])
+  }, [currentLanguage, isOpen, isMinimized, t.welcome])
 
-  const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue.trim()
+    if (!textToSend || !sessionId) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
+      text: textToSend,
       isUser: true,
       timestamp: new Date(),
     }
@@ -80,32 +179,54 @@ export default function ChatbotWidget({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: inputValue,
-          context,
-          products,
-          services,
-          faqs,
-          cart,
-          appointments,
+          message: textToSend,
+          language: currentLanguage,
+          sessionId: sessionId,
         }),
       })
 
-      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const contentType = response.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text()
+        console.error("Non-JSON response:", text)
+        throw new Error("Server returned non-JSON response")
+      }
+
+      const data: ChatResponse = await response.json()
+
+      // Aggiorna stato supporto
+      if (data.supportActive !== undefined) {
+        setSupportMode({
+          active: data.supportActive,
+          level: data.supportLevel || 0,
+        })
+      }
+
+      // Aggiorna stato escalation
+      if (data.context?.escalationActive !== undefined) {
+        setEscalationActive(data.context.escalationActive)
+      }
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response,
+        text: data.message,
         isUser: false,
         timestamp: new Date(),
+        supportActive: data.supportActive,
+        supportLevel: data.supportLevel,
       }
 
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
-      console.error("Errore invio messaggio:", error)
+      console.error("Error sending message:", error)
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Mi dispiace, si è verificato un errore. Riprova tra qualche momento.",
+        text: t.connectionError,
         isUser: false,
         timestamp: new Date(),
       }
@@ -124,164 +245,320 @@ export default function ChatbotWidget({
   }
 
   const handleQuickAction = (action: string) => {
-    setInputValue(action)
-    sendMessage()
-  }
-
-  const renderMessage = (message: Message) => {
-    if (!message.content) {
-      return <div className="text-gray-500 italic">Messaggio non disponibile</div>
+    const actionMessages = {
+      it: {
+        services: "Dimmi di più sui vostri servizi",
+        faq: "Ho alcune domande frequenti",
+        book: "Voglio prenotare un appuntamento",
+        support: "Ho bisogno di assistenza tecnica",
+      },
+      en: {
+        services: "Tell me more about your services",
+        faq: "I have some frequently asked questions",
+        book: "I want to book an appointment",
+        support: "I need technical support",
+      },
     }
 
-    return <div className="whitespace-pre-wrap">{message.content}</div>
+    const messages = actionMessages[currentLanguage]
+    sendMessage(messages[action as keyof typeof messages] || action)
+  }
+
+  const formatMessage = (text: string) => {
+    return text.split("\n").map((line, index) => (
+      <span key={index}>
+        {line.replace(/\*\*(.*?)\*\*/g, (match, p1) => p1)}
+        {index < text.split("\n").length - 1 && <br />}
+      </span>
+    ))
+  }
+
+  const getSupportIcon = (level?: number) => {
+    switch (level) {
+      case 1:
+        return <AlertTriangle className="w-4 h-4 text-red-500" />
+      case 2:
+        return <Clock className="w-4 h-4 text-yellow-500" />
+      case 3:
+        return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 4:
+        return <AlertTriangle className="w-4 h-4 text-red-600" />
+      default:
+        return <Bot className="w-4 h-4 text-blue-500" />
+    }
+  }
+
+  const getSupportHeader = (supportActive?: boolean, supportLevel?: number) => {
+    if (!supportActive && !escalationActive) return null
+
+    const headerText = escalationActive
+      ? currentLanguage === "en"
+        ? "Support Data Collection"
+        : "Raccolta Dati Supporto"
+      : t.supportHeader
+    const subText = escalationActive
+      ? currentLanguage === "en"
+        ? "Collecting your data to organize technical support"
+        : "Sto raccogliendo i tuoi dati per organizzare il supporto tecnico"
+      : t.supportSubtext
+
+    return (
+      <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 rounded-r-lg">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-red-500" />
+          <span className="font-semibold text-red-700">{headerText}</span>
+        </div>
+        <p className="text-sm text-red-600 mt-1">{subText}</p>
+        <p className="text-xs text-red-500 mt-2">
+          {new Date().toLocaleTimeString(currentLanguage === "en" ? "en-US" : "it-IT", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
+    )
+  }
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString(currentLanguage === "en" ? "en-US" : "it-IT", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
   }
 
   return (
-    <>
-      {/* Pulsante floating con gradiente viola-blu */}
-      <Button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg z-40 transition-all duration-300 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 ${
-          isOpen ? "scale-0" : "scale-100"
-        }`}
-        size="icon"
-      >
-        <MessageCircle className="h-7 w-7 text-white" />
-      </Button>
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Button */}
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${
+            supportMode.active || escalationActive
+              ? "bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 animate-pulse"
+              : "bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-700 hover:from-blue-600 hover:via-purple-700 hover:to-indigo-800 animate-pulse hover:animate-none"
+          } text-white`}
+        >
+          {supportMode.active || escalationActive ? (
+            <AlertTriangle className="w-8 h-8" />
+          ) : (
+            <MessageCircle className="w-8 h-8" />
+          )}
+        </Button>
+      )}
 
-      {/* Widget chat con nuovo design */}
-      <div
-        className={`fixed bottom-6 right-6 w-96 h-[500px] z-50 transition-all duration-300 ${
-          isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
-        }`}
-      >
-        <Card className="h-full flex flex-col shadow-2xl border-0 rounded-2xl overflow-hidden">
-          {/* Header con gradiente */}
-          <CardHeader className="pb-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      {/* Chat Widget */}
+      {isOpen && (
+        <Card
+          className={`w-96 bg-white shadow-2xl border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 ${
+            isMinimized ? "h-16" : "h-[600px]"
+          }`}
+        >
+          {/* Header */}
+          <div
+            className={`p-4 rounded-t-2xl ${
+              supportMode.active || escalationActive
+                ? "bg-gradient-to-r from-red-500 via-red-600 to-red-700"
+                : "bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-700"
+            } text-white`}
+          >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <MessageCircle className="h-6 w-6" />
+              <div className="flex items-center space-x-3">
+                <div className="p-1 bg-white/20 rounded-full">
+                  {supportMode.active || escalationActive ? (
+                    <AlertTriangle className="w-4 h-4" />
+                  ) : (
+                    <Bot className="w-4 h-4" />
+                  )}
                 </div>
-                <div>
-                  <CardTitle className="text-lg font-semibold">Digital Aura AI</CardTitle>
-                  <p className="text-white/80 text-sm">Il tuo assistente AI</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="h-8 w-8 text-white hover:bg-white/20"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent className="flex-1 flex flex-col p-0">
-            {/* Timestamp */}
-            <div className="px-4 py-2 bg-gray-50 border-b">
-              <p className="text-xs text-gray-500 text-center">
-                {new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
-              </p>
-            </div>
-
-            {/* Area messaggi */}
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
-              {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                      message.isUser
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white ml-8"
-                        : "bg-gray-100 text-gray-800 mr-8"
-                    }`}
-                  >
-                    {renderMessage(message)}
-                  </div>
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-2xl max-w-[80%] mr-8">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
-                      <span className="text-gray-600 text-sm">Sto scrivendo...</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Azioni rapide */}
-            {messages.length === 1 && (
-              <div className="px-4 pb-3">
-                <p className="text-xs text-gray-500 mb-3 text-center">Azioni rapide:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={() => handleQuickAction("Vorrei informazioni sui vostri servizi")}
-                    className="bg-purple-500 hover:bg-purple-600 text-white text-xs py-2 px-3 rounded-full flex items-center gap-1"
-                    size="sm"
-                  >
-                    <Briefcase className="w-3 h-3" />
-                    Servizi
-                  </Button>
-                  <Button
-                    onClick={() => handleQuickAction("Ho bisogno di supporto tecnico")}
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-full flex items-center gap-1"
-                    size="sm"
-                  >
-                    <HelpCircle className="w-3 h-3" />
-                    FAQ
-                  </Button>
-                  <Button
-                    onClick={() => handleQuickAction("Vorrei prenotare una consulenza")}
-                    className="bg-green-500 hover:bg-green-600 text-white text-xs py-2 px-3 rounded-full flex items-center gap-1"
-                    size="sm"
-                  >
-                    <Calendar className="w-3 h-3" />
-                    Prenota
-                  </Button>
-                  <Button
-                    onClick={() => handleQuickAction("Ho bisogno di assistenza")}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-full flex items-center gap-1"
-                    size="sm"
-                  >
-                    <Headphones className="w-3 h-3" />
-                    Assistenza
-                  </Button>
+                <div className="text-lg font-bold">
+                  {supportMode.active || escalationActive ? t.supportTitle : t.title}
                 </div>
               </div>
-            )}
-
-            {/* Input area */}
-            <div className="p-4 border-t bg-gray-50">
-              <div className="flex gap-2">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Scrivi un messaggio..."
-                  className="flex-1 text-sm border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                  disabled={isLoading}
-                />
+              <div className="flex items-center space-x-2">
                 <Button
-                  onClick={sendMessage}
+                  variant="ghost"
                   size="icon"
-                  disabled={!inputValue.trim() || isLoading}
-                  className="h-10 w-10 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  className="text-white hover:bg-white/20 w-8 h-8"
                 >
-                  <Send className="h-4 w-4" />
+                  <Minimize2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsOpen(false)}
+                  className="text-white hover:bg-white/20 w-8 h-8"
+                >
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
+
+          {!isMinimized && (
+            <div className="p-0 flex flex-col h-[536px] bg-white">
+              {/* Quick Actions */}
+              <div className="p-4 bg-white border-b border-gray-100">
+                <div className="flex items-center mb-3">
+                  <span className="text-sm font-semibold text-gray-700">🚀 {t.quickActions}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={() => handleQuickAction("services")}
+                    className="bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>{t.services}</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleQuickAction("faq")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                    <span>{t.faq}</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleQuickAction("book")}
+                    className="bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span>{t.book}</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleQuickAction("support")}
+                    className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <Headphones className="w-4 h-4" />
+                    <span>{t.support}</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+                {/* Support Header se attivo */}
+                {(supportMode.active || escalationActive) && getSupportHeader(supportMode.active, supportMode.level)}
+
+                {messages.map((message) => (
+                  <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
+                    <div className="max-w-[85%]">
+                      {!message.isUser && (
+                        <div className="flex items-start space-x-2">
+                          <div
+                            className={`p-2 rounded-full mt-1 flex-shrink-0 ${
+                              message.supportActive || escalationActive ? "bg-red-100" : "bg-gray-100"
+                            }`}
+                          >
+                            {getSupportIcon(message.supportLevel)}
+                          </div>
+                          <div
+                            className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
+                              message.supportActive || escalationActive
+                                ? "bg-red-50 border border-red-200"
+                                : "bg-gray-100"
+                            }`}
+                          >
+                            <div
+                              className={`text-sm leading-relaxed ${
+                                message.supportActive || escalationActive ? "text-red-900" : "text-gray-800"
+                              }`}
+                            >
+                              {formatMessage(message.text)}
+                            </div>
+                            <div
+                              className={`text-xs mt-2 ${message.supportActive || escalationActive ? "text-red-500" : "text-gray-500"}`}
+                            >
+                              {formatTime(message.timestamp)}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {message.isUser && (
+                        <div className="flex items-start space-x-2 justify-end">
+                          <div className="bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-3 shadow-sm">
+                            <div className="text-sm leading-relaxed">{message.text}</div>
+                            <div className="text-xs text-blue-100 mt-2">{formatTime(message.timestamp)}</div>
+                          </div>
+                          <div className="p-2 bg-blue-500 rounded-full mt-1 flex-shrink-0">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Typing Indicator */}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start space-x-2">
+                      <div
+                        className={`p-2 rounded-full ${supportMode.active || escalationActive ? "bg-red-100" : "bg-gray-100"}`}
+                      >
+                        <Bot
+                          className={`w-4 h-4 ${supportMode.active || escalationActive ? "text-red-600" : "text-gray-600"}`}
+                        />
+                      </div>
+                      <div
+                        className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
+                          supportMode.active || escalationActive ? "bg-red-100" : "bg-gray-100"
+                        }`}
+                      >
+                        <div className="flex space-x-1">
+                          <div
+                            className={`w-2 h-2 rounded-full animate-bounce ${
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                            }`}
+                          ></div>
+                          <div
+                            className={`w-2 h-2 rounded-full animate-bounce ${
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                            }`}
+                            style={{ animationDelay: "0.1s" }}
+                          ></div>
+                          <div
+                            className={`w-2 h-2 rounded-full animate-bounce ${
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                            }`}
+                            style={{ animationDelay: "0.2s" }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 bg-white border-t border-gray-100">
+                <div className="flex space-x-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={t.placeholder}
+                    className="flex-1 border border-gray-300 focus:border-blue-500 rounded-full px-4 py-2 bg-white"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={() => sendMessage()}
+                    disabled={!inputValue.trim() || isLoading}
+                    className={`rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200 ${
+                      supportMode.active || escalationActive
+                        ? "bg-red-500 hover:bg-red-600"
+                        : "bg-blue-500 hover:bg-blue-600"
+                    } text-white`}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
-      </div>
-    </>
+      )}
+    </div>
   )
 }

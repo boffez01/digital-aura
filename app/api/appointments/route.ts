@@ -1,66 +1,122 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { createAppointment, type CreateAppointmentData } from "@/lib/database"
+import { neon } from "@neondatabase/serverless"
+
+const sql = neon(process.env.DATABASE_URL!)
 
 export async function POST(request: NextRequest) {
   try {
-    const appointmentData = await request.json()
+    const body = await request.json()
+    console.log("📝 Received appointment request:", body)
 
-    // Log della prenotazione
-    const logPrefix = appointmentData.priority ? "🚨 PRIORITY APPOINTMENT" : "📅 APPOINTMENT"
-    console.log(`${logPrefix} - New booking:`, {
-      service: appointmentData.serviceName,
-      date: appointmentData.date,
-      time: appointmentData.time,
-      name: appointmentData.name,
-      email: appointmentData.email,
-      phone: appointmentData.phone,
-      priority: appointmentData.priority,
-      language: appointmentData.language,
-    })
+    const { name, email, phone, service, date, time, message, status, priority } = body
 
-    // Simula il salvataggio nel database
-    const appointmentId = `${appointmentData.priority ? "PRIORITY" : "REGULAR"}-${Date.now()}`
-
-    // Per assistenza prioritaria, invia notifiche immediate
-    if (appointmentData.priority) {
-      console.log("📱 Sending priority SMS notification to support team")
-      console.log("📧 Sending priority email notification to support@digitalaura.it")
-      console.log("🎫 Creating high-priority support ticket")
-
-      // Simula creazione ticket prioritario
-      const priorityTicket = {
-        ticketId: `URGENT-${Date.now()}`,
-        type: "priority_support",
-        urgency: "high",
-        customer: appointmentData.name,
-        phone: appointmentData.phone,
-        email: appointmentData.email,
-        message: appointmentData.message,
-        scheduledTime: `${appointmentData.date} ${appointmentData.time}`,
-        createdAt: new Date().toISOString(),
-      }
-
-      console.log("🚨 Priority ticket created:", priorityTicket)
+    // Validate required fields
+    if (!name || !email || !service || !date || !time) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required fields",
+          message: "Name, email, service, date, and time are required",
+        },
+        { status: 400 },
+      )
     }
 
-    // Simula invio email di conferma
-    console.log("📧 Sending confirmation email to:", appointmentData.email)
+    // ✅ FINAL AVAILABILITY CHECK before creating appointment
+    console.log("🔍 Final availability check before creating appointment...")
 
-    // Risposta di successo
+    const existingAppointment = await sql`
+      SELECT id, name, status FROM appointments 
+      WHERE date = ${date} AND time = ${time} AND status != 'cancelled'
+      LIMIT 1
+    `
+
+    if (existingAppointment.length > 0) {
+      console.log(`❌ Time slot ${date} ${time} is already occupied by: ${existingAppointment[0].name}`)
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Time slot occupied",
+          message: "This time slot was just booked by someone else. Please select another time.",
+          occupied: true,
+          conflicting_appointment: existingAppointment[0],
+        },
+        { status: 409 }, // Conflict status
+      )
+    }
+
+    // Create the appointment
+    const appointmentData: CreateAppointmentData = {
+      name,
+      email,
+      phone: phone || "",
+      service,
+      date,
+      time,
+      message: message || "",
+      status: status || "pending",
+      priority: priority || false,
+    }
+
+    console.log("💾 Creating appointment with data:", appointmentData)
+
+    const newAppointment = await createAppointment(appointmentData)
+
+    console.log("✅ Appointment created successfully:", newAppointment.id)
+
     return NextResponse.json({
       success: true,
-      appointmentId,
-      priority: appointmentData.priority,
-      message: appointmentData.priority
-        ? "Priority support request received. We will contact you within 1 hour."
-        : "Appointment booked successfully. You will receive a confirmation email shortly.",
-      estimatedResponse: appointmentData.priority ? "1 hour" : "24 hours",
+      message: "Appointment created successfully",
+      appointment: newAppointment,
     })
   } catch (error) {
-    console.error("Appointment booking error:", error)
+    console.error("❌ Error creating appointment:", error)
+
+    // Check if it's a duplicate key error (race condition)
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Time slot occupied",
+          message: "This time slot was just booked. Please select another time.",
+          occupied: true,
+        },
+        { status: 409 },
+      )
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to book appointment. Please try again.",
+        error: "Database error",
+        message: error instanceof Error ? error.message : "Failed to create appointment",
+      },
+      { status: 500 },
+    )
+  }
+}
+
+export async function GET() {
+  try {
+    const appointments = await sql`
+      SELECT * FROM appointments 
+      ORDER BY date DESC, time DESC
+    `
+
+    return NextResponse.json({
+      success: true,
+      appointments,
+    })
+  } catch (error) {
+    console.error("❌ Error fetching appointments:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Database error",
+        message: error instanceof Error ? error.message : "Failed to fetch appointments",
       },
       { status: 500 },
     )

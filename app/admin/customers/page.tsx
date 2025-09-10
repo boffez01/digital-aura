@@ -72,6 +72,17 @@ interface Customer {
   }>
 }
 
+interface CustomerStats {
+  total: number
+  active: number
+  vip: number
+  prospects: number
+  totalRevenue: number
+  avgSatisfaction: number
+  newThisMonth: number
+  churnRate: number
+}
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
@@ -85,8 +96,7 @@ export default function CustomersPage() {
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [showCustomerDetail, setShowCustomerDetail] = useState(false)
 
-  // Statistiche
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<CustomerStats>({
     total: 0,
     active: 0,
     vip: 0,
@@ -109,10 +119,24 @@ export default function CustomersPage() {
     try {
       const response = await fetch("/api/admin/customers")
       const data = await response.json()
-      setCustomers(data.customers)
-      setStats(data.stats)
+      if (data.success) {
+        setCustomers(data.customers || [])
+        setStats(
+          data.stats || {
+            total: 0,
+            active: 0,
+            vip: 0,
+            prospects: 0,
+            totalRevenue: 0,
+            avgSatisfaction: 0,
+            newThisMonth: 0,
+            churnRate: 0,
+          },
+        )
+      }
     } catch (error) {
       console.error("Errore nel caricamento clienti:", error)
+      setCustomers([])
     } finally {
       setIsLoading(false)
     }
@@ -281,14 +305,22 @@ export default function CustomersPage() {
           </div>
 
           <div className="flex flex-wrap gap-1 mb-4">
-            {customer.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {customer.tags.length > 3 && (
+            {customer.tags && customer.tags.length > 0 ? (
+              <>
+                {customer.tags.slice(0, 3).map((tag, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+                {customer.tags.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{customer.tags.length - 3}
+                  </Badge>
+                )}
+              </>
+            ) : (
               <Badge variant="outline" className="text-xs">
-                +{customer.tags.length - 3}
+                Cliente
               </Badge>
             )}
           </div>
@@ -413,7 +445,9 @@ export default function CustomersPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Clienti Attivi</p>
                   <p className="text-3xl font-bold text-gray-800">{stats.active}</p>
-                  <p className="text-sm text-gray-600">{((stats.active / stats.total) * 100).toFixed(1)}% del totale</p>
+                  <p className="text-sm text-gray-600">
+                    {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}% del totale
+                  </p>
                 </div>
                 <Activity className="w-8 h-8 text-green-600" />
               </div>
@@ -426,7 +460,7 @@ export default function CustomersPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Fatturato Totale</p>
                   <p className="text-3xl font-bold text-gray-800">{formatCurrency(stats.totalRevenue)}</p>
-                  <p className="text-sm text-green-600">+12% vs mese scorso</p>
+                  <p className="text-sm text-green-600">Basato su appuntamenti</p>
                 </div>
                 <DollarSign className="w-8 h-8 text-yellow-600" />
               </div>
@@ -438,7 +472,7 @@ export default function CustomersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Soddisfazione Media</p>
-                  <p className="text-3xl font-bold text-gray-800">{stats.avgSatisfaction}/5</p>
+                  <p className="text-3xl font-bold text-gray-800">{stats.avgSatisfaction.toFixed(1)}/5</p>
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -581,15 +615,19 @@ export default function CustomersPage() {
           </Card>
         )}
 
-        {filteredCustomers.length === 0 && (
+        {filteredCustomers.length === 0 && !isLoading && (
           <Card>
             <CardContent className="p-12 text-center">
               <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">Nessun cliente trovato</h3>
-              <p className="text-gray-600 mb-6">Prova a modificare i filtri di ricerca o aggiungi un nuovo cliente.</p>
+              <p className="text-gray-600 mb-6">
+                {customers.length === 0
+                  ? "Non ci sono ancora clienti nel database. I clienti verranno aggiunti automaticamente quando prenotano appuntamenti."
+                  : "Prova a modificare i filtri di ricerca o aggiungi un nuovo cliente."}
+              </p>
               <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setShowAddCustomer(true)}>
                 <UserPlus className="w-4 h-4 mr-2" />
-                Aggiungi Primo Cliente
+                {customers.length === 0 ? "Aggiungi Primo Cliente" : "Aggiungi Cliente"}
               </Button>
             </CardContent>
           </Card>
@@ -734,11 +772,15 @@ export default function CustomersPage() {
                         <div>
                           <span className="text-gray-600 font-medium mb-2 block">Tag:</span>
                           <div className="flex flex-wrap gap-2">
-                            {selectedCustomer.tags.map((tag, index) => (
-                              <Badge key={index} variant="outline">
-                                {tag}
-                              </Badge>
-                            ))}
+                            {selectedCustomer.tags && selectedCustomer.tags.length > 0 ? (
+                              selectedCustomer.tags.map((tag, index) => (
+                                <Badge key={index} variant="outline">
+                                  {tag}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge variant="outline">Cliente</Badge>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -756,43 +798,51 @@ export default function CustomersPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {selectedCustomer.interactions.map((interaction) => (
-                          <div key={interaction.id} className="flex items-start space-x-4 p-4 border rounded-lg">
-                            <div
-                              className={`p-2 rounded-full ${
-                                interaction.outcome === "positive"
-                                  ? "bg-green-100"
-                                  : interaction.outcome === "negative"
-                                    ? "bg-red-100"
-                                    : "bg-gray-100"
-                              }`}
-                            >
-                              {interaction.type === "email" && <Mail className="w-4 h-4" />}
-                              {interaction.type === "call" && <Phone className="w-4 h-4" />}
-                              {interaction.type === "meeting" && <Calendar className="w-4 h-4" />}
-                              {interaction.type === "project" && <Briefcase className="w-4 h-4" />}
-                              {interaction.type === "support" && <MessageSquare className="w-4 h-4" />}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">{interaction.title}</h4>
-                                <span className="text-sm text-gray-500">{formatDate(interaction.date)}</span>
-                              </div>
-                              <p className="text-gray-600 text-sm mt-1">{interaction.description}</p>
-                              <Badge
-                                className={`mt-2 ${
+                        {selectedCustomer.interactions && selectedCustomer.interactions.length > 0 ? (
+                          selectedCustomer.interactions.map((interaction) => (
+                            <div key={interaction.id} className="flex items-start space-x-4 p-4 border rounded-lg">
+                              <div
+                                className={`p-2 rounded-full ${
                                   interaction.outcome === "positive"
-                                    ? "bg-green-100 text-green-800"
+                                    ? "bg-green-100"
                                     : interaction.outcome === "negative"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-gray-100 text-gray-800"
+                                      ? "bg-red-100"
+                                      : "bg-gray-100"
                                 }`}
                               >
-                                {interaction.outcome}
-                              </Badge>
+                                {interaction.type === "email" && <Mail className="w-4 h-4" />}
+                                {interaction.type === "call" && <Phone className="w-4 h-4" />}
+                                {interaction.type === "meeting" && <Calendar className="w-4 h-4" />}
+                                {interaction.type === "project" && <Briefcase className="w-4 h-4" />}
+                                {interaction.type === "support" && <MessageSquare className="w-4 h-4" />}
+                                {interaction.type === "appointment" && <Calendar className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-medium">{interaction.title}</h4>
+                                  <span className="text-sm text-gray-500">{formatDate(interaction.date)}</span>
+                                </div>
+                                <p className="text-gray-600 text-sm mt-1">{interaction.description}</p>
+                                <Badge
+                                  className={`mt-2 ${
+                                    interaction.outcome === "positive"
+                                      ? "bg-green-100 text-green-800"
+                                      : interaction.outcome === "negative"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
+                                  {interaction.outcome}
+                                </Badge>
+                              </div>
                             </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600">Nessuna interazione registrata</p>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -829,6 +879,7 @@ export default function CustomersPage() {
                         value={selectedCustomer.notes}
                         rows={6}
                         className="mb-4"
+                        readOnly
                       />
                       <Button className="bg-purple-600 hover:bg-purple-700">
                         <MessageSquare className="w-4 h-4 mr-2" />

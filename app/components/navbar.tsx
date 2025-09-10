@@ -1,196 +1,176 @@
 "use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { LanguageSelector } from "@/app/components/language-selector"
-import { useLanguage } from "@/app/contexts/language-context"
+import { Menu, X, Calendar } from "lucide-react"
+import Link from "next/link"
+import LanguageSelector from "./language-selector"
+import { useLanguage } from "../contexts/language-context"
 
-export function Navbar() {
-  const pathname = usePathname()
-  const { language } = useLanguage()
-  const isAdmin = pathname?.startsWith("/admin")
+export default function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t, language } = useLanguage()
 
-  // Translations
-  const translations = {
-    menu: language === "it" ? "Menu" : "Menu",
-    services: language === "it" ? "Servizi" : "Services",
-    aiAutomation: language === "it" ? "AI Automation" : "AI Automation",
-    smartChatbots: language === "it" ? "Smart Chatbots" : "Smart Chatbots",
-    webDevelopment: language === "it" ? "Web Development" : "Web Development",
-    aiMarketing: language === "it" ? "AI Marketing" : "AI Marketing",
-    chatbotDemo: language === "it" ? "Demo Chatbot" : "Chatbot Demo",
-    portfolio: language === "it" ? "Portfolio" : "Portfolio",
-    blog: language === "it" ? "Blog" : "Blog",
-    about: language === "it" ? "Chi Siamo" : "About Us",
-    contact: language === "it" ? "Contatti" : "Contact",
-    admin: language === "it" ? "Admin" : "Admin",
-    appointment: language === "it" ? "Appuntamento" : "Book Appointment",
+  const navigationItems = [
+    { key: "home", label: "Home", href: "/" },
+    { key: "services", label: language === "it" ? "Servizi" : "Services", dropdown: true },
+    { key: "blog", label: "Blog", href: "/blog" },
+    { key: "appointments", label: language === "it" ? "Appuntamenti" : "Appointments", href: "/appointments" },
+  ]
+
+  const scrollToSection = (section: string) => {
+    setMobileMenuOpen(false)
+    const element = document.getElementById(section)
+    element?.scrollIntoView({ behavior: "smooth" })
   }
 
   return (
-    <div className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <motion.div initial={{ rotate: -10 }} animate={{ rotate: 0 }} transition={{ duration: 0.5 }}>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                DA
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-purple-800/95 backdrop-blur-lg border-b border-white/10 shadow-lg"
+    >
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center space-x-2 text-white"
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">⚡</span>
               </div>
+              <span className="text-2xl font-bold">Digital Aura</span>
             </motion.div>
-            <span className="font-bold text-xl hidden sm:inline-block">Digital Aura</span>
           </Link>
-        </div>
 
-        <div className="flex-1 flex justify-center">
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>{translations.menu}</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                    <li className="row-span-3">
-                      <NavigationMenuLink asChild>
-                        <a
-                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-purple-500 to-blue-700 p-6 no-underline outline-none focus:shadow-md"
-                          href="/"
-                        >
-                          <div className="mt-4 mb-2 text-lg font-medium text-white">Digital Aura</div>
-                          <p className="text-sm leading-tight text-white/90">
-                            {language === "it"
-                              ? "Soluzioni digitali innovative per il tuo business"
-                              : "Innovative digital solutions for your business"}
-                          </p>
-                        </a>
-                      </NavigationMenuLink>
-                    </li>
-                    <ListItem href="/services/ai-automation" title={translations.aiAutomation}>
-                      {language === "it"
-                        ? "Automatizza i processi aziendali con l'AI"
-                        : "Automate business processes with AI"}
-                    </ListItem>
-                    <ListItem href="/services/chatbot" title={translations.smartChatbots}>
-                      {language === "it"
-                        ? "Chatbot intelligenti per il tuo business"
-                        : "Intelligent chatbots for your business"}
-                    </ListItem>
-                    <ListItem href="/services/web-development" title={translations.webDevelopment}>
-                      {language === "it"
-                        ? "Sviluppo web moderno e performante"
-                        : "Modern and performant web development"}
-                    </ListItem>
-                    <ListItem href="/services/ai-marketing" title={translations.aiMarketing}>
-                      {language === "it"
-                        ? "Marketing potenziato dall'intelligenza artificiale"
-                        : "Marketing powered by artificial intelligence"}
-                    </ListItem>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>{translations.services}</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    <ListItem href="/services/ai-automation" title={translations.aiAutomation}>
-                      {language === "it"
-                        ? "Automatizza i processi aziendali con l'AI"
-                        : "Automate business processes with AI"}
-                    </ListItem>
-                    <ListItem href="/services/chatbot" title={translations.smartChatbots}>
-                      {language === "it"
-                        ? "Chatbot intelligenti per il tuo business"
-                        : "Intelligent chatbots for your business"}
-                    </ListItem>
-                    <ListItem href="/services/web-development" title={translations.webDevelopment}>
-                      {language === "it"
-                        ? "Sviluppo web moderno e performante"
-                        : "Modern and performant web development"}
-                    </ListItem>
-                    <ListItem href="/services/ai-marketing" title={translations.aiMarketing}>
-                      {language === "it"
-                        ? "Marketing potenziato dall'intelligenza artificiale"
-                        : "Marketing powered by artificial intelligence"}
-                    </ListItem>
-                    <ListItem href="/services/chatbot-demo" title={translations.chatbotDemo}>
-                      {language === "it" ? "Prova i nostri chatbot demo" : "Try our demo chatbots"}
-                    </ListItem>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/blog" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>{translations.blog}</NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/about" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>{translations.about}</NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/contact" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    {translations.contact}
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navigationItems.map((item, index) => (
+              <motion.div key={item.key}>
+                {item.href ? (
+                  <Link href={item.href}>
+                    <motion.button
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-white/90 hover:text-white transition-colors font-medium"
+                    >
+                      {item.label}
+                    </motion.button>
+                  </Link>
+                ) : item.dropdown ? (
+                  <motion.button
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => scrollToSection("services")}
+                    className="text-white/90 hover:text-white transition-colors font-medium flex items-center"
+                  >
+                    {item.label}
+                    <span className="ml-1">▼</span>
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => scrollToSection(item.key)}
+                    className="text-white/90 hover:text-white transition-colors font-medium"
+                  >
+                    {item.label}
+                  </motion.button>
+                )}
+              </motion.div>
+            ))}
 
-        <div className="flex items-center gap-2">
-          <LanguageSelector />
+            {/* Language Selector */}
+            <div className="flex items-center space-x-2 text-white/90">
+              <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
+                <span className="text-xs">🌐</span>
+              </div>
+              <LanguageSelector />
+            </div>
 
-          {!isAdmin && (
-            <Link href="/admin">
-              <Button variant="ghost" size="sm">
-                {translations.admin}
-              </Button>
+            {/* CTA Button */}
+            <Link href="/appointments">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-full">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
+                </Button>
+              </motion.div>
             </Link>
-          )}
+          </div>
 
-          <Link href="/appointments">
-            <Button variant="default" size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600">
-              {translations.appointment}
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-white/90">
+              <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
+                <span className="text-xs">🌐</span>
+              </div>
+              <LanguageSelector />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-white hover:bg-white/10"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </Button>
-          </Link>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden mt-4 pb-4 border-t border-white/10 pt-4"
+          >
+            <div className="flex flex-col space-y-4">
+              {navigationItems.map((item) => (
+                <div key={item.key}>
+                  {item.href ? (
+                    <Link href={item.href}>
+                      <button
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-white/90 hover:text-white transition-colors font-medium text-left w-full"
+                      >
+                        {item.label}
+                      </button>
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => scrollToSection(item.key)}
+                      className="text-white/90 hover:text-white transition-colors font-medium text-left w-full"
+                    >
+                      {item.label}
+                    </button>
+                  )}
+                </div>
+              ))}
+              <Link href="/appointments">
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold w-full mt-4">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
       </div>
-    </div>
+    </motion.nav>
   )
 }
-
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(
-  ({ className, title, children, ...props }, ref) => {
-    return (
-      <li>
-        <NavigationMenuLink asChild>
-          <a
-            ref={ref}
-            className={cn(
-              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-              className,
-            )}
-            {...props}
-          >
-            <div className="text-sm font-medium leading-none">{title}</div>
-            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">{children}</p>
-          </a>
-        </NavigationMenuLink>
-      </li>
-    )
-  },
-)
-ListItem.displayName = "ListItem"

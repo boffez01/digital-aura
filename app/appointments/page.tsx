@@ -1,557 +1,568 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { format } from "date-fns"
-import { it, enUS } from "date-fns/locale"
-import { CalendarIcon, Clock, User, Phone, MessageSquare } from "lucide-react"
+import type React from "react"
 
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ArrowLeft, CalendarIcon, Clock, CheckCircle, Star, Zap, BarChart3, Headphones } from "lucide-react"
+import { format, addDays, isAfter, isBefore, startOfDay } from "date-fns"
+import { it, enUS } from "date-fns/locale"
+import Link from "next/link"
 import { useLanguage } from "@/app/contexts/language-context"
-import { BackToMenu } from "@/app/components/back-to-menu"
 
-// Define the form schema with Zod
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  phone: z.string().min(6, {
-    message: "Please enter a valid phone number.",
-  }),
-  service: z.string({
-    required_error: "Please select a service.",
-  }),
-  date: z.date({
-    required_error: "Please select a date.",
-  }),
-  time: z.string({
-    required_error: "Please select a time.",
-  }),
-  message: z.string().optional(),
-})
+interface AppointmentType {
+  id: string
+  title: string
+  description: string
+  duration: string
+  price: string
+  icon: React.ReactNode
+  color: string
+  bgColor: string
+  features: string[]
+  popular?: boolean
+}
 
-// Available time slots
-const timeSlots = [
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-]
+interface TimeSlot {
+  time: string
+  available: boolean
+  occupied?: boolean
+}
+
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  company: string
+  message: string
+  appointmentType: string
+  date: Date | null
+  time: string
+}
 
 export default function AppointmentsPage() {
   const { language } = useLanguage()
-  const { toast } = useToast()
+  const [currentStep, setCurrentStep] = useState(1)
+  const [selectedType, setSelectedType] = useState<AppointmentType | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedTime, setSelectedTime] = useState("")
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [step, setStep] = useState(1)
-  const [appointmentType, setAppointmentType] = useState("consultation")
-
-  // Translations
-  const t = {
-    title: language === "it" ? "Prenota un Appuntamento" : "Book an Appointment",
-    subtitle:
-      language === "it"
-        ? "Prenota una consulenza gratuita con uno dei nostri esperti"
-        : "Schedule a free consultation with one of our experts",
-    step1: language === "it" ? "Tipo di Appuntamento" : "Appointment Type",
-    step2: language === "it" ? "Data e Ora" : "Date & Time",
-    step3: language === "it" ? "Informazioni Personali" : "Personal Information",
-    consultation: language === "it" ? "Consulenza Generale" : "General Consultation",
-    demo: language === "it" ? "Demo Tecnica" : "Technical Demo",
-    project: language === "it" ? "Analisi Progetto" : "Project Analysis",
-    emergency: language === "it" ? "Supporto Urgente" : "Emergency Support",
-    nameLabel: language === "it" ? "Nome Completo" : "Full Name",
-    namePlaceholder: language === "it" ? "Inserisci il tuo nome" : "Enter your name",
-    emailLabel: language === "it" ? "Email" : "Email",
-    emailPlaceholder: language === "it" ? "Inserisci la tua email" : "Enter your email",
-    phoneLabel: language === "it" ? "Telefono" : "Phone",
-    phonePlaceholder: language === "it" ? "Inserisci il tuo numero" : "Enter your phone number",
-    serviceLabel: language === "it" ? "Servizio" : "Service",
-    servicePlaceholder: language === "it" ? "Seleziona un servizio" : "Select a service",
-    dateLabel: language === "it" ? "Data" : "Date",
-    datePlaceholder: language === "it" ? "Seleziona una data" : "Select a date",
-    timeLabel: language === "it" ? "Orario" : "Time",
-    timePlaceholder: language === "it" ? "Seleziona un orario" : "Select a time",
-    messageLabel: language === "it" ? "Messaggio (opzionale)" : "Message (optional)",
-    messagePlaceholder:
-      language === "it"
-        ? "Fornisci dettagli aggiuntivi sulla tua richiesta..."
-        : "Provide additional details about your request...",
-    next: language === "it" ? "Avanti" : "Next",
-    back: language === "it" ? "Indietro" : "Back",
-    submit: language === "it" ? "Prenota Appuntamento" : "Book Appointment",
-    success:
-      language === "it"
-        ? "Appuntamento prenotato con successo! Ti abbiamo inviato un'email di conferma."
-        : "Appointment booked successfully! We've sent you a confirmation email.",
-    aiAutomation: language === "it" ? "AI Automation" : "AI Automation",
-    chatbots: language === "it" ? "Smart Chatbots" : "Smart Chatbots",
-    webDev: language === "it" ? "Sviluppo Web" : "Web Development",
-    aiMarketing: language === "it" ? "AI Marketing" : "AI Marketing",
-    other: language === "it" ? "Altro" : "Other",
-    duration: language === "it" ? "Durata" : "Duration",
-    minutes: language === "it" ? "minuti" : "minutes",
-    availability: language === "it" ? "Disponibilità" : "Availability",
-    consultationDesc:
-      language === "it"
-        ? "Discuti le tue esigenze e scopri come possiamo aiutarti"
-        : "Discuss your needs and discover how we can help you",
-    demoDesc:
-      language === "it"
-        ? "Vedi in azione le nostre soluzioni con una demo personalizzata"
-        : "See our solutions in action with a personalized demo",
-    projectDesc:
-      language === "it"
-        ? "Analisi approfondita del tuo progetto con un nostro esperto"
-        : "In-depth analysis of your project with one of our experts",
-    emergencyDesc:
-      language === "it" ? "Supporto prioritario per problemi urgenti" : "Priority support for urgent issues",
-  }
-
-  // Initialize the form
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      service: "",
-      message: "",
-    },
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    message: "",
+    appointmentType: "",
+    date: null,
+    time: "",
   })
 
-  // Handle form submission
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const appointmentTypes: AppointmentType[] = [
+    {
+      id: "strategic-consultation",
+      title: language === "it" ? "Consulenza Strategica" : "Strategic Consultation",
+      description:
+        language === "it"
+          ? "Strategia digitale personalizzata per il tuo business"
+          : "Personalized digital strategy for your business",
+      duration: "30",
+      price: language === "it" ? "Gratuito" : "Free",
+      icon: <Star className="w-6 h-6" />,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 border-purple-200",
+      features:
+        language === "it"
+          ? ["Analisi completa del business", "Strategia personalizzata", "Piano d'azione dettagliato"]
+          : ["Complete business analysis", "Personalized strategy", "Detailed action plan"],
+      popular: true,
+    },
+    {
+      id: "personalized-demo",
+      title: language === "it" ? "Demo Personalizzata" : "Personalized Demo",
+      description:
+        language === "it" ? "Vedi le nostre soluzioni AI in azione dal vivo" : "See our AI solutions in action live",
+      duration: "30",
+      price: language === "it" ? "Gratuito" : "Free",
+      icon: <Zap className="w-6 h-6" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 border-blue-200",
+      features:
+        language === "it"
+          ? ["Demo live personalizzata", "Q&A in tempo reale", "Prova delle funzionalità"]
+          : ["Personalized live demo", "Real-time Q&A", "Feature testing"],
+    },
+    {
+      id: "project-analysis",
+      title: language === "it" ? "Analisi Progetto" : "Project Analysis",
+      description:
+        language === "it"
+          ? "Valutazione tecnica approfondita del tuo progetto"
+          : "In-depth technical evaluation of your project",
+      duration: "30",
+      price: language === "it" ? "Gratuito" : "Free",
+      icon: <BarChart3 className="w-6 h-6" />,
+      color: "text-green-600",
+      bgColor: "bg-green-50 border-green-200",
+      features:
+        language === "it"
+          ? ["Analisi tecnica dettagliata", "Stima tempi e costi", "Roadmap implementazione"]
+          : ["Detailed technical analysis", "Time and cost estimation", "Implementation roadmap"],
+    },
+    {
+      id: "priority-support",
+      title: language === "it" ? "Supporto Prioritario" : "Priority Support",
+      description:
+        language === "it" ? "Risoluzione rapida per problemi critici" : "Quick resolution for critical issues",
+      duration: "30",
+      price: language === "it" ? "Gratuito" : "Free",
+      icon: <Headphones className="w-6 h-6" />,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50 border-orange-200",
+      features:
+        language === "it"
+          ? ["Supporto immediato", "Risoluzione prioritaria", "Follow-up garantito"]
+          : ["Immediate support", "Priority resolution", "Guaranteed follow-up"],
+    },
+  ]
+
+  const timeSlots = [
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30",
+    "16:00",
+    "16:30",
+    "17:00",
+    "17:30",
+  ]
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchAvailability(selectedDate)
+    }
+  }, [selectedDate])
+
+  const fetchAvailability = async (date: Date) => {
+    setIsLoading(true)
+    try {
+      const dateStr = format(date, "yyyy-MM-dd")
+      console.log("🔍 Fetching availability for date:", dateStr)
+
+      const response = await fetch(`/api/appointments/availability?date=${dateStr}`)
+      const data = await response.json()
+
+      console.log("📅 Availability response:", data)
+
+      if (data.success) {
+        const occupiedTimes = data.occupied_slots || []
+        console.log("⏰ Occupied times:", occupiedTimes)
+
+        const slots = timeSlots.map((time) => ({
+          time,
+          available: !occupiedTimes.includes(time),
+          occupied: occupiedTimes.includes(time),
+        }))
+
+        console.log("🎯 Generated slots:", slots)
+        setAvailableSlots(slots)
+      } else {
+        console.error("❌ Error fetching availability:", data.error)
+        // Fallback: tutti gli slot disponibili
+        setAvailableSlots(timeSlots.map((time) => ({ time, available: true, occupied: false })))
+      }
+    } catch (error) {
+      console.error("❌ Error fetching availability:", error)
+      // Fallback: tutti gli slot disponibili
+      setAvailableSlots(timeSlots.map((time) => ({ time, available: true, occupied: false })))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleTypeSelect = (type: AppointmentType) => {
+    setSelectedType(type)
+    setFormData((prev) => ({ ...prev, appointmentType: type.id }))
+    setCurrentStep(2)
+  }
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date)
+      setFormData((prev) => ({ ...prev, date }))
+      setSelectedTime("")
+    }
+  }
+
+  const handleTimeSelect = async (time: string) => {
+    if (!selectedDate) return
+
+    // Double check availability before selecting
+    const dateStr = format(selectedDate, "yyyy-MM-dd")
+
+    try {
+      console.log("🔍 Double-checking availability for:", { date: dateStr, time })
+
+      const response = await fetch("/api/appointments/availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date: dateStr, time }),
+      })
+
+      const data = await response.json()
+      console.log("📊 Availability check result:", data)
+
+      if (data.available) {
+        setSelectedTime(time)
+        setFormData((prev) => ({ ...prev, time }))
+        setCurrentStep(3)
+      } else {
+        alert(
+          language === "it"
+            ? "Questo orario è stato appena prenotato da qualcun altro. Seleziona un altro orario."
+            : "This time slot was just booked by someone else. Please select another time.",
+        )
+        // Refresh availability
+        fetchAvailability(selectedDate)
+      }
+    } catch (error) {
+      console.error("❌ Error checking availability:", error)
+      alert(
+        language === "it"
+          ? "Errore nel controllo disponibilità. Riprova."
+          : "Error checking availability. Please try again.",
+      )
+    }
+  }
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      // Here you would typically send the form data to your API
+      console.log("📝 Submitting appointment:", formData)
+
+      // Final availability check before submission
+      if (selectedDate && selectedTime) {
+        const dateStr = format(selectedDate, "yyyy-MM-dd")
+
+        const availabilityCheck = await fetch("/api/appointments/availability", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ date: dateStr, time: selectedTime }),
+        })
+
+        const availabilityData = await availabilityCheck.json()
+
+        if (!availabilityData.available) {
+          alert(
+            language === "it"
+              ? "Questo orario è stato appena prenotato. Seleziona un altro orario."
+              : "This time slot was just booked. Please select another time.",
+          )
+          setCurrentStep(2)
+          fetchAvailability(selectedDate)
+          return
+        }
+      }
+
+      const appointmentData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: selectedType?.title || formData.appointmentType,
+        date: formData.date ? format(formData.date, "yyyy-MM-dd") : "",
+        time: formData.time,
+        message:
+          formData.message ||
+          `${language === "it" ? "Richiesta appuntamento per" : "Appointment request for"}: ${selectedType?.title}`,
+        status: "pending" as const,
+        priority: selectedType?.id === "priority-support",
+      }
+
+      console.log("🚀 Sending appointment data:", appointmentData)
+
       const response = await fetch("/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...values,
-          appointmentType,
-          date: format(values.date, "yyyy-MM-dd"),
-          language,
-        }),
+        body: JSON.stringify(appointmentData),
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to book appointment")
+      const result = await response.json()
+      console.log("✅ Appointment response:", result)
+
+      if (result.success) {
+        setSubmitSuccess(true)
+        setCurrentStep(4)
+
+        // Reset form after success
+        setTimeout(() => {
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            company: "",
+            message: "",
+            appointmentType: "",
+            date: null,
+            time: "",
+          })
+          setSelectedType(null)
+          setSelectedDate(null)
+          setSelectedTime("")
+          setCurrentStep(1)
+          setSubmitSuccess(false)
+        }, 5000)
+      } else {
+        console.error("❌ Error submitting appointment:", result.error)
+
+        if (result.occupied) {
+          alert(
+            language === "it"
+              ? "Questo orario è stato appena prenotato. Seleziona un altro orario."
+              : "This time slot was just booked. Please select another time.",
+          )
+          setCurrentStep(2)
+          if (selectedDate) fetchAvailability(selectedDate)
+        } else {
+          alert(
+            language === "it"
+              ? "Errore nell'invio della richiesta. Riprova."
+              : "Error submitting request. Please try again.",
+          )
+        }
       }
-
-      toast({
-        title: language === "it" ? "Appuntamento Confermato" : "Appointment Confirmed",
-        description: t.success,
-        duration: 5000,
-      })
-
-      // Reset form and go back to step 1
-      form.reset()
-      setStep(1)
     } catch (error) {
-      toast({
-        title: language === "it" ? "Errore" : "Error",
-        description:
-          language === "it"
-            ? "Si è verificato un errore. Riprova più tardi."
-            : "An error occurred. Please try again later.",
-        variant: "destructive",
-      })
+      console.error("❌ Error submitting appointment:", error)
+      alert(
+        language === "it"
+          ? "Errore nell'invio della richiesta. Riprova."
+          : "Error submitting request. Please try again.",
+      )
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Get appointment type details
-  const getAppointmentTypeDetails = () => {
-    const types = {
-      consultation: {
-        title: t.consultation,
-        description: t.consultationDesc,
-        duration: "30",
-        icon: <MessageSquare className="w-10 h-10 text-purple-500" />,
-      },
-      demo: {
-        title: t.demo,
-        description: t.demoDesc,
-        duration: "45",
-        icon: <Clock className="w-10 h-10 text-blue-500" />,
-      },
-      project: {
-        title: t.project,
-        description: t.projectDesc,
-        duration: "60",
-        icon: <User className="w-10 h-10 text-green-500" />,
-      },
-      emergency: {
-        title: t.emergency,
-        description: t.emergencyDesc,
-        duration: "30",
-        icon: <Phone className="w-10 h-10 text-red-500" />,
-      },
-    }
-
-    return types[appointmentType as keyof typeof types]
+  const isDateDisabled = (date: Date) => {
+    const today = startOfDay(new Date())
+    const maxDate = addDays(today, 60) // 60 giorni nel futuro
+    return isBefore(date, today) || isAfter(date, maxDate)
   }
 
-  const appointmentDetails = getAppointmentTypeDetails()
+  const nextStep = () => {
+    if (currentStep < 4) setCurrentStep(currentStep + 1)
+  }
+
+  const prevStep = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1)
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <BackToMenu />
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="text-gray-600 hover:text-purple-600 transition-colors">
+                <ArrowLeft className="w-6 h-6" />
+              </Link>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
+                  <CalendarIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {language === "it" ? "Prenota Appuntamento" : "Book Appointment"}
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    {language === "it" ? "Scegli il servizio perfetto per te" : "Choose the perfect service for you"}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center mb-12"
-      >
-        <h1 className="text-4xl font-bold mb-4">{t.title}</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">{t.subtitle}</p>
-      </motion.div>
-
-      <div className="max-w-4xl mx-auto">
-        <Tabs defaultValue="1" value={step.toString()} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="1" disabled={step < 1} onClick={() => step > 1 && setStep(1)}>
-              {t.step1}
-            </TabsTrigger>
-            <TabsTrigger value="2" disabled={step < 2} onClick={() => step > 2 && setStep(2)}>
-              {t.step2}
-            </TabsTrigger>
-            <TabsTrigger value="3" disabled={step < 3} onClick={() => step > 3 && setStep(3)}>
-              {t.step3}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {["consultation", "demo", "project", "emergency"].map((type) => {
-                const isSelected = appointmentType === type
-                const typeDetails = {
-                  consultation: {
-                    title: t.consultation,
-                    description: t.consultationDesc,
-                    duration: "30",
-                    icon: <MessageSquare className="w-10 h-10 text-purple-500" />,
-                  },
-                  demo: {
-                    title: t.demo,
-                    description: t.demoDesc,
-                    duration: "45",
-                    icon: <Clock className="w-10 h-10 text-blue-500" />,
-                  },
-                  project: {
-                    title: t.project,
-                    description: t.projectDesc,
-                    duration: "60",
-                    icon: <User className="w-10 h-10 text-green-500" />,
-                  },
-                  emergency: {
-                    title: t.emergency,
-                    description: t.emergencyDesc,
-                    duration: "30",
-                    icon: <Phone className="w-10 h-10 text-red-500" />,
-                  },
-                }[type as keyof typeof typeDetails]
-
-                return (
-                  <Card
-                    key={type}
-                    className={cn(
-                      "cursor-pointer transition-all hover:shadow-md",
-                      isSelected ? "ring-2 ring-purple-500 shadow-md" : "",
-                    )}
-                    onClick={() => setAppointmentType(type)}
+            {/* Progress Indicator */}
+            <div className="hidden md:flex items-center space-x-2">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                      step <= currentStep
+                        ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                        : "bg-gray-200 text-gray-500"
+                    }`}
                   >
-                    <CardHeader className="flex flex-row items-center gap-4">
-                      {typeDetails.icon}
-                      <div>
-                        <CardTitle>{typeDetails.title}</CardTitle>
-                        <CardDescription className="mt-1.5">{typeDetails.description}</CardDescription>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between text-sm">
-                        <div>
-                          <span className="font-medium">{t.duration}:</span> {typeDetails.duration} {t.minutes}
-                        </div>
-                        <div>
-                          <span className="font-medium">{t.availability}:</span> 24h
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-
-            <div className="mt-8 flex justify-end">
-              <Button onClick={() => setStep(2)}>{t.next}</Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{appointmentDetails.title}</CardTitle>
-                <CardDescription>
-                  {t.duration}: {appointmentDetails.duration} {t.minutes}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>{t.dateLabel}</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground",
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP", {
-                                      locale: language === "it" ? it : enUS,
-                                    })
-                                  ) : (
-                                    <span>{t.datePlaceholder}</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                                  date.getDay() === 0 ||
-                                  date.getDay() === 6
-                                }
-                                initialFocus
-                                locale={language === "it" ? it : enUS}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormDescription>
-                            {language === "it" ? "Seleziona una data feriale" : "Select a weekday"}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="time"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t.timeLabel}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t.timePlaceholder} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {timeSlots.map((time) => (
-                                <SelectItem key={time} value={time}>
-                                  {time}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            {language === "it" ? "Gli orari sono nel fuso orario CET" : "Times are in CET timezone"}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {step < currentStep ? <CheckCircle className="w-4 h-4" /> : step}
                   </div>
-                </Form>
-              </CardContent>
-            </Card>
-
-            <div className="mt-8 flex justify-between">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                {t.back}
-              </Button>
-              <Button
-                onClick={() => {
-                  const dateValue = form.getValues("date")
-                  const timeValue = form.getValues("time")
-
-                  if (!dateValue || !timeValue) {
-                    if (!dateValue) form.setError("date", { message: "Please select a date" })
-                    if (!timeValue) form.setError("time", { message: "Please select a time" })
-                    return
-                  }
-
-                  setStep(3)
-                }}
-              >
-                {t.next}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="3">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t.step3}</CardTitle>
-                <CardDescription>
-                  {language === "it"
-                    ? "Inserisci i tuoi dati per completare la prenotazione"
-                    : "Enter your details to complete the booking"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t.nameLabel}</FormLabel>
-                            <FormControl>
-                              <Input placeholder={t.namePlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t.emailLabel}</FormLabel>
-                            <FormControl>
-                              <Input placeholder={t.emailPlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t.phoneLabel}</FormLabel>
-                            <FormControl>
-                              <Input placeholder={t.phonePlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="service"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t.serviceLabel}</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={t.servicePlaceholder} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="ai-automation">{t.aiAutomation}</SelectItem>
-                                <SelectItem value="chatbots">{t.chatbots}</SelectItem>
-                                <SelectItem value="web-development">{t.webDev}</SelectItem>
-                                <SelectItem value="ai-marketing">{t.aiMarketing}</SelectItem>
-                                <SelectItem value="other">{t.other}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t.messageLabel}</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder={t.messagePlaceholder} className="min-h-[120px]" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  {step < 4 && (
+                    <div
+                      className={`w-8 h-1 mx-2 rounded-full transition-all ${
+                        step < currentStep ? "bg-gradient-to-r from-purple-600 to-blue-600" : "bg-gray-200"
+                      }`}
                     />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-                    <div className="flex justify-between">
-                      <Button type="button" variant="outline" onClick={() => setStep(2)}>
-                        {t.back}
-                      </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                          <div className="flex items-center">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            {language === "it" ? "Prenotazione..." : "Booking..."}
+      <div className="container mx-auto px-6 py-8 max-w-6xl">
+        <AnimatePresence mode="wait">
+          {/* Step 2: Select Date & Time */}
+          {currentStep === 2 && selectedType && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center mb-12">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl font-bold text-gray-900 mb-4"
+                >
+                  {language === "it" ? "Scegli Data e Orario" : "Choose Date and Time"}
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-xl text-gray-600"
+                >
+                  {language === "it"
+                    ? `Seleziona quando vuoi la tua ${selectedType.title.toLowerCase()}`
+                    : `Select when you want your ${selectedType.title.toLowerCase()}`}
+                </motion.p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                {/* Time Slots */}
+                <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+                  <Card className="p-6 shadow-lg border-0 h-full">
+                    <CardHeader className="p-0 mb-6">
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <Clock className="w-5 h-5 mr-2 text-purple-600" />
+                        {language === "it" ? "Orari Disponibili" : "Available Times"}
+                      </CardTitle>
+                      {selectedDate && (
+                        <p className="text-gray-600 text-sm">
+                          {format(selectedDate, "EEEE, d MMMM yyyy", {
+                            locale: language === "it" ? it : enUS,
+                          })}
+                        </p>
+                      )}
+                    </CardHeader>
+
+                    {!selectedDate ? (
+                      <div className="text-center py-12">
+                        <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">
+                          {language === "it" ? "Seleziona prima una data" : "Please select a date first"}
+                        </p>
+                      </div>
+                    ) : isLoading ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                        <p className="text-gray-500">
+                          {language === "it" ? "Caricamento orari..." : "Loading times..."}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto">
+                          {availableSlots.map((slot) => (
+                            <Button
+                              key={slot.time}
+                              variant={selectedTime === slot.time ? "default" : "outline"}
+                              className={`p-3 h-auto transition-all ${
+                                slot.occupied
+                                  ? "bg-red-50 border-red-200 text-red-600 cursor-not-allowed opacity-60"
+                                  : selectedTime === slot.time
+                                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                                    : slot.available
+                                      ? "bg-white hover:bg-purple-50 hover:border-purple-200 hover:text-purple-600"
+                                      : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
+                              }`}
+                              onClick={() => slot.available && !slot.occupied && handleTimeSelect(slot.time)}
+                              disabled={!slot.available || slot.occupied}
+                            >
+                              <div className="text-center">
+                                <div className="font-semibold">{slot.time}</div>
+                                <div className="text-xs opacity-75">
+                                  {slot.occupied
+                                    ? language === "it"
+                                      ? "Occupato"
+                                      : "Occupied"
+                                    : slot.available
+                                      ? language === "it"
+                                        ? "Disponibile"
+                                        : "Available"
+                                      : language === "it"
+                                        ? "Non disponibile"
+                                        : "Unavailable"}
+                                </div>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                          <h4 className="font-semibold text-gray-900 mb-3 text-sm">
+                            {language === "it" ? "Legenda:" : "Legend:"}
+                          </h4>
+                          <div className="grid grid-cols-3 gap-4 text-xs">
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 bg-white border border-gray-300 rounded mr-2"></div>
+                              <span className="text-gray-600">{language === "it" ? "Disponibile" : "Available"}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-2"></div>
+                              <span className="text-gray-600">{language === "it" ? "Occupato" : "Occupied"}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded mr-2"></div>
+                              <span className="text-gray-600">{language === "it" ? "Selezionato" : "Selected"}</span>
+                            </div>
                           </div>
-                        ) : (
-                          t.submit
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

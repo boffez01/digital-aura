@@ -1,447 +1,279 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Send, HelpCircle, ThumbsUp, ThumbsDown, User, Phone } from "lucide-react"
+import { HelpCircle, Search, ChevronRight, Bot, Send } from "lucide-react"
+import { useLanguage } from "../../contexts/language-context"
 
 interface Message {
   id: string
-  content: string
+  text: string
   sender: "user" | "bot"
   timestamp: Date
-  source?: "faq" | "ai" | "escalation"
-  showRating?: boolean
-  rating?: "up" | "down" | null
+  type?: "text" | "faq" | "search"
+}
+
+interface FAQ {
+  id: string
+  question: string
+  answer: string
+  category: string
 }
 
 export default function FAQChatbot() {
+  const { language } = useLanguage()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [escalated, setEscalated] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isTyping, setIsTyping] = useState(false)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const texts = {
+    en: {
+      title: "FAQ Assistant",
+      subtitle: "Quick answers to common questions",
+      greeting:
+        "Hi! I'm your FAQ assistant. I can help you find answers to common questions about our services, pricing, and policies. What would you like to know?",
+      popularQuestions: "Here are some popular questions:",
+      searchResults: "I found these answers for you:",
+      placeholder: "Ask a question...",
+      moreInfo: "More Info",
+      helpful: "Was this helpful?",
+    },
+    it: {
+      title: "Assistente FAQ",
+      subtitle: "Risposte rapide alle domande comuni",
+      greeting:
+        "Ciao! Sono il tuo assistente FAQ. Posso aiutarti a trovare risposte alle domande comuni sui nostri servizi, prezzi e politiche. Cosa vorresti sapere?",
+      popularQuestions: "Ecco alcune domande popolari:",
+      searchResults: "Ho trovato queste risposte per te:",
+      placeholder: "Fai una domanda...",
+      moreInfo: "Più Info",
+      helpful: "È stato utile?",
+    },
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+  const t = texts[language]
+
+  const faqs: FAQ[] = [
+    {
+      id: "pricing",
+      question: language === "en" ? "What are your pricing plans?" : "Quali sono i vostri piani tariffari?",
+      answer:
+        language === "en"
+          ? "We offer flexible pricing starting from €299 for basic services up to €1999 for enterprise solutions. All plans include setup, training, and 6 months of support."
+          : "Offriamo prezzi flessibili a partire da €299 per servizi base fino a €1999 per soluzioni enterprise. Tutti i piani includono setup, formazione e 6 mesi di supporto.",
+      category: language === "en" ? "Pricing" : "Prezzi",
+    },
+    {
+      id: "timeline",
+      question: language === "en" ? "How long does implementation take?" : "Quanto tempo richiede l'implementazione?",
+      answer:
+        language === "en"
+          ? "Most projects are completed within 2-4 weeks. Simple chatbots can be ready in 24-48 hours, while complex AI automation projects may take up to 6 weeks."
+          : "La maggior parte dei progetti viene completata entro 2-4 settimane. I chatbot semplici possono essere pronti in 24-48 ore, mentre i progetti di automazione AI complessi possono richiedere fino a 6 settimane.",
+      category: language === "en" ? "Timeline" : "Tempistiche",
+    },
+    {
+      id: "support",
+      question: language === "en" ? "What support do you provide?" : "Che supporto fornite?",
+      answer:
+        language === "en"
+          ? "We provide 24/7 technical support, regular updates, training sessions, and dedicated account management for enterprise clients."
+          : "Forniamo supporto tecnico 24/7, aggiornamenti regolari, sessioni di formazione e gestione account dedicata per i clienti enterprise.",
+      category: language === "en" ? "Support" : "Supporto",
+    },
+    {
+      id: "integration",
+      question:
+        language === "en" ? "Can you integrate with existing systems?" : "Potete integrarvi con i sistemi esistenti?",
+      answer:
+        language === "en"
+          ? "Yes! We integrate with most CRM systems, databases, e-commerce platforms, and business tools. We also provide custom API integrations."
+          : "Sì! Ci integriamo con la maggior parte dei sistemi CRM, database, piattaforme e-commerce e strumenti aziendali. Forniamo anche integrazioni API personalizzate.",
+      category: language === "en" ? "Integration" : "Integrazione",
+    },
+    {
+      id: "languages",
+      question: language === "en" ? "What languages do you support?" : "Che lingue supportate?",
+      answer:
+        language === "en"
+          ? "Our AI systems support over 50 languages including Italian, English, Spanish, French, German, and many more. We can customize for specific regional dialects."
+          : "I nostri sistemi AI supportano oltre 50 lingue inclusi italiano, inglese, spagnolo, francese, tedesco e molte altre. Possiamo personalizzare per dialetti regionali specifici.",
+      category: language === "en" ? "Languages" : "Lingue",
+    },
+  ]
 
   useEffect(() => {
-    const welcomeMessage: Message = {
+    const initialMessage: Message = {
       id: "1",
-      content:
-        "👋 Ciao! Sono l'assistente del supporto clienti. Posso aiutarti con domande frequenti, problemi tecnici e molto altro. Come posso aiutarti?",
+      text: t.greeting,
       sender: "bot",
       timestamp: new Date(),
-      source: "faq",
     }
-    setMessages([welcomeMessage])
-  }, [])
+    setMessages([initialMessage])
+  }, [language])
 
-  const findFAQResponse = (message: string): { response: string; source: string; showRating?: boolean } | null => {
-    const lowerMessage = message.toLowerCase()
-
-    // Saluti
-    if (lowerMessage.includes("ciao") || lowerMessage.includes("salve") || lowerMessage.includes("hello")) {
-      return {
-        response:
-          "👋 Ciao! Benvenuto nel nostro centro assistenza. Sono qui per rispondere alle tue domande. Di cosa hai bisogno?",
-        source: "faq",
-      }
+  const addMessage = (text: string, sender: "user" | "bot", type: "text" | "faq" | "search" = "text") => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      sender,
+      timestamp: new Date(),
+      type,
     }
-
-    // Password
-    if (lowerMessage.includes("password") || lowerMessage.includes("accesso") || lowerMessage.includes("login")) {
-      return {
-        response:
-          '🔐 **Problemi con la password?**\n\n1️⃣ Vai alla pagina di login\n2️⃣ Clicca su "Password dimenticata"\n3️⃣ Inserisci la tua email\n4️⃣ Controlla la tua casella email\n5️⃣ Segui le istruzioni nel messaggio\n\n⚠️ Se non ricevi l\'email, controlla la cartella spam. Hai ancora problemi?',
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Account
-    if (
-      lowerMessage.includes("account") ||
-      lowerMessage.includes("profilo") ||
-      lowerMessage.includes("registrazione")
-    ) {
-      return {
-        response:
-          '👤 **Gestione Account:**\n\n✅ **Creare account**: Clicca "Registrati" e compila il form\n🔧 **Modificare profilo**: Vai in Impostazioni > Profilo\n🗑️ **Eliminare account**: Contatta il supporto\n📧 **Cambiare email**: Impostazioni > Email\n\nCosa vuoi fare esattamente?',
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Fatturazione
-    if (lowerMessage.includes("fattura") || lowerMessage.includes("pagamento") || lowerMessage.includes("billing")) {
-      return {
-        response:
-          "💳 **Fatturazione e Pagamenti:**\n\n📄 **Scaricare fatture**: Area clienti > Fatture\n💰 **Metodi pagamento**: Carta, PayPal, Bonifico\n🔄 **Rinnovo automatico**: Gestibile dalle impostazioni\n❌ **Annullare abbonamento**: Impostazioni > Abbonamento\n\n📞 Per problemi di pagamento, contatta il supporto.",
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Tecnico
-    if (lowerMessage.includes("errore") || lowerMessage.includes("bug") || lowerMessage.includes("problema tecnico")) {
-      return {
-        response:
-          "🔧 **Problemi Tecnici:**\n\n1️⃣ **Ricarica la pagina** (Ctrl+F5)\n2️⃣ **Svuota cache** del browser\n3️⃣ **Prova browser diverso** (Chrome, Firefox)\n4️⃣ **Disabilita estensioni** temporaneamente\n5️⃣ **Controlla connessione** internet\n\n🆘 Se il problema persiste, descrivimi l'errore esatto.",
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Spedizione
-    if (lowerMessage.includes("spedizione") || lowerMessage.includes("consegna") || lowerMessage.includes("tracking")) {
-      return {
-        response:
-          "📦 **Spedizioni e Consegne:**\n\n🚚 **Tempi**: 2-5 giorni lavorativi\n📍 **Tracking**: Riceverai email con codice\n💰 **Costi**: Gratis sopra €50\n🏠 **Indirizzo**: Modificabile fino alla spedizione\n📞 **Problemi**: Contatta il corriere\n\nHai un codice di tracking da verificare?",
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Reso
-    if (lowerMessage.includes("reso") || lowerMessage.includes("rimborso") || lowerMessage.includes("return")) {
-      return {
-        response:
-          "↩️ **Resi e Rimborsi:**\n\n⏰ **Tempo**: 30 giorni dall'acquisto\n📦 **Condizioni**: Prodotto integro e imballaggio originale\n💰 **Rimborso**: 5-10 giorni lavorativi\n📋 **Procedura**: Area clienti > I miei ordini > Richiedi reso\n\n🆘 Vuoi iniziare una procedura di reso?",
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Contatti
-    if (lowerMessage.includes("contatto") || lowerMessage.includes("telefono") || lowerMessage.includes("email")) {
-      return {
-        response:
-          "📞 **Contatti Supporto:**\n\n📧 **Email**: support@digitalaura.it\n📱 **Telefono**: +39 02 1234 5678\n💬 **Chat**: Disponibile 24/7 (qui!)\n⏰ **Orari**: Lun-Ven 9:00-18:00\n🏢 **Sede**: Milano, Via Innovation 123\n\n🚨 Per urgenze, usa il telefono!",
-        source: "faq",
-        showRating: true,
-      }
-    }
-
-    // Aiuto generico
-    if (lowerMessage.includes("aiuto") || lowerMessage.includes("help") || lowerMessage.includes("supporto")) {
-      return {
-        response:
-          "🆘 **Come posso aiutarti?**\n\n🔐 Problemi di accesso\n👤 Gestione account\n💳 Fatturazione\n🔧 Problemi tecnici\n📦 Spedizioni\n↩️ Resi e rimborsi\n📞 Contatti\n\n💬 Scrivi la tua domanda o scegli un argomento!",
-        source: "faq",
-      }
-    }
-
-    return null
+    setMessages((prev) => [...prev, newMessage])
   }
 
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return
+  const simulateTyping = (callback: () => void, delay = 1500) => {
+    setIsTyping(true)
+    setTimeout(() => {
+      setIsTyping(false)
+      callback()
+    }, delay)
+  }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: content.trim(),
-      sender: "user",
-      timestamp: new Date(),
-    }
+  const handleSend = (message: string) => {
+    if (!message.trim()) return
 
-    setMessages((prev) => [...prev, userMessage])
+    addMessage(message, "user")
     setInputValue("")
-    setIsLoading(true)
 
-    try {
-      // Prima cerca nelle FAQ
-      const faqResponse = findFAQResponse(content)
+    simulateTyping(() => {
+      // Search for relevant FAQs
+      const searchTerm = message.toLowerCase()
+      const relevantFAQs = faqs.filter(
+        (faq) =>
+          faq.question.toLowerCase().includes(searchTerm) ||
+          faq.answer.toLowerCase().includes(searchTerm) ||
+          faq.category.toLowerCase().includes(searchTerm),
+      )
 
-      if (faqResponse) {
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: faqResponse.response,
-          sender: "bot",
-          timestamp: new Date(),
-          source: faqResponse.source as any,
-          showRating: faqResponse.showRating,
-        }
-        setMessages((prev) => [...prev, botMessage])
-      } else if (escalated) {
-        // Se già escalato, simula risposta umana
-        const humanMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content:
-            "👨‍💼 **Operatore Umano**: Ho ricevuto la tua richiesta. Ti ricontatterò entro 2 ore lavorative via email con una soluzione personalizzata. Grazie per la pazienza!",
-          sender: "bot",
-          timestamp: new Date(),
-          source: "escalation",
-        }
-        setMessages((prev) => [...prev, humanMessage])
-      } else {
-        // Usa AI per domande complesse
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: `Come assistente supporto clienti, rispondi a: ${content}`,
-            language: "it",
-          }),
+      if (relevantFAQs.length > 0) {
+        addMessage(t.searchResults, "bot", "search")
+        relevantFAQs.slice(0, 2).forEach((faq) => {
+          setTimeout(() => {
+            addMessage(faq.answer, "bot", "faq")
+          }, 500)
         })
-
-        const data = await response.json()
-
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content:
-            data.response ||
-            "Mi dispiace, non ho trovato una risposta specifica. Vuoi che trasferisca la tua richiesta a un operatore umano?",
-          sender: "bot",
-          timestamp: new Date(),
-          source: "ai",
-          showRating: true,
-        }
-
-        setMessages((prev) => [...prev, botMessage])
+      } else {
+        addMessage(t.popularQuestions, "bot", "faq")
       }
-    } catch (error) {
-      console.error("Chat error:", error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          "❌ Si è verificato un errore. Sto trasferendo la tua richiesta a un operatore umano che ti contatterà a breve.",
-        sender: "bot",
-        timestamp: new Date(),
-        source: "escalation",
-      }
-      setMessages((prev) => [...prev, errorMessage])
-      setEscalated(true)
-    } finally {
-      setIsLoading(false)
-    }
+    })
   }
 
-  const rateMessage = (messageId: string, rating: "up" | "down") => {
-    setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, rating } : msg)))
-
-    if (rating === "down") {
-      // Se rating negativo, offri escalation
-      const escalationMessage: Message = {
-        id: Date.now().toString(),
-        content:
-          "😔 Mi dispiace che la risposta non sia stata utile. Vuoi che trasferisca la tua richiesta a un operatore umano per un supporto personalizzato?",
-        sender: "bot",
-        timestamp: new Date(),
-        source: "faq",
-      }
-      setMessages((prev) => [...prev, escalationMessage])
-    } else {
-      // Se rating positivo, ringrazia
-      const thankMessage: Message = {
-        id: Date.now().toString(),
-        content: "😊 Perfetto! Sono felice di essere stato utile. C'è altro con cui posso aiutarti?",
-        sender: "bot",
-        timestamp: new Date(),
-        source: "faq",
-      }
-      setMessages((prev) => [...prev, thankMessage])
-    }
-  }
-
-  const escalateToHuman = () => {
-    setEscalated(true)
-    const escalationMessage: Message = {
-      id: Date.now().toString(),
-      content:
-        "👨‍💼 **Trasferimento in corso...**\n\nLa tua richiesta è stata inoltrata al nostro team di supporto umano. Un operatore specializzato ti contatterà entro 2 ore lavorative.\n\n📧 Riceverai una email di conferma a breve.\n\nGrazie per la pazienza!",
-      sender: "bot",
-      timestamp: new Date(),
-      source: "escalation",
-    }
-    setMessages((prev) => [...prev, escalationMessage])
-  }
-
-  const getSourceBadge = (source?: string) => {
-    if (!source) return null
-
-    const badges = {
-      faq: { label: "FAQ", color: "bg-blue-500" },
-      ai: { label: "AI", color: "bg-purple-500" },
-      escalation: { label: "Umano", color: "bg-orange-500" },
-    }
-
-    const badge = badges[source as keyof typeof badges]
-    if (!badge) return null
-
-    return <Badge className={`${badge.color} text-white text-xs ml-2`}>{badge.label}</Badge>
+  const handleFAQSelect = (faq: FAQ) => {
+    addMessage(faq.question, "user")
+    simulateTyping(() => {
+      addMessage(faq.answer, "bot", "faq")
+    })
   }
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
-      <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="flex items-center justify-between">
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-t-lg">
+        <CardTitle className="flex items-center space-x-2">
+          <HelpCircle className="h-5 w-5" />
           <div>
-            <CardTitle className="flex items-center space-x-2">
-              <HelpCircle className="h-5 w-5" />
-              <span>FAQ Support Bot</span>
-            </CardTitle>
-            <p className="text-sm text-white/80">Assistenza clienti intelligente</p>
+            <div className="font-semibold">{t.title}</div>
+            <div className="text-sm opacity-90">{t.subtitle}</div>
           </div>
-          {escalated && (
-            <Badge className="bg-orange-500 text-white">
-              <User className="h-3 w-3 mr-1" />
-              Operatore Umano
-            </Badge>
-          )}
-        </div>
+        </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0 flex flex-col" style={{ minHeight: 0 }}>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: 0 }}>
+      <CardContent className="flex-1 flex flex-col p-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
-            <div key={message.id}>
-              <div className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.sender === "user"
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                  {message.sender === "bot" && (
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs opacity-60">
-                        {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                      <div className="flex items-center space-x-2">
-                        {getSourceBadge(message.source)}
-                        {message.showRating && !message.rating && (
-                          <div className="flex space-x-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 p-0"
-                              onClick={() => rateMessage(message.id, "up")}
-                            >
-                              <ThumbsUp className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 p-0"
-                              onClick={() => rateMessage(message.id, "down")}
-                            >
-                              <ThumbsDown className="h-3 w-3" />
-                            </Button>
+            <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] ${message.sender === "user" ? "bg-cyan-600 text-white" : "bg-gray-100"} rounded-lg p-3`}
+              >
+                {message.sender === "bot" && (
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Bot className="h-4 w-4 text-cyan-600" />
+                    <Badge variant="secondary" className="text-xs">
+                      FAQ Assistant
+                    </Badge>
+                  </div>
+                )}
+                <p className="text-sm">{message.text}</p>
+
+                {message.type === "faq" && message.text === t.popularQuestions && (
+                  <div className="mt-3 space-y-2">
+                    {faqs.slice(0, 3).map((faq) => (
+                      <Button
+                        key={faq.id}
+                        variant="outline"
+                        className="w-full text-left justify-between h-auto py-3 bg-transparent"
+                        onClick={() => handleFAQSelect(faq)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Search className="h-4 w-4 text-cyan-600" />
+                          <div>
+                            <div className="font-medium text-sm">{faq.question}</div>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {faq.category}
+                            </Badge>
                           </div>
-                        )}
-                        {message.rating && (
-                          <Badge variant={message.rating === "up" ? "default" : "destructive"}>
-                            {message.rating === "up" ? "👍" : "👎"}
-                          </Badge>
-                        )}
+                        </div>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    ))}
+                  </div>
+                )}
+
+                {message.type === "faq" && message.text !== t.popularQuestions && message.text !== t.searchResults && (
+                  <div className="mt-3 p-3 bg-white rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-600">{t.helpful}</span>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline" className="text-xs bg-transparent">
+                          👍 {language === "en" ? "Yes" : "Sì"}
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-xs bg-transparent">
+                          👎 {language === "en" ? "No" : "No"}
+                        </Button>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
 
-          {isLoading && (
+          {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
+              <div className="bg-gray-100 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <Bot className="h-4 w-4 text-cyan-600" />
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.1s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Actions */}
-        <div className="p-4 border-t bg-gray-50">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-gray-600">Domande frequenti:</p>
-            {!escalated && (
-              <Button size="sm" variant="outline" className="text-xs h-7 bg-transparent" onClick={escalateToHuman}>
-                <Phone className="h-3 w-3 mr-1" />
-                Operatore Umano
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 bg-transparent"
-              onClick={() => sendMessage("Ho dimenticato la password")}
-            >
-              🔐 Password
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 bg-transparent"
-              onClick={() => sendMessage("Problemi con il pagamento")}
-            >
-              💳 Pagamenti
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 bg-transparent"
-              onClick={() => sendMessage("Dove è il mio ordine?")}
-            >
-              📦 Spedizioni
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 bg-transparent"
-              onClick={() => sendMessage("Voglio fare un reso")}
-            >
-              ↩️ Resi
-            </Button>
-          </div>
-        </div>
-
-        {/* Input */}
-        <div className="p-4 border-t flex-shrink-0">
+        <div className="border-t p-4">
           <div className="flex space-x-2">
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Descrivi il tuo problema..."
-              onKeyPress={(e) => {
-                if (e.key === "Enter" && !isLoading) {
-                  sendMessage(inputValue)
-                }
-              }}
-              disabled={isLoading}
+              placeholder={t.placeholder}
+              onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
               className="flex-1"
             />
-            <Button
-              onClick={() => sendMessage(inputValue)}
-              disabled={isLoading || !inputValue.trim()}
-              size="icon"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
+            <Button onClick={() => handleSend(inputValue)} className="bg-cyan-600 hover:bg-cyan-700">
               <Send className="h-4 w-4" />
             </Button>
           </div>
