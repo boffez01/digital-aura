@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "../contexts/language-context"
 
-export default function BackToMenu() {
+function BackToMenu() {
   const router = useRouter()
   const { language } = useLanguage()
 
@@ -26,3 +26,5 @@ export default function BackToMenu() {
     </div>
   )
 }
+
+export { BackToMenu }
