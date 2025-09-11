@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
-import { Resend } from "resend"
+// import { Resend } from "resend"
 
-// Inizializza Resend con la tua API key
-const resend = new Resend(process.env.RESEND_API_KEY)
+// COMMENTED OUT FOR TESTING - Resend requires API key
+// const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
   try {
     const { to, subject, content, template, variables } = await request.json()
 
-    console.log("📧 REAL EMAIL API - Sending email via Resend...")
+    console.log("📧 EMAIL API - TESTING MODE (Resend disabled)")
     console.log("To:", to)
     console.log("Subject:", subject)
 
@@ -17,6 +17,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Parametri mancanti: to, subject, content" }, { status: 400 })
     }
 
+    // TESTING MODE - Simulate email sending without actual API call
+    console.log("✅ EMAIL SIMULATION - Would send email:")
+    console.log("From: noreply@digitalaura.com")
+    console.log("To:", to)
+    console.log("Subject:", subject)
+    console.log("Content:", content)
+
+    // Simulate successful response
+    return NextResponse.json({
+      success: true,
+      message: "Email simulata con successo (modalità testing)",
+      emailId: "test-email-" + Date.now(),
+      provider: "Testing Mode",
+      note: "Resend API disabilitato per il testing",
+    })
+
+    /* ORIGINAL RESEND CODE - COMMENTED OUT FOR TESTING
+    
     // Sostituisci le variabili nel contenuto se fornite
     let finalContent = content
     if (variables && typeof variables === "object") {
@@ -64,12 +82,14 @@ export async function POST(request: Request) {
       emailId: result.data?.id,
       provider: "Resend",
     })
+    
+    */
   } catch (error) {
     console.error("❌ Email API error:", error)
     return NextResponse.json(
       {
         success: false,
-        error: "Errore nell'invio dell'email",
+        error: "Errore nell'invio dell'email (modalità testing)",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
