@@ -33,22 +33,27 @@ export default function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-purple-800/95 backdrop-blur-lg border-b border-white/10 shadow-lg"
     >
       <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center space-x-2 text-white"
-            >
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">⚡</span>
-              </div>
-              <span className="text-2xl font-bold">Digital Aura</span>
-            </motion.div>
-          </Link>
+        {/* Contenitore principale con posizione relativa per permettere il centramento assoluto */}
+        <div className="relative flex items-center justify-between">
+          
+          {/* GRUPPO SINISTRA: LOGO */}
+          <div className="flex-shrink-0 z-10">
+            <Link href="/">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center space-x-2 text-white"
+              >
+                <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">⚡</span>
+                </div>
+                <span className="text-2xl font-bold">Digital Aura</span>
+              </motion.div>
+            </Link>
+          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* GRUPPO CENTRALE: LINK DI NAVIGAZIONE (POSIZIONATO IN MODO ASSOLUTO) */}
+          <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
             {navigationItems.map((item, index) => (
               <motion.div key={item.key}>
                 {item.href ? (
@@ -92,16 +97,16 @@ export default function Navbar() {
                 )}
               </motion.div>
             ))}
+          </div>
 
-            {/* Language Selector */}
+          {/* GRUPPO DESTRA: LINGUA E PULSANTE CTA */}
+          <div className="hidden md:flex items-center space-x-4 ml-auto z-10">
             <div className="flex items-center space-x-2 text-white/90">
               <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
                 <span className="text-xs">🌐</span>
               </div>
               <LanguageSelector />
             </div>
-
-            {/* CTA Button */}
             <Link href="/appointments">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-full">
@@ -111,7 +116,7 @@ export default function Navbar() {
               </motion.div>
             </Link>
           </div>
-
+          
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-white/90">

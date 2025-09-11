@@ -1,30 +1,26 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useLanguage } from "../contexts/language-context"
+import { Button } from "@/components/ui/button"
 
-function BackToMenu() {
-  const router = useRouter()
-  const { language } = useLanguage()
+interface BackToMenuProps {
+  onBack: () => void
+  label?: string
+}
 
-  const handleBackToMenu = () => {
-    router.push("/")
-  }
-
+export default function BackToMenu({ onBack, label = "Back to Menu" }: BackToMenuProps) {
   return (
-    <div className="mb-8">
-      <Button
-        onClick={handleBackToMenu}
-        variant="outline"
-        className="bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {language === "it" ? "Torna al Menu" : "Back to Menu"}
-      </Button>
-    </div>
+    <Button
+      onClick={onBack}
+      variant="outline"
+      size="sm"
+      className="mb-4 hover:bg-gray-50 transition-colors bg-transparent"
+    >
+      <ArrowLeft className="w-4 h-4 mr-2" />
+      {label}
+    </Button>
   )
 }
 
+// Named export for compatibility
 export { BackToMenu }

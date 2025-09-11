@@ -4,13 +4,16 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
 import { ArrowLeft, CalendarIcon, Clock, CheckCircle, Star, Zap, BarChart3, Headphones } from "lucide-react"
 import { format, addDays, isAfter, isBefore, startOfDay } from "date-fns"
 import { it, enUS } from "date-fns/locale"
 import Link from "next/link"
-import { useLanguage } from "@/app/contexts/language-context"
 
 interface AppointmentType {
   id: string
@@ -43,7 +46,8 @@ interface FormData {
 }
 
 export default function AppointmentsPage() {
-  const { language } = useLanguage()
+  // Self-contained language management
+  const [language, setLanguage] = useState<"it" | "en">("it")
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedType, setSelectedType] = useState<AppointmentType | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -62,6 +66,31 @@ export default function AppointmentsPage() {
     date: null,
     time: "",
   })
+
+  // Load language from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLanguage = localStorage.getItem("language") as "it" | "en"
+      if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
+        setLanguage(savedLanguage)
+      }
+    }
+  }, [])
+
+  // Listen for language changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleStorageChange = () => {
+        const savedLanguage = localStorage.getItem("language") as "it" | "en"
+        if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
+          setLanguage(savedLanguage)
+        }
+      }
+
+      window.addEventListener("storage", handleStorageChange)
+      return () => window.removeEventListener("storage", handleStorageChange)
+    }
+  }, [])
 
   const appointmentTypes: AppointmentType[] = [
     {
@@ -373,14 +402,6 @@ export default function AppointmentsPage() {
     return isBefore(date, today) || isAfter(date, maxDate)
   }
 
-  const nextStep = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1)
-  }
-
-  const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1)
-  }
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -435,6 +456,84 @@ export default function AppointmentsPage() {
 
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <AnimatePresence mode="wait">
+          {/* Step 1: Select Service Type */}
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center mb-12">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl font-bold text-gray-900 mb-4"
+                >
+                  {language === "it" ? "Che tipo di consulenza ti serve?" : "What type of consultation do you need?"}
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-xl text-gray-600"
+                >
+                  {language === "it"
+                    ? "Scegli il servizio più adatto alle tue esigenze"
+                    : "Choose the service that best fits your needs"}
+                </motion.p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {appointmentTypes.map((type, index) => (
+                  <motion.div
+                    key={type.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card
+                      className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                        type.bgColor
+                      } ${type.popular ? "ring-2 ring-purple-500" : ""}`}
+                      onClick={() => handleTypeSelect(type)}
+                    >
+                      {type.popular && (
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                          <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                            {language === "it" ? "Più Richiesto" : "Most Popular"}
+                          </span>
+                        </div>
+                      )}
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className={`p-3 rounded-lg bg-white shadow-sm ${type.color}`}>{type.icon}</div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900">{type.price}</div>
+                            <div className="text-sm text-gray-500">{type.duration} min</div>
+                          </div>
+                        </div>
+                        <CardTitle className="text-xl text-gray-900">{type.title}</CardTitle>
+                        <p className="text-gray-600">{type.description}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {type.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-center text-sm text-gray-700">
+                              <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* Step 2: Select Date & Time */}
           {currentStep === 2 && selectedType && (
             <motion.div
@@ -465,6 +564,25 @@ export default function AppointmentsPage() {
               </div>
 
               <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                {/* Calendar */}
+                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                  <Card className="p-6 shadow-lg border-0">
+                    <CardHeader className="p-0 mb-6">
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <CalendarIcon className="w-5 h-5 mr-2 text-purple-600" />
+                        {language === "it" ? "Seleziona Data" : "Select Date"}
+                      </CardTitle>
+                    </CardHeader>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate || undefined}
+                      onSelect={handleDateSelect}
+                      disabled={isDateDisabled}
+                      className="rounded-md border-0"
+                    />
+                  </Card>
+                </motion.div>
+
                 {/* Time Slots */}
                 <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
                   <Card className="p-6 shadow-lg border-0 h-full">
@@ -558,6 +676,251 @@ export default function AppointmentsPage() {
                       </div>
                     )}
                   </Card>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Personal Information */}
+          {currentStep === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center mb-12">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl font-bold text-gray-900 mb-4"
+                >
+                  {language === "it" ? "I Tuoi Dati" : "Your Information"}
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-xl text-gray-600"
+                >
+                  {language === "it"
+                    ? "Inserisci i tuoi dati per completare la prenotazione"
+                    : "Enter your details to complete the booking"}
+                </motion.p>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="max-w-2xl mx-auto"
+              >
+                <Card className="p-8 shadow-lg border-0">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                          {language === "it" ? "Nome completo *" : "Full name *"}
+                        </Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                          Email *
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                          {language === "it" ? "Telefono" : "Phone"}
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="company" className="text-sm font-medium text-gray-700">
+                          {language === "it" ? "Azienda" : "Company"}
+                        </Label>
+                        <Input
+                          id="company"
+                          type="text"
+                          value={formData.company}
+                          onChange={(e) => handleInputChange("company", e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="message" className="text-sm font-medium text-gray-700">
+                        {language === "it" ? "Messaggio (opzionale)" : "Message (optional)"}
+                      </Label>
+                      <Textarea
+                        id="message"
+                        value={formData.message}
+                        onChange={(e) => handleInputChange("message", e.target.value)}
+                        className="mt-1"
+                        rows={4}
+                        placeholder={
+                          language === "it"
+                            ? "Descrivi brevemente le tue esigenze o domande..."
+                            : "Briefly describe your needs or questions..."
+                        }
+                      />
+                    </div>
+
+                    {/* Summary */}
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="font-semibold text-gray-900 mb-4">
+                        {language === "it" ? "Riepilogo Appuntamento" : "Appointment Summary"}
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{language === "it" ? "Servizio:" : "Service:"}</span>
+                          <span className="font-medium">{selectedType?.title}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{language === "it" ? "Data:" : "Date:"}</span>
+                          <span className="font-medium">
+                            {selectedDate &&
+                              format(selectedDate, "EEEE, d MMMM yyyy", {
+                                locale: language === "it" ? it : enUS,
+                              })}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{language === "it" ? "Orario:" : "Time:"}</span>
+                          <span className="font-medium">{selectedTime}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{language === "it" ? "Durata:" : "Duration:"}</span>
+                          <span className="font-medium">{selectedType?.duration} min</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !formData.name || !formData.email}
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 text-lg font-semibold"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          {language === "it" ? "Prenotazione..." : "Booking..."}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          {language === "it" ? "Conferma Prenotazione" : "Confirm Booking"}
+                        </div>
+                      )}
+                    </Button>
+                  </form>
+                </Card>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Step 4: Success */}
+          {currentStep === 4 && submitSuccess && (
+            <motion.div
+              key="step4"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="text-center max-w-2xl mx-auto">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8"
+                >
+                  <CheckCircle className="w-12 h-12 text-green-500" />
+                </motion.div>
+
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-4xl font-bold text-gray-900 mb-4"
+                >
+                  {language === "it" ? "Prenotazione Confermata!" : "Booking Confirmed!"}
+                </motion.h2>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-xl text-gray-600 mb-8"
+                >
+                  {language === "it"
+                    ? "Grazie per aver prenotato con noi. Riceverai una email di conferma a breve."
+                    : "Thank you for booking with us. You will receive a confirmation email shortly."}
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-gray-50 p-6 rounded-lg mb-8"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    {language === "it" ? "Dettagli Appuntamento" : "Appointment Details"}
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{language === "it" ? "Servizio:" : "Service:"}</span>
+                      <span className="font-medium">{selectedType?.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{language === "it" ? "Data:" : "Date:"}</span>
+                      <span className="font-medium">
+                        {selectedDate &&
+                          format(selectedDate, "EEEE, d MMMM yyyy", {
+                            locale: language === "it" ? it : enUS,
+                          })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{language === "it" ? "Orario:" : "Time:"}</span>
+                      <span className="font-medium">{selectedTime}</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                  <Link href="/">
+                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3">
+                      {language === "it" ? "Torna alla Home" : "Back to Home"}
+                    </Button>
+                  </Link>
                 </motion.div>
               </div>
             </motion.div>
