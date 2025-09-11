@@ -1,51 +1,37 @@
-import { NextResponse } from "next/server"
-// import { Resend } from "resend"
+import { type NextRequest, NextResponse } from "next/server"
+// import { Resend } from 'resend'
 
-// COMMENTED OUT FOR TESTING - Resend requires API key
+// Commented out for testing - uncomment when you have RESEND_API_KEY
 // const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { to, subject, content, template, variables } = await request.json()
+    const { to, subject, message, type = "general" } = await request.json()
 
-    console.log("📧 EMAIL API - TESTING MODE (Resend disabled)")
-    console.log("To:", to)
-    console.log("Subject:", subject)
-
-    // Validazione
-    if (!to || !subject || !content) {
-      return NextResponse.json({ success: false, error: "Parametri mancanti: to, subject, content" }, { status: 400 })
+    // Validation
+    if (!to || !subject || !message) {
+      return NextResponse.json({ error: "Missing required fields: to, subject, message" }, { status: 400 })
     }
 
-    // TESTING MODE - Simulate email sending without actual API call
-    console.log("✅ EMAIL SIMULATION - Would send email:")
-    console.log("From: noreply@digitalaura.com")
-    console.log("To:", to)
-    console.log("Subject:", subject)
-    console.log("Content:", content)
-
-    // Simulate successful response
-    return NextResponse.json({
-      success: true,
-      message: "Email simulata con successo (modalità testing)",
-      emailId: "test-email-" + Date.now(),
-      provider: "Testing Mode",
-      note: "Resend API disabilitato per il testing",
-    })
-
-    /* ORIGINAL RESEND CODE - COMMENTED OUT FOR TESTING
-    
-    // Sostituisci le variabili nel contenuto se fornite
-    let finalContent = content
-    if (variables && typeof variables === "object") {
-      Object.entries(variables).forEach(([key, value]) => {
-        finalContent = finalContent.replace(new RegExp(`{{${key}}}`, "g"), String(value))
-      })
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(to)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 })
     }
 
-    // Invia email tramite Resend
-    const emailData = {
-      from: process.env.RESEND_FROM_EMAIL || "noreply@digitalaura.com",
+    console.log("📧 EMAIL SIMULATION MODE - Would send email:")
+    console.log("To:", to)
+    console.log("Subject:", subject)
+    console.log("Message:", message)
+    console.log("Type:", type)
+    console.log("From:", process.env.RESEND_FROM_EMAIL || "noreply@digitalaura.com")
+
+    // TESTING MODE - Simulate email sending without Resend
+    // Uncomment the code below when you have RESEND_API_KEY set up
+
+    /*
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'Digital Aura <noreply@digitalaura.com>',
       to: [to],
       subject: subject,
       html: `
@@ -53,46 +39,61 @@ export async function POST(request: Request) {
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
             <h1 style="color: white; margin: 0;">Digital Aura</h1>
           </div>
-          <div style="padding: 30px; background: #f9f9f9;">
+          <div style="padding: 20px; background: #f9f9f9;">
+            <h2 style="color: #333;">${subject}</h2>
             <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              ${finalContent.replace(/\n/g, "<br>")}
+              ${message.replace(/\n/g, '<br>')}
             </div>
-          </div>
-          <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-            <p>© 2024 Digital Aura. Tutti i diritti riservati.</p>
-            <p>Questa email è stata inviata automaticamente dal nostro sistema.</p>
+            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">
+              <p>Questo messaggio è stato inviato da Digital Aura</p>
+              <p>Se non hai richiesto questo messaggio, puoi ignorarlo.</p>
+            </div>
           </div>
         </div>
       `,
-      text: finalContent,
+    })
+
+    if (error) {
+      console.error('Resend error:', error)
+      return NextResponse.json(
+        { error: 'Failed to send email', details: error },
+        { status: 500 }
+      )
     }
-
-    const result = await resend.emails.send(emailData)
-
-    if (result.error) {
-      console.error("❌ Resend error:", result.error)
-      return NextResponse.json({ success: false, error: result.error.message }, { status: 500 })
-    }
-
-    console.log("✅ Email sent successfully via Resend:", result.data?.id)
 
     return NextResponse.json({
       success: true,
-      message: "Email inviata con successo",
-      emailId: result.data?.id,
-      provider: "Resend",
+      message: 'Email sent successfully',
+      id: data?.id
     })
-    
     */
-  } catch (error) {
-    console.error("❌ Email API error:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Errore nell'invio dell'email (modalità testing)",
-        details: error instanceof Error ? error.message : "Unknown error",
+
+    // SIMULATION RESPONSE - Remove this when using real Resend
+    return NextResponse.json({
+      success: true,
+      message: "Email simulated successfully (testing mode)",
+      id: `sim_${Date.now()}`,
+      simulation: true,
+      details: {
+        to,
+        subject,
+        type,
+        timestamp: new Date().toISOString(),
       },
+    })
+  } catch (error) {
+    console.error("Email API error:", error)
+    return NextResponse.json(
+      { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },
     )
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    status: "Email API is running",
+    mode: "simulation",
+    message: "Resend integration is commented out for testing",
+  })
 }

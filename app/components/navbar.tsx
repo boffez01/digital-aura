@@ -32,12 +32,11 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-purple-800/95 backdrop-blur-lg border-b border-white/10 shadow-lg"
     >
-      <div className="container mx-auto px-6 py-4">
-        {/* Contenitore principale con posizione relativa per permettere il centramento assoluto */}
-        <div className="relative flex items-center justify-between">
-          
-          {/* GRUPPO SINISTRA: LOGO */}
-          <div className="flex-shrink-0 z-10">
+      <div className="container mx-auto px-4 lg:px-6 py-4">
+        {/* Desktop Layout */}
+        <div className="hidden lg:flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex-shrink-0">
             <Link href="/">
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -52,8 +51,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* GRUPPO CENTRALE: LINK DI NAVIGAZIONE (POSIZIONATO IN MODO ASSOLUTO) */}
-          <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
+          {/* Navigation Links - Centered */}
+          <div className="flex items-center space-x-8">
             {navigationItems.map((item, index) => (
               <motion.div key={item.key}>
                 {item.href ? (
@@ -99,8 +98,8 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* GRUPPO DESTRA: LINGUA E PULSANTE CTA */}
-          <div className="hidden md:flex items-center space-x-4 ml-auto z-10">
+          {/* Right Side - Language & CTA */}
+          <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-white/90">
               <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
                 <span className="text-xs">🌐</span>
@@ -116,11 +115,98 @@ export default function Navbar() {
               </motion.div>
             </Link>
           </div>
-          
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-white/90">
-              <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
+        </div>
+
+        {/* Tablet Layout (md to lg) */}
+        <div className="hidden md:flex lg:hidden items-center justify-between">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link href="/">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center space-x-2 text-white"
+              >
+                <div className="w-7 h-7 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">⚡</span>
+                </div>
+                <span className="text-xl font-bold">Digital Aura</span>
+              </motion.div>
+            </Link>
+          </div>
+
+          {/* Tablet Navigation - Compact */}
+          <div className="flex items-center space-x-4">
+            {navigationItems.slice(0, 3).map((item, index) => (
+              <div key={item.key}>
+                {item.href ? (
+                  <Link href={item.href}>
+                    <button className="text-white/90 hover:text-white transition-colors font-medium text-sm">
+                      {item.label}
+                    </button>
+                  </Link>
+                ) : item.dropdown ? (
+                  <button
+                    onClick={() => scrollToSection("services")}
+                    className="text-white/90 hover:text-white transition-colors font-medium text-sm flex items-center"
+                  >
+                    {item.label}
+                    <span className="ml-1 text-xs">▼</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => scrollToSection(item.key)}
+                    className="text-white/90 hover:text-white transition-colors font-medium text-sm"
+                  >
+                    {item.label}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Right Side - Compact */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 text-white/90">
+              <div className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center">
+                <span className="text-xs">🌐</span>
+              </div>
+              <LanguageSelector />
+            </div>
+            <Link href="/appointments">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-4 py-1 rounded-full text-xs"
+              >
+                <Calendar className="w-3 h-3 mr-1" />
+                {language === "it" ? "Consulenza" : "Consultation"}
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="md:hidden flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link href="/">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center space-x-2 text-white"
+              >
+                <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">⚡</span>
+                </div>
+                <span className="text-lg font-bold">Digital Aura</span>
+              </motion.div>
+            </Link>
+          </div>
+
+          {/* Mobile Right Side */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 text-white/90">
+              <div className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center">
                 <span className="text-xs">🌐</span>
               </div>
               <LanguageSelector />
@@ -131,12 +217,12 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-white hover:bg-white/10"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}

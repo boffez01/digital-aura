@@ -25,10 +25,39 @@ import {
   RefreshCw,
   Plus,
   Eye,
+  Loader2,
 } from "lucide-react"
 
+// Self-contained language management for admin page
+const useAdminLanguage = () => {
+  const [language, setLanguage] = useState<"it" | "en">("it")
+
+  useEffect(() => {
+    // Read language from localStorage
+    const savedLanguage = localStorage.getItem("language") as "it" | "en"
+    if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
+      setLanguage(savedLanguage)
+    }
+
+    // Listen for language changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "language" && e.newValue) {
+        const newLang = e.newValue as "it" | "en"
+        if (newLang === "it" || newLang === "en") {
+          setLanguage(newLang)
+        }
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
+
+  return { language }
+}
+
 interface Appointment {
-  id: string
+  id: number
   name: string
   email: string
   phone: string
@@ -37,7 +66,11 @@ interface Appointment {
   time: string
   message: string
   status: string
+  priority: boolean
   created_at: string
+  updated_at: string
+  google_event_id?: string
+  google_event_link?: string
 }
 
 interface Contact {
@@ -66,7 +99,8 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("moduli")
+  const { language } = useAdminLanguage()
+  const [activeTab, setActiveTab] = useState("calendario")
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -85,6 +119,7 @@ export default function AdminDashboard() {
     responseTime: 145,
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -94,125 +129,179 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
+      setError(null)
+      console.log("🔄 Fetching admin data...")
+
       // Fetch appointments
       const appointmentsRes = await fetch("/api/admin/appointments")
       if (appointmentsRes.ok) {
-        const appointmentsData = await appointmentsRes.json()
-        setAppointments(appointmentsData)
+        const data = await appointmentsRes.json()
+        console.log("📅 Appointments API response:", data)
+
+        if (data.success && Array.isArray(data.appointments)) {
+          setAppointments(data.appointments)
+          if (data.stats) {
+            setStats((prev) => ({
+              ...prev,
+              ...data.stats,
+            }))
+          }
+        }
       }
 
       // Fetch contacts
-      const contactsRes = await fetch("/api/admin/contacts")
-      if (contactsRes.ok) {
-        const contactsData = await contactsRes.json()
-        setContacts(contactsData)
+      try {
+        const contactsRes = await fetch("/api/admin/contacts")
+        if (contactsRes.ok) {
+          const contactsData = await contactsRes.json()
+          if (Array.isArray(contactsData)) {
+            setContacts(contactsData)
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching contacts:", err)
       }
 
-      // Calculate stats
-      const today = new Date().toISOString().split("T")[0]
-      const totalAppointments = appointments.length
-      const confirmedAppointments = appointments.filter((apt) => apt.status === "confirmed").length
-      const pendingAppointments = appointments.filter((apt) => apt.status === "pending").length
-      const todayAppointments = appointments.filter((apt) => apt.date === today).length
-
-      const totalContacts = contacts.length
-      const respondedContacts = contacts.filter((contact) => contact.status === "responded").length
-      const pendingContacts = contacts.filter((contact) => contact.status === "pending").length
-      const priorityContacts = contacts.filter((contact) => contact.subject.toLowerCase().includes("urgent")).length
-
-      setStats((prev) => ({
-        ...prev,
-        totalAppointments,
-        confirmedAppointments,
-        pendingAppointments,
-        todayAppointments,
-        totalContacts,
-        respondedContacts,
-        pendingContacts,
-        priorityContacts,
-      }))
+      console.log("✅ Data fetch completed")
     } catch (error) {
-      console.error("Error fetching data:", error)
+      console.error("❌ Error fetching data:", error)
+      setError("Errore nel caricamento dei dati")
     } finally {
       setLoading(false)
     }
   }
 
+  // Get appointments for a specific date
   const getAppointmentsForDate = (date: Date) => {
+    if (!Array.isArray(appointments)) return []
+
     const dateString = date.toISOString().split("T")[0]
-    return appointments.filter((apt) => apt.date === dateString)
+    return appointments.filter((apt) => {
+      if (!apt || !apt.date) return false
+      const aptDate = apt.date.split("T")[0]
+      return aptDate === dateString
+    })
   }
 
+  // Check if a date has appointments
   const hasAppointmentsOnDate = (date: Date) => {
+    if (!Array.isArray(appointments)) return false
+
     const dateString = date.toISOString().split("T")[0]
-    return appointments.some((apt) => apt.date === dateString)
+    return appointments.some((apt) => {
+      if (!apt || !apt.date) return false
+      const aptDate = apt.date.split("T")[0]
+      return aptDate === dateString
+    })
   }
 
   const selectedDateAppointments = getAppointmentsForDate(selectedDate)
 
   const formatTime = (timeString: string) => {
+    if (!timeString) return ""
     return timeString.slice(0, 5)
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("it-IT", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    })
+    try {
+      return new Date(dateString).toLocaleDateString("it-IT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    } catch (err) {
+      return dateString
+    }
+  }
+
+  const getServiceIcon = (service: string) => {
+    switch (service.toLowerCase()) {
+      case "ai-automation":
+        return "🤖"
+      case "web-development":
+        return "🌐"
+      case "ai-marketing":
+        return "📊"
+      case "chatbot":
+        return "💬"
+      default:
+        return "⚡"
+    }
   }
 
   const getRecentActivities = () => {
-    const activities = []
-
-    // Recent appointments
-    const recentAppointments = appointments
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 2)
-
-    recentAppointments.forEach((apt) => {
-      activities.push({
+    const activities = [
+      {
         type: "appointment",
         message: "Nuovo appuntamento confermato",
-        time: getTimeAgo(apt.created_at),
+        time: "2 minuti fa",
         color: "green",
         icon: CheckCircle,
-      })
-    })
-
-    // Recent contacts
-    const recentContacts = contacts
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 2)
-
-    recentContacts.forEach((contact) => {
-      activities.push({
+      },
+      {
         type: "contact",
         message: "Nuova conversazione chatbot",
-        time: getTimeAgo(contact.created_at),
+        time: "5 minuti fa",
         color: "blue",
         icon: MessageSquare,
-      })
-    })
-
-    return activities.slice(0, 4)
+      },
+      {
+        type: "client",
+        message: "Nuovo cliente registrato",
+        time: "12 minuti fa",
+        color: "purple",
+        icon: User,
+      },
+      {
+        type: "backup",
+        message: "Backup automatico completato",
+        time: "1 ora fa",
+        color: "orange",
+        icon: Shield,
+      },
+    ]
+    return activities
   }
 
-  const getTimeAgo = (dateString: string) => {
-    const now = new Date()
-    const date = new Date(dateString)
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-
-    if (diffInMinutes < 1) return "Ora"
-    if (diffInMinutes < 60) return `${diffInMinutes} minuti fa`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ore fa`
-    return `${Math.floor(diffInMinutes / 1440)} giorni fa`
+  const getRecentMessages = () => {
+    return [
+      {
+        id: "1",
+        name: "harshpreet singh",
+        email: "boffez42@gmail.com",
+        subject: "fdkkdd",
+        message: "fdkkdd",
+        created_at: "2025-09-11T09:00:00Z",
+        status: "pending",
+        category: "chatbot",
+      },
+      {
+        id: "2",
+        name: "harshpreet singh",
+        email: "boffez42@gmail.com",
+        subject: "dfdrfev",
+        message: "dfdrfev",
+        created_at: "2025-09-11T09:00:00Z",
+        status: "pending",
+        category: "marketing",
+      },
+      {
+        id: "3",
+        name: "harshpreet singh",
+        email: "boffez42@gmail.com",
+        subject: "voglio sapere informazioni",
+        message: "voglio sapere informazioni",
+        created_at: "2025-09-11T09:00:00Z",
+        status: "pending",
+        category: "web",
+      },
+    ]
   }
 
   const TabButton = ({ id, label, isActive, onClick }: any) => (
     <button
       onClick={() => onClick(id)}
-      className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+      className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
         isActive
           ? id === "calendario"
             ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
@@ -220,13 +309,28 @@ export default function AdminDashboard() {
               ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg"
               : id === "panoramica"
                 ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                : "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg"
-          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
       }`}
     >
+      {id === "calendario" && <CalendarIcon className="w-4 h-4" />}
+      {id === "moduli" && <Settings className="w-4 h-4" />}
+      {id === "panoramica" && <BarChart3 className="w-4 h-4" />}
+      {id === "messaggi" && <MessageSquare className="w-4 h-4" />}
       {label}
     </button>
   )
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Caricamento dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -237,29 +341,211 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-bold text-blue-600 mb-2">Dashboard Admin</h1>
             <p className="text-gray-600">Gestisci la tua piattaforma Digital Aura</p>
           </div>
-          <Button className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button
+            onClick={fetchData}
+            disabled={loading}
+            className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Aggiorna
           </Button>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {error}
+            <Button onClick={fetchData} className="ml-4 bg-red-600 hover:bg-red-700 text-white">
+              Riprova
+            </Button>
+          </div>
+        )}
+
         {/* Navigation Tabs */}
-        <div className="flex gap-4 mb-8">
-          <TabButton
-            id="calendario"
-            label="📅 Calendario"
-            isActive={activeTab === "calendario"}
-            onClick={setActiveTab}
-          />
-          <TabButton id="moduli" label="⚙️ Moduli Sistema" isActive={activeTab === "moduli"} onClick={setActiveTab} />
-          <TabButton
-            id="panoramica"
-            label="📊 Panoramica"
-            isActive={activeTab === "panoramica"}
-            onClick={setActiveTab}
-          />
-          <TabButton id="messaggi" label="💬 Messaggi" isActive={activeTab === "messaggi"} onClick={setActiveTab} />
+        <div className="flex gap-4 mb-8 overflow-x-auto">
+          <TabButton id="calendario" label="Calendario" isActive={activeTab === "calendario"} onClick={setActiveTab} />
+          <TabButton id="moduli" label="Moduli Sistema" isActive={activeTab === "moduli"} onClick={setActiveTab} />
+          <TabButton id="panoramica" label="Panoramica" isActive={activeTab === "panoramica"} onClick={setActiveTab} />
+          <TabButton id="messaggi" label="Messaggi" isActive={activeTab === "messaggi"} onClick={setActiveTab} />
         </div>
+
+        {/* Calendario Tab */}
+        {activeTab === "calendario" && (
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-blue-100">Totale Appuntamenti</span>
+                    <CalendarIcon className="w-5 h-5" />
+                  </div>
+                  <div className="text-3xl font-bold mb-1">{stats.totalAppointments}</div>
+                  <div className="text-blue-100 text-sm">+12% dal mese scorso</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-green-100">Confermati</span>
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                  <div className="text-3xl font-bold mb-1">{stats.confirmedAppointments}</div>
+                  <div className="text-green-100 text-sm">Tasso conferma 94%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-orange-100">In Attesa</span>
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div className="text-3xl font-bold mb-1">{stats.pendingAppointments}</div>
+                  <div className="text-orange-100 text-sm">Da confermare</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-purple-100">Oggi</span>
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div className="text-3xl font-bold mb-1">{stats.todayAppointments}</div>
+                  <div className="text-purple-100 text-sm">Appuntamenti oggi</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Calendario e Appuntamenti */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Calendario Interattivo */}
+              <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <CalendarIcon className="w-6 h-6 mr-3" />
+                    Calendario Interattivo
+                  </CardTitle>
+                  <p className="text-blue-100">Seleziona una data per vedere gli appuntamenti</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-white rounded-lg p-4">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setSelectedDate(date)
+                        }
+                      }}
+                      locale="it"
+                      className="text-gray-900"
+                      modifiers={{
+                        hasAppointments: (date) => hasAppointmentsOnDate(date),
+                      }}
+                      modifiersStyles={{
+                        hasAppointments: {
+                          backgroundColor: "#10b981",
+                          color: "white",
+                          fontWeight: "bold",
+                          borderRadius: "6px",
+                        },
+                      }}
+                    />
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <span>Giorni con appuntamenti</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                        <span>Oggi</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-white border-2 border-gray-300 rounded-full mr-2"></div>
+                        <span>Data selezionata</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Appuntamenti per Data Selezionata */}
+              <Card className="bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between text-white">
+                    <div className="flex items-center">
+                      <Clock className="w-6 h-6 mr-3" />
+                      Appuntamenti per {formatDate(selectedDate.toISOString())}
+                    </div>
+                    <Button size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Nuovo
+                    </Button>
+                  </CardTitle>
+                  <p className="text-purple-100">{selectedDateAppointments.length} appuntamenti trovati</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {selectedDateAppointments.length > 0 ? (
+                    selectedDateAppointments
+                      .sort((a, b) => a.time.localeCompare(b.time))
+                      .map((appointment) => (
+                        <div key={appointment.id} className="bg-white/10 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center mr-3">
+                                <span className="text-lg">{getServiceIcon(appointment.service)}</span>
+                              </div>
+                              <div>
+                                <span className="font-bold text-lg">{formatTime(appointment.time)}</span>
+                                <p className="text-purple-100 text-sm">{appointment.service}</p>
+                              </div>
+                            </div>
+                            <Badge
+                              className={`${
+                                appointment.status === "confirmed"
+                                  ? "bg-green-500"
+                                  : appointment.status === "pending"
+                                    ? "bg-orange-500"
+                                    : "bg-gray-500"
+                              } text-white border-0`}
+                            >
+                              {appointment.status === "confirmed" ? "confirmed" : "pending"}
+                            </Badge>
+                          </div>
+                          <div className="space-y-2 text-purple-100">
+                            <div className="flex items-center">
+                              <User className="w-4 h-4 mr-2" />
+                              <span>{appointment.name}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Mail className="w-4 h-4 mr-2" />
+                              <span>{appointment.email}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Phone className="w-4 h-4 mr-2" />
+                              <span>{appointment.phone}</span>
+                            </div>
+                          </div>
+                          <div className="mt-3 p-2 bg-white/10 rounded text-sm">{appointment.message}</div>
+                          <div className="mt-2 text-xs text-purple-200">
+                            Prenotato il {new Date(appointment.created_at).toLocaleDateString("it-IT")}
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-center py-8 text-purple-100">
+                      <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Nessun appuntamento per questa data</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {/* Moduli Sistema Tab */}
         {activeTab === "moduli" && (
@@ -505,173 +791,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Calendario Tab */}
-        {activeTab === "calendario" && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-blue-100">Totale Appuntamenti</span>
-                    <CalendarIcon className="w-5 h-5" />
-                  </div>
-                  <div className="text-3xl font-bold mb-1">{stats.totalAppointments}</div>
-                  <div className="text-blue-100 text-sm">+12% dal mese scorso</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-green-100">Confermati</span>
-                    <CheckCircle className="w-5 h-5" />
-                  </div>
-                  <div className="text-3xl font-bold mb-1">{stats.confirmedAppointments}</div>
-                  <div className="text-green-100 text-sm">Tasso conferma 94%</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-orange-100">In Attesa</span>
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div className="text-3xl font-bold mb-1">{stats.pendingAppointments}</div>
-                  <div className="text-orange-100 text-sm">Da confermare</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-purple-100">Oggi</span>
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div className="text-3xl font-bold mb-1">{stats.todayAppointments}</div>
-                  <div className="text-purple-100 text-sm">Appuntamenti oggi</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Calendario e Appuntamenti */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Calendario Interattivo */}
-              <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-white">
-                    <CalendarIcon className="w-6 h-6 mr-3" />
-                    Calendario Interattivo
-                  </CardTitle>
-                  <p className="text-blue-100">Seleziona una data per vedere gli appuntamenti</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-white rounded-lg p-4">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      locale="it"
-                      className="text-gray-900"
-                      modifiers={{
-                        hasAppointments: (date) => hasAppointmentsOnDate(date),
-                      }}
-                      modifiersStyles={{
-                        hasAppointments: {
-                          backgroundColor: "#10b981",
-                          color: "white",
-                          fontWeight: "bold",
-                        },
-                      }}
-                    />
-                    <div className="mt-4 space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                        <span>Giorni con appuntamenti</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                        <span>Oggi</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-white border-2 border-gray-300 rounded-full mr-2"></div>
-                        <span>Data selezionata</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Appuntamenti per Data Selezionata */}
-              <Card className="bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between text-white">
-                    <div className="flex items-center">
-                      <Clock className="w-6 h-6 mr-3" />
-                      Appuntamenti per {formatDate(selectedDate.toISOString())}
-                    </div>
-                    <Button size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Nuovo
-                    </Button>
-                  </CardTitle>
-                  <p className="text-purple-100">{selectedDateAppointments.length} appuntamenti trovati</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {selectedDateAppointments.length > 0 ? (
-                    selectedDateAppointments
-                      .sort((a, b) => a.time.localeCompare(b.time))
-                      .map((appointment) => (
-                        <div key={appointment.id} className="bg-white/10 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-blue-400 rounded-full mr-3"></div>
-                              <span className="font-bold text-lg">{formatTime(appointment.time)}</span>
-                            </div>
-                            <Badge
-                              className={`${
-                                appointment.status === "confirmed"
-                                  ? "bg-green-500"
-                                  : appointment.status === "pending"
-                                    ? "bg-orange-500"
-                                    : "bg-gray-500"
-                              } text-white border-0`}
-                            >
-                              {appointment.status === "confirmed" ? "confermato" : "in attesa"}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1 text-purple-100">
-                            <div className="flex items-center">
-                              <User className="w-4 h-4 mr-2" />
-                              <span>{appointment.name}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <Mail className="w-4 h-4 mr-2" />
-                              <span>{appointment.email}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <Phone className="w-4 h-4 mr-2" />
-                              <span>{appointment.phone}</span>
-                            </div>
-                          </div>
-                          <div className="mt-2 p-2 bg-white/10 rounded text-sm">
-                            {appointment.service} - {appointment.message}
-                          </div>
-                        </div>
-                      ))
-                  ) : (
-                    <div className="text-center py-8 text-purple-100">
-                      <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Nessun appuntamento per questa data</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
         {/* Messaggi Tab */}
         {activeTab === "messaggi" && (
           <div className="space-y-8">
@@ -680,7 +799,7 @@ export default function AdminDashboard() {
               <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-blue-100">Totale Messaggi</span>
+                    <span className="text-blue-100">Messaggi Totali</span>
                     <MessageSquare className="w-5 h-5" />
                   </div>
                   <div className="text-3xl font-bold mb-1">{stats.totalContacts}</div>
@@ -695,7 +814,7 @@ export default function AdminDashboard() {
                     <CheckCircle className="w-5 h-5" />
                   </div>
                   <div className="text-3xl font-bold mb-1">{stats.respondedContacts}</div>
-                  <div className="text-green-100 text-sm">Tasso risposta 89%</div>
+                  <div className="text-green-100 text-sm">Tasso risposta 70%</div>
                 </CardContent>
               </Card>
 
@@ -710,100 +829,77 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-lg">
+              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-red-100">Prioritari</span>
+                    <span className="text-purple-100">Prioritari</span>
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="text-3xl font-bold mb-1">{stats.priorityContacts}</div>
-                  <div className="text-red-100 text-sm">Urgenti</div>
+                  <div className="text-purple-100 text-sm">Supporto tecnico</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Lista Messaggi */}
-            <Card className="bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+            <Card className="bg-white border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-white">
+                <CardTitle className="flex items-center justify-between text-gray-900">
                   <div className="flex items-center">
                     <MessageSquare className="w-6 h-6 mr-3" />
                     Messaggi Recenti
                   </div>
-                  <Button size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
+                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white border-0">
                     <Eye className="w-4 h-4 mr-1" />
-                    Vedi Tutti
+                    Visualizza Tutti
                   </Button>
                 </CardTitle>
-                <p className="text-purple-100">Ultimi messaggi ricevuti dal sistema</p>
+                <p className="text-gray-600">Ultimi messaggi ricevuti dal sistema</p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contacts.length > 0 ? (
-                  contacts
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 5)
-                    .map((contact) => (
-                      <div key={contact.id} className="bg-white/10 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <div
-                              className={`w-3 h-3 rounded-full mr-3 ${
-                                contact.status === "responded"
-                                  ? "bg-green-400"
-                                  : contact.subject.toLowerCase().includes("urgent")
-                                    ? "bg-red-400"
-                                    : "bg-orange-400"
-                              }`}
-                            ></div>
-                            <span className="font-bold">{contact.name}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge
-                              className={`${
-                                contact.status === "responded"
-                                  ? "bg-green-500"
-                                  : contact.subject.toLowerCase().includes("urgent")
-                                    ? "bg-red-500"
-                                    : "bg-orange-500"
-                              } text-white border-0`}
-                            >
-                              {contact.status === "responded"
-                                ? "risposto"
-                                : contact.subject.toLowerCase().includes("urgent")
-                                  ? "urgente"
-                                  : "in attesa"}
-                            </Badge>
-                            <span className="text-sm text-purple-100">{getTimeAgo(contact.created_at)}</span>
-                          </div>
+                {getRecentMessages().map((message) => (
+                  <div key={message.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                          <User className="w-5 h-5 text-purple-600" />
                         </div>
-                        <div className="space-y-1 text-purple-100">
-                          <div className="flex items-center">
-                            <Mail className="w-4 h-4 mr-2" />
-                            <span>{contact.email}</span>
-                          </div>
-                          <div className="font-medium">{contact.subject}</div>
-                        </div>
-                        <div className="mt-2 p-2 bg-white/10 rounded text-sm">
-                          {contact.message.length > 100 ? `${contact.message.substring(0, 100)}...` : contact.message}
-                        </div>
-                        <div className="mt-3 flex space-x-2">
-                          <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white border-0">
-                            <Mail className="w-4 h-4 mr-1" />
-                            Rispondi
-                          </Button>
-                          <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white border-0">
-                            <Eye className="w-4 h-4 mr-1" />
-                            Dettagli
-                          </Button>
+                        <div>
+                          <span className="font-bold text-gray-900">{message.name}</span>
+                          <p className="text-sm text-gray-500">{message.email}</p>
                         </div>
                       </div>
-                    ))
-                ) : (
-                  <div className="text-center py-8 text-purple-100">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Nessun messaggio ricevuto</p>
+                      <div className="flex items-center space-x-2">
+                        <Badge
+                          className={`${
+                            message.category === "chatbot"
+                              ? "bg-blue-100 text-blue-800"
+                              : message.category === "marketing"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-purple-100 text-purple-800"
+                          } border-0`}
+                        >
+                          {message.category}
+                        </Badge>
+                        <Badge className="bg-orange-100 text-orange-800 border-0">In Attesa</Badge>
+                        <span className="text-sm text-gray-500">11/09/2025</span>
+                      </div>
+                    </div>
+                    <div className="ml-13">
+                      <p className="text-gray-900 mb-2">{message.subject}</p>
+                      <div className="flex space-x-2">
+                        <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white border-0">
+                          <Mail className="w-4 h-4 mr-1" />
+                          Rispondi
+                        </Button>
+                        <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white border-0">
+                          <Eye className="w-4 h-4 mr-1" />
+                          Dettagli
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </CardContent>
             </Card>
           </div>

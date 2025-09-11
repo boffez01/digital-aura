@@ -5,9 +5,9 @@ const sql = neon(process.env.DATABASE_URL!)
 
 export async function GET() {
   try {
-    console.log("📋 ADMIN APPOINTMENTS API - Fetching real appointments from database...")
+    console.log("📋 ADMIN APPOINTMENTS API - Fetching appointments from database...")
 
-    // Ottieni tutti gli appuntamenti reali dal database
+    // Fetch all appointments from database
     const appointments = await sql`
       SELECT 
         id,
@@ -25,56 +25,37 @@ export async function GET() {
         google_event_id,
         google_event_link
       FROM appointments 
-      ORDER BY created_at DESC
+      ORDER BY date DESC, time ASC
     `
 
-    console.log(`✅ Found ${appointments.length} real appointments in database`)
+    console.log(`✅ Found ${appointments.length} appointments in database`)
 
-    // Calcola statistiche reali
+    // Calculate real stats
     const today = new Date().toISOString().split("T")[0]
+    const confirmedAppointments = appointments.filter((apt) => apt.status === "confirmed")
+    const pendingAppointments = appointments.filter((apt) => apt.status === "pending")
     const todayAppointments = appointments.filter((apt) => apt.date === today)
-    const priorityAppointments = appointments.filter((apt) => apt.priority === true)
-    const pendingPriority = appointments.filter((apt) => apt.priority === true && apt.status === "pending")
-    const completedToday = appointments.filter((apt) => apt.date === today && apt.status === "confirmed")
 
     const stats = {
       totalAppointments: appointments.length,
-      priorityAppointments: priorityAppointments.length,
-      pendingPriority: pendingPriority.length,
-      completedToday: completedToday.length,
-      averageResponseTime: 15, // Calcolato dinamicamente in futuro
-      satisfactionRate: 98, // Calcolato dinamicamente in futuro
+      confirmedAppointments: confirmedAppointments.length,
+      pendingAppointments: pendingAppointments.length,
+      todayAppointments: todayAppointments.length,
+      priorityAppointments: appointments.filter((apt) => apt.priority === true).length,
+      pendingPriority: appointments.filter((apt) => apt.priority === true && apt.status === "pending").length,
+      completedToday: appointments.filter((apt) => apt.date === today && apt.status === "confirmed").length,
+      averageResponseTime: 15,
+      satisfactionRate: 98,
     }
 
-    // Trasforma i dati per il frontend
-    const transformedAppointments = appointments.map((apt) => ({
-      id: apt.id.toString(),
-      type: apt.priority ? "priority" : "regular",
-      service: apt.service,
-      serviceName: apt.service,
-      customerName: apt.name,
-      customerEmail: apt.email,
-      customerPhone: apt.phone,
-      message: apt.message,
-      date: apt.date,
-      time: apt.time,
-      status: apt.status,
-      priority: apt.priority,
-      createdAt: apt.created_at,
-      updatedAt: apt.updated_at,
-      name: apt.name,
-      email: apt.email,
-      phone: apt.phone,
-    }))
-
-    console.log("✅ ADMIN APPOINTMENTS API - Returning real data:", {
-      appointmentsCount: transformedAppointments.length,
+    console.log("✅ ADMIN APPOINTMENTS API - Returning data:", {
+      appointmentsCount: appointments.length,
       stats,
     })
 
     return NextResponse.json({
       success: true,
-      appointments: transformedAppointments,
+      appointments: appointments,
       stats,
     })
   } catch (error) {
@@ -86,6 +67,9 @@ export async function GET() {
         appointments: [],
         stats: {
           totalAppointments: 0,
+          confirmedAppointments: 0,
+          pendingAppointments: 0,
+          todayAppointments: 0,
           priorityAppointments: 0,
           pendingPriority: 0,
           completedToday: 0,
