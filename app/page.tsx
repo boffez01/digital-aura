@@ -436,7 +436,7 @@ export default function DigitalAuraPortfolio() {
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section - MIGLIORATO CON NUOVA TIPOGRAFIA */}
+      {/* Hero Section - CON ANIMAZIONE 3D */}
       <section id="home" className="min-h-screen flex items-center justify-center px-4 pt-0 relative overflow-hidden">
         {/* 3D Animated Background */}
         <HeroBackground />
@@ -464,12 +464,12 @@ export default function DigitalAuraPortfolio() {
               </Badge>
             </motion.div>
 
-            {/* Main Title - TIPOGRAFIA MIGLIORATA */}
+            {/* Main Title - TIPOGRAFIA PROFESSIONALE */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-5xl md:text-6xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
+              className="text-4xl md:text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
             >
               {language === "it" ? (
                 <>
@@ -494,12 +494,12 @@ export default function DigitalAuraPortfolio() {
               )}
             </motion.h1>
 
-            {/* Description - TIPOGRAFIA MIGLIORATA */}
+            {/* Description - TIPOGRAFIA PROFESSIONALE */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="text-lg md:text-xl text-slate-400 mb-12 leading-relaxed max-w-4xl mx-auto"
+              className="text-lg text-slate-400 mb-12 leading-relaxed max-w-4xl mx-auto"
             >
               {language === "it"
                 ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business con le nostre soluzioni AI."
@@ -540,7 +540,7 @@ export default function DigitalAuraPortfolio() {
             </motion.div>
           </motion.div>
 
-          {/* Stats Section - METRICA MIGLIORATA */}
+          {/* Stats Section - METRICA ONESTA */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -572,7 +572,7 @@ export default function DigitalAuraPortfolio() {
                 <div className="flex justify-center mb-3">
                   <stat.icon className="w-8 h-8 text-cyan-400" />
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.value}</div>
                 <div className="text-slate-400 text-sm">{stat.label}</div>
               </motion.div>
             ))}
@@ -580,7 +580,7 @@ export default function DigitalAuraPortfolio() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Services Section - TEMA SCURO COERENTE */}
       <ServicesSection services={services} />
 
       {/* Process Section - NUOVA SEZIONE */}
@@ -622,7 +622,7 @@ export default function DigitalAuraPortfolio() {
   )
 }
 
-// Enhanced Services Section Component with New Design
+// Services Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
 function ServicesSection({ services }: { services: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -641,7 +641,7 @@ function ServicesSection({ services }: { services: any[] }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-6"
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
             {language === "it" ? "I Nostri Servizi" : "Our Services"}
           </motion.h2>
@@ -649,7 +649,7 @@ function ServicesSection({ services }: { services: any[] }) {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Soluzioni digitali innovative per trasformare il tuo business con tecnologie AI all'avanguardia. Ogni servizio è progettato per massimizzare il ROI e accelerare la crescita."
@@ -675,9 +675,7 @@ function ServicesSection({ services }: { services: any[] }) {
               }}
               className="h-full"
             >
-              <Card
-                className={`${service.bgColor} border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500`}
-              >
+              <Card className="bg-slate-800/50 border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500">
                 <CardHeader className="text-center pb-4 flex-shrink-0">
                   <motion.div
                     whileHover={{
@@ -685,7 +683,7 @@ function ServicesSection({ services }: { services: any[] }) {
                       rotate: [0, -10, 10, -10, 0],
                       transition: { duration: 0.6 },
                     }}
-                    className={`inline-flex p-3 rounded-lg bg-slate-800 shadow-sm mb-4 mx-auto ${service.iconColor}`}
+                    className={`inline-flex p-3 rounded-lg bg-slate-700 shadow-sm mb-4 mx-auto ${service.iconColor}`}
                   >
                     {service.icon}
                   </motion.div>
@@ -693,7 +691,7 @@ function ServicesSection({ services }: { services: any[] }) {
                   <CardDescription className="text-slate-400 text-sm leading-relaxed mb-4">
                     {service.description}
                   </CardDescription>
-                  <Badge className={`${service.statsColor} bg-slate-800/80 border-0 font-semibold`}>
+                  <Badge className={`${service.statsColor} bg-slate-700/80 border-0 font-semibold`}>
                     {service.stats}
                   </Badge>
                 </CardHeader>
@@ -735,7 +733,7 @@ function ServicesSection({ services }: { services: any[] }) {
                           }}
                           whileHover={{ scale: 1.05 }}
                         >
-                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
+                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
                             {feature}
                           </Badge>
                         </motion.div>
@@ -762,7 +760,7 @@ function ServicesSection({ services }: { services: any[] }) {
   )
 }
 
-// Enhanced Projects Section Component
+// Projects Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
 function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProjectClick: (project: any) => void }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -781,7 +779,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-6"
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
             {language === "it" ? "I Nostri Progetti" : "Our Projects"}
           </motion.h2>
@@ -789,7 +787,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Scopri come abbiamo trasformato il business dei nostri clienti con soluzioni AI innovative e risultati misurabili"
@@ -909,13 +907,13 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
+                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
                           {tag}
                         </Badge>
                       </motion.div>
                     ))}
                     {project.tags.length > 3 && (
-                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
+                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
                         +{project.tags.length - 3}
                       </Badge>
                     )}
@@ -946,7 +944,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
   )
 }
 
-// Our Story Section Component
+// Our Story Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
 function OurStorySection({ values }: { values: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -965,7 +963,7 @@ function OurStorySection({ values }: { values: any[] }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-8"
+            className="text-3xl md:text-4xl font-bold text-white mb-8"
           >
             {language === "it" ? "La Nostra Storia" : "Our Story"}
           </motion.h2>
@@ -1053,7 +1051,7 @@ function OurStorySection({ values }: { values: any[] }) {
   )
 }
 
-// Enhanced Contact Section Component
+// Contact Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
 function ContactSection({
   formData,
   isSubmitting,
@@ -1108,7 +1106,7 @@ function ContactSection({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-6"
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
             {language === "it" ? "Contattaci" : "Contact Us"}
           </motion.h2>
@@ -1116,7 +1114,7 @@ function ContactSection({
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Pronto a trasformare il tuo business? Contattaci per una consulenza gratuita e scopri come possiamo aiutarti a raggiungere i tuoi obiettivi."

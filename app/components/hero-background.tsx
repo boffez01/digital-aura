@@ -1,10 +1,9 @@
 "use client"
-
 import { useState, useEffect, useRef } from "react"
 
 export default function HeroBackground() {
-  const vantaRef = useRef<HTMLDivElement>(null)
   const [vantaEffect, setVantaEffect] = useState<any>(null)
+  const vantaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let effect: any = null
@@ -26,13 +25,13 @@ export default function HeroBackground() {
             minWidth: 200.0,
             scale: 1.0,
             scaleMobile: 1.0,
-            color: 0x22d3ee, // Cyan 400 per le linee
-            backgroundColor: 0x0f172a, // Slate 900 sfondo
-            points: 15.0, // Numero di punti aumentato
-            maxDistance: 23.0, // Distanza connessioni
-            spacing: 18.0, // Spaziatura tra punti
-            showDots: true, // Mostra i punti
-            backgroundAlpha: 0.0, // Trasparenza sfondo
+            color: 0x22d3ee, // Cyan 400
+            backgroundColor: 0x0f172a, // Slate 900
+            points: 15.0,
+            maxDistance: 23.0,
+            spacing: 18.0,
+            showDots: true,
+            backgroundAlpha: 0.0,
           })
 
           setVantaEffect(effect)
@@ -42,7 +41,6 @@ export default function HeroBackground() {
       }
     }
 
-    // Delay initialization to ensure DOM is ready
     const timer = setTimeout(initVanta, 100)
 
     return () => {
