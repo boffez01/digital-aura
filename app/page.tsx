@@ -451,14 +451,14 @@ export default function DigitalAuraPortfolio() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            {/* Badge - VISIBILITÀ CORRETTA */}
+            {/* Badge - VISIBILITÀ CORRETTA AL 100% */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               className="mb-8"
             >
-              <Badge className="mb-4 bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 text-base px-6 py-3 rounded-full backdrop-blur-sm shadow-lg shadow-cyan-400/20">
+              <Badge className="mb-4 bg-cyan-400/30 text-cyan-200 border-2 border-cyan-400/60 text-base px-6 py-3 rounded-full backdrop-blur-sm shadow-lg shadow-cyan-400/30 font-semibold">
                 <Zap className="w-4 h-4 mr-2" />
                 {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
               </Badge>

@@ -12,11 +12,10 @@ export default function HeroBackground() {
     const initVanta = async () => {
       if (typeof window !== "undefined" && vantaRef.current && !vantaEffect) {
         try {
-          // Dynamically import THREE and VANTA
-          const THREE = await import("three")
-          const VANTA = await import("vanta/dist/vanta.net.min.js")
+          // Import dinamico corretto per Next.js
+          const [THREE, VANTA] = await Promise.all([import("three"), import("vanta/dist/vanta.net.min.js")])
 
-          effect = VANTA.default({
+          effect = (VANTA as any).default({
             el: vantaRef.current,
             THREE: THREE,
             mouseControls: true,
@@ -26,19 +25,19 @@ export default function HeroBackground() {
             minWidth: 200.0,
             scale: 1.0,
             scaleMobile: 1.0,
-            color: 0x22d3ee, // Cyan 400 per le linee
+            color: 0x22d3ee, // Cyan per le linee
             backgroundColor: 0x0f172a, // Slate 900 sfondo
-            points: 20.0, // Numero di punti aumentato
-            maxDistance: 25.0, // Distanza connessioni
-            spacing: 16.0, // Spaziatura tra punti
-            showDots: true, // Mostra i punti
-            backgroundAlpha: 0.0, // Trasparenza sfondo
+            points: 15.0,
+            maxDistance: 23.0,
+            spacing: 18.0,
+            showDots: true,
+            backgroundAlpha: 0.0,
           })
 
           setVantaEffect(effect)
         } catch (error) {
-          console.log("Vanta effect could not be loaded:", error)
-          // Fallback gradient se Vanta non carica
+          console.log("Vanta effect could not be loaded, using fallback:", error)
+          // Fallback con CSS puro se Vanta non carica
           if (vantaRef.current) {
             vantaRef.current.style.background = "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
           }
@@ -46,8 +45,8 @@ export default function HeroBackground() {
       }
     }
 
-    // Delay initialization to ensure DOM is ready
-    const timer = setTimeout(initVanta, 500)
+    // Inizializza dopo che il DOM è pronto
+    const timer = setTimeout(initVanta, 100)
 
     return () => {
       clearTimeout(timer)
