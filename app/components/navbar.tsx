@@ -10,10 +10,10 @@ import { useLanguage } from "../contexts/language-context"
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
+  // Rimuoviamo "Home" dai link di navigazione - il logo è il link alla home
   const navigationItems = [
-    { key: "home", label: "Home", href: "/" },
     { key: "services", label: language === "it" ? "Servizi" : "Services", dropdown: true },
     { key: "blog", label: "Blog", href: "/blog" },
     { key: "appointments", label: language === "it" ? "Appuntamenti" : "Appointments", href: "/appointments" },
@@ -30,28 +30,26 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-purple-800/95 backdrop-blur-lg border-b border-white/10 shadow-lg"
+      className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700/50 shadow-lg"
     >
       <div className="container mx-auto px-4 lg:px-6 py-4">
-        {/* Desktop Layout */}
+        {/* Desktop Layout (lg+) */}
         <div className="hidden lg:flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center space-x-2 text-white"
-              >
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">⚡</span>
-                </div>
-                <span className="text-2xl font-bold">Digital Aura</span>
-              </motion.div>
-            </Link>
-          </div>
+          {/* Logo con sfondo per maggiore visibilità */}
+          <Link href="/">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center space-x-3 text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-sm">⚡</span>
+              </div>
+              <span className="text-2xl font-bold">Digital Aura</span>
+            </motion.div>
+          </Link>
 
-          {/* Navigation Links - Centered */}
+          {/* Link di Navigazione Centrali */}
           <div className="flex items-center space-x-8">
             {navigationItems.map((item, index) => (
               <motion.div key={item.key}>
@@ -63,7 +61,7 @@ export default function Navbar() {
                       transition={{ delay: index * 0.1, duration: 0.3 }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="text-white/90 hover:text-white transition-colors font-medium"
+                      className="text-slate-300 hover:text-white transition-colors font-medium"
                     >
                       {item.label}
                     </motion.button>
@@ -76,10 +74,10 @@ export default function Navbar() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => scrollToSection("services")}
-                    className="text-white/90 hover:text-white transition-colors font-medium flex items-center"
+                    className="text-slate-300 hover:text-white transition-colors font-medium flex items-center"
                   >
                     {item.label}
-                    <span className="ml-1">▼</span>
+                    <span className="ml-1 text-xs">▼</span>
                   </motion.button>
                 ) : (
                   <motion.button
@@ -89,7 +87,7 @@ export default function Navbar() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => scrollToSection(item.key)}
-                    className="text-white/90 hover:text-white transition-colors font-medium"
+                    className="text-slate-300 hover:text-white transition-colors font-medium"
                   >
                     {item.label}
                   </motion.button>
@@ -98,17 +96,12 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right Side - Language & CTA */}
+          {/* Lato Destro - Un solo selettore lingua e CTA */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-white/90">
-              <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
-                <span className="text-xs">🌐</span>
-              </div>
-              <LanguageSelector />
-            </div>
+            <LanguageSelector />
             <Link href="/appointments">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-full">
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20">
                   <Calendar className="w-4 h-4 mr-2" />
                   {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
                 </Button>
@@ -117,38 +110,36 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Tablet Layout (md to lg) */}
+        {/* Tablet Layout (md to lg) - Ottimizzato per evitare sovrapposizioni */}
         <div className="hidden md:flex lg:hidden items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center space-x-2 text-white"
-              >
-                <div className="w-7 h-7 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">⚡</span>
-                </div>
-                <span className="text-xl font-bold">Digital Aura</span>
-              </motion.div>
-            </Link>
-          </div>
+          {/* Logo Compatto */}
+          <Link href="/">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center space-x-2 text-white p-1 rounded-lg hover:bg-white/10"
+            >
+              <div className="w-7 h-7 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">⚡</span>
+              </div>
+              <span className="text-xl font-bold">Digital Aura</span>
+            </motion.div>
+          </Link>
 
-          {/* Tablet Navigation - Compact */}
-          <div className="flex items-center space-x-4">
-            {navigationItems.slice(0, 3).map((item, index) => (
+          {/* Navigation Compatta */}
+          <div className="flex items-center space-x-3">
+            {navigationItems.slice(0, 2).map((item, index) => (
               <div key={item.key}>
                 {item.href ? (
                   <Link href={item.href}>
-                    <button className="text-white/90 hover:text-white transition-colors font-medium text-sm">
+                    <button className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2">
                       {item.label}
                     </button>
                   </Link>
                 ) : item.dropdown ? (
                   <button
                     onClick={() => scrollToSection("services")}
-                    className="text-white/90 hover:text-white transition-colors font-medium text-sm flex items-center"
+                    className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2 flex items-center"
                   >
                     {item.label}
                     <span className="ml-1 text-xs">▼</span>
@@ -156,7 +147,7 @@ export default function Navbar() {
                 ) : (
                   <button
                     onClick={() => scrollToSection(item.key)}
-                    className="text-white/90 hover:text-white transition-colors font-medium text-sm"
+                    className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2"
                   >
                     {item.label}
                   </button>
@@ -165,18 +156,13 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right Side - Compact */}
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1 text-white/90">
-              <div className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center">
-                <span className="text-xs">🌐</span>
-              </div>
-              <LanguageSelector />
-            </div>
+          {/* Right Side Compatto */}
+          <div className="flex items-center space-x-2">
+            <LanguageSelector />
             <Link href="/appointments">
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-4 py-1 rounded-full text-xs"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-3 py-1 rounded-full text-xs"
               >
                 <Calendar className="w-3 h-3 mr-1" />
                 {language === "it" ? "Consulenza" : "Consultation"}
@@ -187,30 +173,23 @@ export default function Navbar() {
 
         {/* Mobile Layout */}
         <div className="md:hidden flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center space-x-2 text-white"
-              >
-                <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-purple-300 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">⚡</span>
-                </div>
-                <span className="text-lg font-bold">Digital Aura</span>
-              </motion.div>
-            </Link>
-          </div>
+          {/* Logo Mobile */}
+          <Link href="/">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center space-x-2 text-white"
+            >
+              <div className="w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">⚡</span>
+              </div>
+              <span className="text-lg font-bold">Digital Aura</span>
+            </motion.div>
+          </Link>
 
           {/* Mobile Right Side */}
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1 text-white/90">
-              <div className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center">
-                <span className="text-xs">🌐</span>
-              </div>
-              <LanguageSelector />
-            </div>
+          <div className="flex items-center space-x-2">
+            <LanguageSelector />
             <Button
               variant="ghost"
               size="sm"
@@ -228,7 +207,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-4 pb-4 border-t border-white/10 pt-4"
+            className="md:hidden mt-4 pb-4 border-t border-slate-700/50 pt-4"
           >
             <div className="flex flex-col space-y-4">
               {navigationItems.map((item) => (
@@ -237,7 +216,7 @@ export default function Navbar() {
                     <Link href={item.href}>
                       <button
                         onClick={() => setMobileMenuOpen(false)}
-                        className="text-white/90 hover:text-white transition-colors font-medium text-left w-full"
+                        className="text-slate-300 hover:text-white transition-colors font-medium text-left w-full"
                       >
                         {item.label}
                       </button>
@@ -245,7 +224,7 @@ export default function Navbar() {
                   ) : (
                     <button
                       onClick={() => scrollToSection(item.key)}
-                      className="text-white/90 hover:text-white transition-colors font-medium text-left w-full"
+                      className="text-slate-300 hover:text-white transition-colors font-medium text-left w-full"
                     >
                       {item.label}
                     </button>
@@ -253,7 +232,7 @@ export default function Navbar() {
                 </div>
               ))}
               <Link href="/appointments">
-                <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold w-full mt-4">
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold w-full mt-4">
                   <Calendar className="w-4 h-4 mr-2" />
                   {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
                 </Button>

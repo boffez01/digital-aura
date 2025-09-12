@@ -3,35 +3,28 @@
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "../contexts/language-context"
 
 interface BackToMenuProps {
-  onBack?: () => void
-  label?: string
+  href?: string
 }
 
-export default function BackToMenu({ onBack, label = "Back to Menu" }: BackToMenuProps) {
+export default function BackToMenu({ href = "/" }: BackToMenuProps) {
   const router = useRouter()
+  const { language } = useLanguage()
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack()
-    } else {
-      router.push("/")
-    }
+  const handleClick = () => {
+    router.push(href)
   }
 
   return (
     <Button
-      onClick={handleBack}
-      variant="outline"
-      size="sm"
-      className="mb-4 hover:bg-gray-50 transition-colors bg-transparent"
+      variant="ghost"
+      onClick={handleClick}
+      className="mb-6 text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200"
     >
       <ArrowLeft className="w-4 h-4 mr-2" />
-      {label}
+      {language === "it" ? "Torna al Menu" : "Back to Menu"}
     </Button>
   )
 }
-
-// Named export for compatibility
-export { BackToMenu }

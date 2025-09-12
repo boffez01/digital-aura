@@ -14,11 +14,9 @@ import {
   Bot,
   Zap,
   ArrowRight,
-  Star,
   Mail,
   Phone,
   MapPin,
-  Play,
   CheckCircle,
   TrendingUp,
   Clock,
@@ -32,11 +30,12 @@ import {
   Instagram,
   Code,
   Heart,
-  Lock,
   Monitor,
   Cpu,
   BarChart3,
   MessageSquare,
+  Eye,
+  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -45,8 +44,10 @@ import ChatbotWidget from "./components/chatbot-widget"
 import FAQSection from "./components/faq-section"
 import BusinessTransformationCTA from "./components/business-transformation-cta"
 import ROICalculatorSection from "./components/roi-calculator"
+import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
+import HeroBackground from "./components/hero-background"
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -72,10 +73,10 @@ export default function DigitalAuraPortfolio() {
           ? "Automatizza i processi aziendali per aumentare l'efficienza e ridurre i costi operativi."
           : "Automate business processes to increase efficiency and reduce operational costs.",
       features: ["Process Automation", "Data Analysis", "Workflow Optimization", "Cost Reduction"],
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600",
+      bgColor: "bg-purple-900/20",
+      iconColor: "text-purple-400",
       buttonColor: "bg-purple-600 hover:bg-purple-700",
-      statsColor: "text-purple-600",
+      statsColor: "text-purple-400",
       href: "/services/ai-automation",
       stats: language === "it" ? "Fino al 60% di riduzione costi" : "Up to 60% cost reduction",
       benefits: [
@@ -94,10 +95,10 @@ export default function DigitalAuraPortfolio() {
           ? "Assistenti virtuali intelligenti per migliorare l'esperienza cliente e aumentare le conversioni."
           : "Intelligent virtual assistants to improve customer experience and increase conversions.",
       features: ["24/7 Support", "Natural Language", "Multi-platform", "Lead Generation"],
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
+      bgColor: "bg-blue-900/20",
+      iconColor: "text-blue-400",
       buttonColor: "bg-blue-600 hover:bg-blue-700",
-      statsColor: "text-blue-600",
+      statsColor: "text-blue-400",
       href: "/services/chatbot",
       stats: language === "it" ? "95% soddisfazione clienti" : "95% customer satisfaction",
       benefits: [
@@ -116,10 +117,10 @@ export default function DigitalAuraPortfolio() {
           ? "Siti web ad alte prestazioni e applicazioni moderne per una presenza digitale vincente."
           : "High-performance websites and modern applications for a winning digital presence.",
       features: ["Responsive Design", "SEO Optimized", "Fast Loading", "Modern UI/UX"],
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600",
+      bgColor: "bg-green-900/20",
+      iconColor: "text-green-400",
       buttonColor: "bg-green-600 hover:bg-green-700",
-      statsColor: "text-green-600",
+      statsColor: "text-green-400",
       href: "/services/web-development",
       stats: language === "it" ? "300% aumento traffico medio" : "300% average traffic increase",
       benefits: [
@@ -138,10 +139,10 @@ export default function DigitalAuraPortfolio() {
           ? "Strategie di marketing intelligenti e crescita digitale per influencer e aziende."
           : "Intelligent marketing strategies and digital growth for influencers and businesses.",
       features: ["Social Growth", "SEO Optimization", "Ad Campaigns", "Analytics"],
-      bgColor: "bg-orange-50",
-      iconColor: "text-orange-600",
+      bgColor: "bg-orange-900/20",
+      iconColor: "text-orange-400",
       buttonColor: "bg-orange-600 hover:bg-orange-700",
-      statsColor: "text-orange-600",
+      statsColor: "text-orange-400",
       href: "/services/ai-marketing",
       stats: language === "it" ? "ROI medio 5x" : "5x average ROI",
       benefits: [
@@ -370,28 +371,28 @@ export default function DigitalAuraPortfolio() {
         language === "it"
           ? "Sempre all'avanguardia con le ultime tecnologie AI"
           : "Always at the forefront with the latest AI technologies",
-      color: "text-purple-600",
+      color: "text-cyan-400",
     },
     {
       icon: <Target className="w-8 h-8" />,
       title: language === "it" ? "Risultati Misurabili" : "Measurable Results",
       description:
         language === "it" ? "Focus su ROI concreto e KPI verificabili" : "Focus on concrete ROI and verifiable KPIs",
-      color: "text-purple-600",
+      color: "text-cyan-400",
     },
     {
       icon: <Handshake className="w-8 h-8" />,
       title: language === "it" ? "Partnership Durature" : "Lasting Partnerships",
       description:
         language === "it" ? "Relazioni a lungo termine basate sulla fiducia" : "Long-term relationships based on trust",
-      color: "text-purple-600",
+      color: "text-cyan-400",
     },
     {
       icon: <Rocket className="w-8 h-8" />,
       title: language === "it" ? "Crescita Accelerata" : "Accelerated Growth",
       description:
         language === "it" ? "Soluzioni che scalano con il tuo business" : "Solutions that scale with your business",
-      color: "text-purple-600",
+      color: "text-cyan-400",
     },
   ]
 
@@ -431,31 +432,19 @@ export default function DigitalAuraPortfolio() {
   }
 
   return (
-    <div className="bg-background text-foreground overflow-x-hidden">
+    <div className="bg-slate-900 text-white overflow-x-hidden">
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section */}
-      <section
-        id="home"
-        className="min-h-screen flex items-center justify-center px-4 pt-0 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 relative overflow-hidden"
-      >
-        {/* Background Effects */}
-        <div className="absolute inset-0 opacity-20">
-          <svg width="60" height="60" className="absolute inset-0 w-full h-full">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="2" fill="white" fillOpacity="0.05" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      {/* Hero Section - MIGLIORATO CON NUOVA TIPOGRAFIA */}
+      <section id="home" className="min-h-screen flex items-center justify-center px-4 pt-0 relative overflow-hidden">
+        {/* 3D Animated Background */}
+        <HeroBackground />
 
-        <div className="text-center max-w-6xl mx-auto relative z-10">
+        {/* Overlay per leggibilità */}
+        <div className="absolute inset-0 bg-black/30 z-10" />
+
+        <div className="text-center max-w-6xl mx-auto relative z-20">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -469,18 +458,18 @@ export default function DigitalAuraPortfolio() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="mb-8"
             >
-              <Badge className="mb-4 bg-white/20 text-white border-white/30 text-lg px-6 py-3 rounded-full backdrop-blur-sm">
+              <Badge className="mb-4 bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 text-lg px-6 py-3 rounded-full backdrop-blur-sm">
                 <Zap className="w-4 h-4 mr-2" />
                 {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
               </Badge>
             </motion.div>
 
-            {/* Main Title */}
+            {/* Main Title - TIPOGRAFIA MIGLIORATA */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-5xl md:text-7xl font-bold mb-8 text-white leading-tight"
+              className="text-5xl md:text-6xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
             >
               {language === "it" ? (
                 <>
@@ -488,7 +477,7 @@ export default function DigitalAuraPortfolio() {
                   <br />
                   Business con
                   <br />
-                  <span className="bg-gradient-to-r from-pink-400 to-purple-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                     l'Intelligenza Artificiale
                   </span>
                 </>
@@ -498,19 +487,19 @@ export default function DigitalAuraPortfolio() {
                   <br />
                   Business with
                   <br />
-                  <span className="bg-gradient-to-r from-pink-400 to-purple-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                     Artificial Intelligence
                   </span>
                 </>
               )}
             </motion.h1>
 
-            {/* Description */}
+            {/* Description - TIPOGRAFIA MIGLIORATA */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed max-w-4xl mx-auto"
+              className="text-lg md:text-xl text-slate-400 mb-12 leading-relaxed max-w-4xl mx-auto"
             >
               {language === "it"
                 ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business con le nostre soluzioni AI."
@@ -528,9 +517,9 @@ export default function DigitalAuraPortfolio() {
                 <Link href="/appointments">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-lg px-8 py-4 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300"
                   >
-                    <Zap className="mr-2 w-5 h-5" />
+                    <Sparkles className="mr-2 w-5 h-5" />
                     {language === "it" ? "Richiedi Consulenza Gratuita" : "Request Free Consultation"}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
@@ -541,17 +530,17 @@ export default function DigitalAuraPortfolio() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
+                  className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
                   onClick={() => scrollToSection("services")}
                 >
-                  <Play className="mr-2 w-5 h-5" />
-                  {language === "it" ? "Prova Demo Gratuita" : "Try Free Demo"}
+                  <Eye className="mr-2 w-5 h-5" />
+                  {language === "it" ? "Esplora Demo" : "Explore Demo"}
                 </Button>
               </motion.div>
             </motion.div>
           </motion.div>
 
-          {/* Stats Section */}
+          {/* Stats Section - METRICA MIGLIORATA */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -565,8 +554,13 @@ export default function DigitalAuraPortfolio() {
                 label: language === "it" ? "Soddisfazione Garantita" : "Satisfaction Guaranteed",
               },
               { icon: Clock, value: "24/7", label: language === "it" ? "Supporto Dedicato" : "Dedicated Support" },
-              { icon: Lock, value: "SSL", label: language === "it" ? "Sicurezza Garantita" : "Guaranteed Security" },
-              { icon: Star, value: "5★", label: language === "it" ? "Rating Medio" : "Average Rating" },
+              { icon: Shield, value: "SSL", label: language === "it" ? "Sicurezza Garantita" : "Guaranteed Security" },
+              // METRICA ONESTA E PROFESSIONALE
+              {
+                icon: Handshake,
+                value: "Partner",
+                label: language === "it" ? "Approccio su Misura" : "Tailored Approach",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -576,10 +570,10 @@ export default function DigitalAuraPortfolio() {
                 className="text-center"
               >
                 <div className="flex justify-center mb-3">
-                  <stat.icon className="w-8 h-8 text-white/80" />
+                  <stat.icon className="w-8 h-8 text-cyan-400" />
                 </div>
                 <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-white/80 text-sm">{stat.label}</div>
+                <div className="text-slate-400 text-sm">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -588,6 +582,9 @@ export default function DigitalAuraPortfolio() {
 
       {/* Services Section */}
       <ServicesSection services={services} />
+
+      {/* Process Section - NUOVA SEZIONE */}
+      <ProcessSection />
 
       {/* Projects Section */}
       <ProjectsSection projects={projects} onProjectClick={setSelectedProject} />
@@ -632,7 +629,7 @@ function ServicesSection({ services }: { services: any[] }) {
   const { t, language } = useLanguage()
 
   return (
-    <section id="services" className="py-20 px-4 bg-white">
+    <section id="services" className="py-20 px-4">
       <div className="container mx-auto max-w-7xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -644,7 +641,7 @@ function ServicesSection({ services }: { services: any[] }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
+            className="text-4xl md:text-5xl font-bold text-white mb-6"
           >
             {language === "it" ? "I Nostri Servizi" : "Our Services"}
           </motion.h2>
@@ -652,7 +649,7 @@ function ServicesSection({ services }: { services: any[] }) {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Soluzioni digitali innovative per trasformare il tuo business con tecnologie AI all'avanguardia. Ogni servizio è progettato per massimizzare il ROI e accelerare la crescita."
@@ -679,7 +676,7 @@ function ServicesSection({ services }: { services: any[] }) {
               className="h-full"
             >
               <Card
-                className={`${service.bgColor} border-0 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col`}
+                className={`${service.bgColor} border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500`}
               >
                 <CardHeader className="text-center pb-4 flex-shrink-0">
                   <motion.div
@@ -688,19 +685,21 @@ function ServicesSection({ services }: { services: any[] }) {
                       rotate: [0, -10, 10, -10, 0],
                       transition: { duration: 0.6 },
                     }}
-                    className={`inline-flex p-3 rounded-lg bg-white shadow-sm mb-4 mx-auto ${service.iconColor}`}
+                    className={`inline-flex p-3 rounded-lg bg-slate-800 shadow-sm mb-4 mx-auto ${service.iconColor}`}
                   >
                     {service.icon}
                   </motion.div>
-                  <CardTitle className="text-xl font-bold text-gray-900 mb-3">{service.title}</CardTitle>
-                  <CardDescription className="text-gray-600 text-sm leading-relaxed mb-4">
+                  <CardTitle className="text-xl font-bold text-white mb-3">{service.title}</CardTitle>
+                  <CardDescription className="text-slate-400 text-sm leading-relaxed mb-4">
                     {service.description}
                   </CardDescription>
-                  <Badge className={`${service.statsColor} bg-white/80 border-0 font-semibold`}>{service.stats}</Badge>
+                  <Badge className={`${service.statsColor} bg-slate-800/80 border-0 font-semibold`}>
+                    {service.stats}
+                  </Badge>
                 </CardHeader>
                 <CardContent className="pt-0 flex-1 flex flex-col">
                   <div className="mb-6 flex-1">
-                    <h4 className="font-semibold text-gray-900 mb-3 text-sm">
+                    <h4 className="font-semibold text-white mb-3 text-sm">
                       {language === "it" ? "Vantaggi Principali:" : "Key Benefits:"}
                     </h4>
                     <ul className="space-y-2 mb-6">
@@ -713,7 +712,7 @@ function ServicesSection({ services }: { services: any[] }) {
                             duration: 0.4,
                             delay: index * 0.1 + benefitIndex * 0.1 + 0.5,
                           }}
-                          className="flex items-start text-gray-700 text-sm"
+                          className="flex items-start text-slate-300 text-sm"
                         >
                           <CheckCircle className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${service.iconColor}`} />
                           {benefit}
@@ -721,7 +720,7 @@ function ServicesSection({ services }: { services: any[] }) {
                       ))}
                     </ul>
 
-                    <h4 className="font-semibold text-gray-900 mb-3 text-sm">
+                    <h4 className="font-semibold text-white mb-3 text-sm">
                       {language === "it" ? "Funzionalità:" : "Features:"}
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -736,7 +735,7 @@ function ServicesSection({ services }: { services: any[] }) {
                           }}
                           whileHover={{ scale: 1.05 }}
                         >
-                          <Badge variant="outline" className="border-gray-300 text-gray-600 text-xs bg-white/50">
+                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
                             {feature}
                           </Badge>
                         </motion.div>
@@ -770,7 +769,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
   const { t, language } = useLanguage()
 
   return (
-    <section id="projects" className="py-20 px-4 bg-white">
+    <section id="projects" className="py-20 px-4">
       <div className="container mx-auto max-w-6xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -782,7 +781,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
+            className="text-4xl md:text-5xl font-bold text-white mb-6"
           >
             {language === "it" ? "I Nostri Progetti" : "Our Projects"}
           </motion.h2>
@@ -790,7 +789,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Scopri come abbiamo trasformato il business dei nostri clienti con soluzioni AI innovative e risultati misurabili"
@@ -833,11 +832,11 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
               onClick={() => onProjectClick(project)}
               className="cursor-pointer h-full"
             >
-              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
+              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-slate-800/50 border-slate-700 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
-                  className="aspect-video overflow-hidden relative bg-gradient-to-br from-purple-100 to-blue-100"
+                  className="aspect-video overflow-hidden relative bg-gradient-to-br from-slate-700 to-slate-800"
                 >
                   {project.image ? (
                     <Image
@@ -845,10 +844,13 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                       alt={project.title}
                       fill
                       className="object-cover"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                      quality={80}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <div className="text-6xl opacity-20">
+                      <div className="text-6xl opacity-20 text-slate-500">
                         {project.category === "AI Automation" && <Cpu />}
                         {project.category === "Chatbot" && <MessageSquare />}
                         {project.category === "Web Development" && <Monitor />}
@@ -856,14 +858,14 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                       </div>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/90 rounded-full p-4 shadow-lg">
-                      <Play className="w-8 h-8 text-purple-600" />
+                    <div className="bg-white/90 rounded-full p-4 shadow-lg border-2 border-white">
+                      <Eye className="w-8 h-8 text-slate-900" />
                     </div>
                   </div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-purple-600 border-0 shadow-sm">ROI: {project.roi}</Badge>
+                    <Badge className="bg-white/90 text-slate-900 border-0 shadow-sm">ROI: {project.roi}</Badge>
                   </div>
                 </motion.div>
                 <CardHeader className="flex-shrink-0">
@@ -876,23 +878,23 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                       <Badge
                         className={`${
                           project.category === "AI Automation"
-                            ? "bg-purple-100 text-purple-700 border-purple-200"
+                            ? "bg-purple-900/50 text-purple-300 border-purple-700"
                             : project.category === "Chatbot"
-                              ? "bg-blue-100 text-blue-700 border-blue-200"
+                              ? "bg-blue-900/50 text-blue-300 border-blue-700"
                               : project.category === "Web Development"
-                                ? "bg-green-100 text-green-700 border-green-200"
-                                : "bg-orange-100 text-orange-700 border-orange-200"
+                                ? "bg-green-900/50 text-green-300 border-green-700"
+                                : "bg-orange-900/50 text-orange-300 border-orange-700"
                         }`}
                       >
                         {project.category}
                       </Badge>
                     </motion.div>
-                    <div className="text-xs text-gray-500">{project.timeline}</div>
+                    <div className="text-xs text-slate-500">{project.timeline}</div>
                   </div>
-                  <CardTitle className="text-xl text-gray-900 group-hover:text-purple-600 transition-colors">
+                  <CardTitle className="text-xl text-white group-hover:text-cyan-400 transition-colors">
                     {project.title}
                   </CardTitle>
-                  <CardDescription className="text-gray-600 leading-relaxed">{project.description}</CardDescription>
+                  <CardDescription className="text-slate-400 leading-relaxed">{project.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -907,30 +909,30 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Badge variant="outline" className="border-gray-300 text-gray-600 text-xs">
+                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
                           {tag}
                         </Badge>
                       </motion.div>
                     ))}
                     {project.tags.length > 3 && (
-                      <Badge variant="outline" className="border-gray-300 text-gray-600 text-xs">
+                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-800/50">
                         +{project.tags.length - 3}
                       </Badge>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between mb-4 text-sm">
-                    <div className="flex items-center text-gray-500">
+                    <div className="flex items-center text-slate-500">
                       <Clock className="w-4 h-4 mr-1" />
                       {project.timeline}
                     </div>
-                    <div className="flex items-center text-gray-500">
+                    <div className="flex items-center text-slate-500">
                       <TrendingUp className="w-4 h-4 mr-1" />
                       {project.roi} ROI
                     </div>
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto">
+                  <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto">
                     {language === "it" ? "Visualizza Case Study" : "View Case Study"}
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
@@ -951,7 +953,7 @@ function OurStorySection({ values }: { values: any[] }) {
   const { t, language } = useLanguage()
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100">
+    <section className="py-20 px-4">
       <div className="container mx-auto max-w-6xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -963,7 +965,7 @@ function OurStorySection({ values }: { values: any[] }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold text-gray-900 mb-8"
+            className="text-4xl md:text-5xl font-bold text-white mb-8"
           >
             {language === "it" ? "La Nostra Storia" : "Our Story"}
           </motion.h2>
@@ -972,7 +974,7 @@ function OurStorySection({ values }: { values: any[] }) {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed mb-12"
+            className="text-lg text-slate-400 max-w-4xl mx-auto leading-relaxed mb-12"
           >
             {language === "it"
               ? "Siamo un team di esperti appassionati di tecnologia e innovazione, dedicati a trasformare le aziende attraverso soluzioni AI all'avanguardia. La nostra missione è democratizzare l'accesso all'intelligenza artificiale, rendendo queste potenti tecnologie accessibili a business di ogni dimensione."
@@ -988,12 +990,12 @@ function OurStorySection({ values }: { values: any[] }) {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="relative"
           >
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500 rounded-full"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-full"></div>
             <div className="pl-6">
-              <h3 className="text-2xl font-bold text-purple-600 mb-4">
+              <h3 className="text-2xl font-bold text-cyan-400 mb-4">
                 {language === "it" ? "La Nostra Visione" : "Our Vision"}
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed">
                 {language === "it"
                   ? "Crediamo in un futuro dove l'intelligenza artificiale non sostituisce l'uomo, ma lo potenzia, creando opportunità di crescita e innovazione senza precedenti. Vogliamo essere il ponte tra la tecnologia avanzata e il successo aziendale."
                   : "We believe in a future where artificial intelligence does not replace humans, but empowers them, creating unprecedented opportunities for growth and innovation. We want to be the bridge between advanced technology and business success."}
@@ -1009,10 +1011,10 @@ function OurStorySection({ values }: { values: any[] }) {
           >
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-full"></div>
             <div className="pl-6">
-              <h3 className="text-2xl font-bold text-green-600 mb-4">
+              <h3 className="text-2xl font-bold text-green-400 mb-4">
                 {language === "it" ? "Il Nostro Impegno" : "Our Commitment"}
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed">
                 {language === "it"
                   ? "Ogni progetto è un'opportunità per creare valore reale. Lavoriamo fianco a fianco con i nostri clienti per garantire risultati concreti e misurabili, con un approccio trasparente e orientato al ROI."
                   : "Every project is an opportunity to create real value. We work side by side with our clients to ensure concrete and measurable results, with a transparent and ROI-oriented approach."}
@@ -1032,16 +1034,16 @@ function OurStorySection({ values }: { values: any[] }) {
               whileHover={{ y: -10, scale: 1.02 }}
               className="h-full"
             >
-              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-0">
+              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 border-slate-700 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.2, rotate: 360 }}
                   transition={{ duration: 0.6 }}
-                  className={`inline-flex p-4 rounded-full bg-purple-100 mb-6 ${value.color}`}
+                  className={`inline-flex p-4 rounded-full bg-slate-700 mb-6 ${value.color}`}
                 >
                   {value.icon}
                 </motion.div>
-                <CardTitle className="text-xl text-gray-900 mb-3">{value.title}</CardTitle>
-                <CardDescription className="text-gray-600 leading-relaxed">{value.description}</CardDescription>
+                <CardTitle className="text-xl text-white mb-3">{value.title}</CardTitle>
+                <CardDescription className="text-slate-400 leading-relaxed">{value.description}</CardDescription>
               </Card>
             </motion.div>
           ))}
@@ -1075,26 +1077,26 @@ function ContactSection({
       title: "Email",
       info: "info@digitalaura.it",
       description: language === "it" ? "Rispondiamo entro 2 ore" : "We respond within 2 hours",
-      color: "bg-gradient-to-r from-purple-600 to-blue-600",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
       icon: <Phone className="w-6 h-6 text-white" />,
       title: language === "it" ? "Telefono" : "Phone",
       info: "+393500216480",
       description: language === "it" ? "Lun-Ven 9:00-18:00" : "Mon-Fri 9:00-18:00",
-      color: "bg-gradient-to-r from-purple-600 to-blue-600",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
       icon: <MapPin className="w-6 h-6 text-white" />,
       title: language === "it" ? "Sede" : "Office",
       info: "Brescia, Italia",
       description: "Via dei Mille 5",
-      color: "bg-gradient-to-r from-purple-600 to-blue-600",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
   ]
 
   return (
-    <section id="contact" className="py-20 px-4 bg-white">
+    <section id="contact" className="py-20 px-4">
       <div className="container mx-auto max-w-6xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -1106,7 +1108,7 @@ function ContactSection({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
+            className="text-4xl md:text-5xl font-bold text-white mb-6"
           >
             {language === "it" ? "Contattaci" : "Contact Us"}
           </motion.h2>
@@ -1114,7 +1116,7 @@ function ContactSection({
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Pronto a trasformare il tuo business? Contattaci per una consulenza gratuita e scopri come possiamo aiutarti a raggiungere i tuoi obiettivi."
@@ -1139,7 +1141,7 @@ function ContactSection({
                   delay: index * 0.2 + 0.5,
                 }}
                 whileHover={{ x: 10, scale: 1.02 }}
-                className="bg-white rounded-lg shadow-lg p-6 flex items-center space-x-4 border border-gray-100"
+                className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg p-6 flex items-center space-x-4 hover:border-cyan-500 transition-all duration-300"
               >
                 <motion.div
                   whileHover={{
@@ -1152,9 +1154,9 @@ function ContactSection({
                   {contact.icon}
                 </motion.div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{contact.title}</h3>
-                  <p className="text-gray-700 font-medium">{contact.info}</p>
-                  <p className="text-gray-500 text-sm">{contact.description}</p>
+                  <h3 className="text-lg font-semibold text-white">{contact.title}</h3>
+                  <p className="text-slate-300 font-medium">{contact.info}</p>
+                  <p className="text-slate-500 text-sm">{contact.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -1163,7 +1165,7 @@ function ContactSection({
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.4, delay: 0.8 }}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-6 text-white"
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg shadow-lg p-6 text-white"
             >
               <div className="flex items-center space-x-4">
                 <Shield className="w-8 h-8" />
@@ -1171,7 +1173,7 @@ function ContactSection({
                   <h3 className="text-lg font-semibold">
                     {language === "it" ? "Garanzia di Qualità" : "Quality Guarantee"}
                   </h3>
-                  <p className="text-white/90 text-sm">
+                  <p className="text-cyan-100 text-sm">
                     {language === "it"
                       ? "Soddisfatti o rimborsati entro 30 giorni. La tua soddisfazione è la nostra priorità."
                       : "Satisfied or refunded within 30 days. Your satisfaction is our priority."}
@@ -1186,12 +1188,12 @@ function ContactSection({
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-lg border-slate-700 bg-slate-800/50">
               <CardHeader>
-                <CardTitle className="text-gray-900 text-2xl">
+                <CardTitle className="text-white text-2xl">
                   {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
                 </CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-slate-400">
                   {language === "it"
                     ? "Compila il form e ti ricontatteremo entro 2 ore lavorative con una proposta personalizzata"
                     : "Fill out the form and we'll contact you within 2 business hours with a personalized proposal"}
@@ -1205,10 +1207,10 @@ function ContactSection({
                     className="text-center py-8"
                   >
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-2xl font-bold text-white mb-2">
                       {language === "it" ? "Messaggio Inviato!" : "Message Sent!"}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-slate-400">
                       {language === "it" ? "Ti contatteremo entro 24 ore!" : "We'll contact you within 24 hours!"}
                     </p>
                   </motion.div>
@@ -1216,26 +1218,26 @@ function ContactSection({
                   <form onSubmit={onSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-gray-700 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium">
                           {language === "it" ? "Nome *" : "Name *"}
                         </label>
                         <Input
                           value={formData.name}
                           onChange={(e) => onInputChange("name", e.target.value)}
-                          className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-purple-500"
+                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
                           placeholder="Mario Rossi"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-gray-700 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium">
                           {language === "it" ? "Email *" : "Email *"}
                         </label>
                         <Input
                           type="email"
                           value={formData.email}
                           onChange={(e) => onInputChange("email", e.target.value)}
-                          className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-purple-500"
+                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
                           placeholder="mario@esempio.com"
                           required
                         />
@@ -1244,38 +1246,41 @@ function ContactSection({
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-gray-700 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium">
                           {language === "it" ? "Telefono" : "Phone"}
                         </label>
                         <Input
+                          type="tel"
+                          pattern="[0-9\s\+]*"
+                          title="Per favore, inserisci un numero di telefono valido."
                           value={formData.phone}
                           onChange={(e) => onInputChange("phone", e.target.value)}
-                          className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-purple-500"
+                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
                           placeholder="+39 123 456 7890"
                         />
                       </div>
                       <div>
-                        <label className="block text-gray-700 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium">
                           {language === "it" ? "Azienda" : "Company"}
                         </label>
                         <Input
                           value={formData.company}
                           onChange={(e) => onInputChange("company", e.target.value)}
-                          className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-purple-500"
+                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
                           placeholder={language === "it" ? "La Tua Azienda" : "Your Company"}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-gray-700 mb-2 font-medium">
+                      <label className="block text-slate-300 mb-2 font-medium">
                         {language === "it" ? "Servizio di Interesse" : "Service of Interest"}
                       </label>
                       <Select value={formData.service} onValueChange={(value) => onInputChange("service", value)}>
-                        <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-purple-500">
+                        <SelectTrigger className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500">
                           <SelectValue placeholder={language === "it" ? "Seleziona un servizio" : "Select a service"} />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        <SelectContent className="bg-slate-800 border border-slate-600 shadow-lg">
                           <SelectItem value="ai">{language === "it" ? "AI Automation" : "AI Automation"}</SelectItem>
                           <SelectItem value="chatbot">
                             {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
@@ -1292,13 +1297,13 @@ function ContactSection({
                     </div>
 
                     <div>
-                      <label className="block text-gray-700 mb-2 font-medium">
+                      <label className="block text-slate-300 mb-2 font-medium">
                         {language === "it" ? "Messaggio *" : "Message *"}
                       </label>
                       <Textarea
                         value={formData.message}
                         onChange={(e) => onInputChange("message", e.target.value)}
-                        className="bg-white border-gray-300 text-gray-900 min-h-[120px] focus:border-purple-500 focus:ring-purple-500"
+                        className="bg-slate-800/50 border-slate-600 text-white min-h-[120px] focus:border-cyan-500 focus:ring-cyan-500"
                         placeholder={
                           language === "it" ? "Raccontaci del tuo progetto..." : "Tell us about your project..."
                         }
@@ -1310,7 +1315,7 @@ function ContactSection({
                       type="submit"
                       size="lg"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold"
+                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold"
                     >
                       {isSubmitting ? (
                         <>
@@ -1340,36 +1345,36 @@ function Footer() {
   const { t, language } = useLanguage()
 
   return (
-    <footer className="bg-slate-800 text-white py-12 px-4">
+    <footer className="bg-slate-900 border-t border-slate-700 text-white py-12 px-4">
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-2xl font-bold">Digital Aura</span>
             </div>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <p className="text-slate-400 mb-6 leading-relaxed">
               {language === "it"
                 ? "Trasformiamo le aziende attraverso soluzioni AI innovative e tecnologie all'avanguardia. La tua crescita digitale inizia qui."
                 : "We transform businesses through innovative AI solutions and cutting-edge technologies. Your digital growth starts here."}
             </p>
             <div className="space-y-3">
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-slate-400">
                 <Mail className="w-4 h-4 mr-3" />
                 <a href="mailto:info@digitalaura.it" className="hover:text-white transition-colors">
                   info@digitalaura.it
                 </a>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-slate-400">
                 <Phone className="w-4 h-4 mr-3" />
                 <a href="tel:+393500216480" className="hover:text-white transition-colors">
                   +393500216480
                 </a>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-slate-400">
                 <MapPin className="w-4 h-4 mr-3" />
                 Brescia, Italia - Via dei Mille 5
               </div>
@@ -1381,27 +1386,27 @@ function Footer() {
             <h3 className="text-xl font-semibold mb-6">{language === "it" ? "Link Rapidi" : "Quick Links"}</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Home" : "Home"}
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="#services" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Servizi" : "Services"}
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/blog" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Blog" : "Blog"}
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="#contact" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Contatti" : "Contact"}
                 </Link>
               </li>
               <li>
-                <Link href="/appointments" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/appointments" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Appuntamenti" : "Appointments"}
                 </Link>
               </li>
@@ -1413,22 +1418,22 @@ function Footer() {
             <h3 className="text-xl font-semibold mb-6">{language === "it" ? "I Nostri Servizi" : "Our Services"}</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/services/ai-automation" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/services/ai-automation" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "AI Automation" : "AI Automation"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/chatbot" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/services/chatbot" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/web-development" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/services/web-development" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "Web Development" : "Web Development"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/ai-marketing" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/services/ai-marketing" className="text-slate-400 hover:text-white transition-colors">
                   {language === "it" ? "AI Marketing" : "AI Marketing"}
                 </Link>
               </li>
@@ -1437,37 +1442,37 @@ function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-700 pt-8">
+        <div className="border-t border-slate-700 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-            <p className="text-gray-400 mb-4 md:mb-0">
+            <p className="text-slate-500 mb-4 md:mb-0">
               {language === "it"
                 ? "© 2024 Digital Aura. Tutti i diritti riservati."
                 : "© 2024 Digital Aura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 {language === "it" ? "Privacy Policy" : "Privacy Policy"}
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 {language === "it" ? "Termini di Servizio" : "Terms of Service"}
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 {language === "it" ? "Cookie Policy" : "Cookie Policy"}
               </a>
             </div>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
             </div>
           </div>
-          <p className="text-gray-500 text-sm text-center">
+          <p className="text-slate-600 text-sm text-center">
             {language === "it"
               ? "Startup innovativa specializzata in soluzioni AI per il business • GDPR Compliant • ISO 27001 Certified"
               : "Innovative startup specialized in AI solutions for business • GDPR Compliant • ISO 27001 Certified"}

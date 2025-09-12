@@ -335,7 +335,7 @@ I can help you with:
           className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${
             supportMode.active || escalationActive
               ? "bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 animate-pulse"
-              : "bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-700 hover:from-blue-600 hover:via-purple-700 hover:to-indigo-800 animate-pulse hover:animate-none"
+              : "bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 hover:from-cyan-600 hover:via-blue-700 hover:to-indigo-800 animate-pulse hover:animate-none"
           } text-white`}
         >
           {supportMode.active || escalationActive ? (
@@ -349,7 +349,7 @@ I can help you with:
       {/* Chat Widget */}
       {isOpen && (
         <Card
-          className={`w-96 bg-white shadow-2xl border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 ${
+          className={`w-96 bg-slate-800 shadow-2xl border border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 ${
             isMinimized ? "h-16" : "h-[600px]"
           }`}
         >
@@ -358,7 +358,7 @@ I can help you with:
             className={`p-4 rounded-t-2xl ${
               supportMode.active || escalationActive
                 ? "bg-gradient-to-r from-red-500 via-red-600 to-red-700"
-                : "bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-700"
+                : "bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700"
             } text-white`}
           >
             <div className="flex items-center justify-between">
@@ -396,37 +396,37 @@ I can help you with:
           </div>
 
           {!isMinimized && (
-            <div className="p-0 flex flex-col h-[536px] bg-white">
+            <div className="p-0 flex flex-col h-[536px] bg-slate-800">
               {/* Quick Actions */}
-              <div className="p-4 bg-white border-b border-gray-100">
+              <div className="p-4 bg-slate-800 border-b border-slate-700">
                 <div className="flex items-center mb-3">
-                  <span className="text-sm font-semibold text-gray-700">🚀 {t.quickActions}</span>
+                  <span className="text-sm font-semibold text-slate-300">🚀 {t.quickActions}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     onClick={() => handleQuickAction("services")}
-                    className="bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
                   >
                     <Settings className="w-4 h-4" />
                     <span>{t.services}</span>
                   </Button>
                   <Button
                     onClick={() => handleQuickAction("faq")}
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
                   >
                     <HelpCircle className="w-4 h-4" />
                     <span>{t.faq}</span>
                   </Button>
                   <Button
                     onClick={() => handleQuickAction("book")}
-                    className="bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
                   >
                     <Calendar className="w-4 h-4" />
                     <span>{t.book}</span>
                   </Button>
                   <Button
                     onClick={() => handleQuickAction("support")}
-                    className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
                   >
                     <Headphones className="w-4 h-4" />
                     <span>{t.support}</span>
@@ -435,7 +435,7 @@ I can help you with:
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-800">
                 {/* Support Header se attivo */}
                 {(supportMode.active || escalationActive) && getSupportHeader(supportMode.active, supportMode.level)}
 
@@ -446,7 +446,7 @@ I can help you with:
                         <div className="flex items-start space-x-2">
                           <div
                             className={`p-2 rounded-full mt-1 flex-shrink-0 ${
-                              message.supportActive || escalationActive ? "bg-red-100" : "bg-gray-100"
+                              message.supportActive || escalationActive ? "bg-red-100" : "bg-slate-700"
                             }`}
                           >
                             {getSupportIcon(message.supportLevel)}
@@ -455,18 +455,18 @@ I can help you with:
                             className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
                               message.supportActive || escalationActive
                                 ? "bg-red-50 border border-red-200"
-                                : "bg-gray-100"
+                                : "bg-slate-700"
                             }`}
                           >
                             <div
                               className={`text-sm leading-relaxed ${
-                                message.supportActive || escalationActive ? "text-red-900" : "text-gray-800"
+                                message.supportActive || escalationActive ? "text-red-900" : "text-slate-200"
                               }`}
                             >
                               {formatMessage(message.text)}
                             </div>
                             <div
-                              className={`text-xs mt-2 ${message.supportActive || escalationActive ? "text-red-500" : "text-gray-500"}`}
+                              className={`text-xs mt-2 ${message.supportActive || escalationActive ? "text-red-500" : "text-slate-500"}`}
                             >
                               {formatTime(message.timestamp)}
                             </div>
@@ -475,11 +475,12 @@ I can help you with:
                       )}
                       {message.isUser && (
                         <div className="flex items-start space-x-2 justify-end">
-                          <div className="bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-3 shadow-sm">
-                            <div className="text-sm leading-relaxed">{message.text}</div>
-                            <div className="text-xs text-blue-100 mt-2">{formatTime(message.timestamp)}</div>
+                          {/* MIGLIORATO: Alto contrasto per messaggi utente */}
+                          <div className="bg-cyan-600 text-white rounded-2xl rounded-tr-md px-4 py-3 shadow-sm">
+                            <div className="text-sm leading-relaxed font-medium">{message.text}</div>
+                            <div className="text-xs text-cyan-100 mt-2">{formatTime(message.timestamp)}</div>
                           </div>
-                          <div className="p-2 bg-blue-500 rounded-full mt-1 flex-shrink-0">
+                          <div className="p-2 bg-cyan-600 rounded-full mt-1 flex-shrink-0">
                             <User className="w-4 h-4 text-white" />
                           </div>
                         </div>
@@ -493,32 +494,32 @@ I can help you with:
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-2">
                       <div
-                        className={`p-2 rounded-full ${supportMode.active || escalationActive ? "bg-red-100" : "bg-gray-100"}`}
+                        className={`p-2 rounded-full ${supportMode.active || escalationActive ? "bg-red-100" : "bg-slate-700"}`}
                       >
                         <Bot
-                          className={`w-4 h-4 ${supportMode.active || escalationActive ? "text-red-600" : "text-gray-600"}`}
+                          className={`w-4 h-4 ${supportMode.active || escalationActive ? "text-red-600" : "text-slate-400"}`}
                         />
                       </div>
                       <div
                         className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
-                          supportMode.active || escalationActive ? "bg-red-100" : "bg-gray-100"
+                          supportMode.active || escalationActive ? "bg-red-100" : "bg-slate-700"
                         }`}
                       >
                         <div className="flex space-x-1">
                           <div
                             className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-slate-400"
                             }`}
                           ></div>
                           <div
                             className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-slate-400"
                             }`}
                             style={{ animationDelay: "0.1s" }}
                           ></div>
                           <div
                             className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive ? "bg-red-400" : "bg-gray-400"
+                              supportMode.active || escalationActive ? "bg-red-400" : "bg-slate-400"
                             }`}
                             style={{ animationDelay: "0.2s" }}
                           ></div>
@@ -532,14 +533,14 @@ I can help you with:
               </div>
 
               {/* Input Area */}
-              <div className="p-4 bg-white border-t border-gray-100">
+              <div className="p-4 bg-slate-800 border-t border-slate-700">
                 <div className="flex space-x-2">
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={t.placeholder}
-                    className="flex-1 border border-gray-300 focus:border-blue-500 rounded-full px-4 py-2 bg-white"
+                    className="flex-1 border border-slate-600 focus:border-cyan-500 rounded-full px-4 py-2 bg-slate-700 text-white"
                     disabled={isLoading}
                   />
                   <Button
@@ -547,8 +548,8 @@ I can help you with:
                     disabled={!inputValue.trim() || isLoading}
                     className={`rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200 ${
                       supportMode.active || escalationActive
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-cyan-600 hover:bg-cyan-700"
                     } text-white`}
                   >
                     <Send className="w-4 h-4" />
