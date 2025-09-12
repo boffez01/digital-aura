@@ -436,13 +436,13 @@ export default function DigitalAuraPortfolio() {
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section - CON ANIMAZIONE 3D */}
+      {/* Hero Section - CON ANIMAZIONE 3D FUNZIONANTE */}
       <section id="home" className="min-h-screen flex items-center justify-center px-4 pt-0 relative overflow-hidden">
-        {/* 3D Animated Background */}
+        {/* 3D Animated Background - FINALMENTE FUNZIONANTE */}
         <HeroBackground />
 
         {/* Overlay per leggibilità */}
-        <div className="absolute inset-0 bg-black/30 z-10" />
+        <div className="absolute inset-0 bg-black/20 z-10" />
 
         <div className="text-center max-w-6xl mx-auto relative z-20">
           <motion.div
@@ -451,25 +451,25 @@ export default function DigitalAuraPortfolio() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            {/* Badge */}
+            {/* Badge - VISIBILITÀ CORRETTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               className="mb-8"
             >
-              <Badge className="mb-4 bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 text-lg px-6 py-3 rounded-full backdrop-blur-sm">
+              <Badge className="mb-4 bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 text-base px-6 py-3 rounded-full backdrop-blur-sm shadow-lg shadow-cyan-400/20">
                 <Zap className="w-4 h-4 mr-2" />
                 {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
               </Badge>
             </motion.div>
 
-            {/* Main Title - TIPOGRAFIA PROFESSIONALE */}
+            {/* Main Title - TIPOGRAFIA PROFESSIONALE CORRETTA */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-4xl md:text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
             >
               {language === "it" ? (
                 <>
@@ -494,12 +494,12 @@ export default function DigitalAuraPortfolio() {
               )}
             </motion.h1>
 
-            {/* Description - TIPOGRAFIA PROFESSIONALE */}
+            {/* Description - TIPOGRAFIA PROFESSIONALE CORRETTA */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="text-lg text-slate-400 mb-12 leading-relaxed max-w-4xl mx-auto"
+              className="text-lg text-slate-300 mb-12 leading-relaxed max-w-4xl mx-auto"
             >
               {language === "it"
                 ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business con le nostre soluzioni AI."
@@ -540,7 +540,7 @@ export default function DigitalAuraPortfolio() {
             </motion.div>
           </motion.div>
 
-          {/* Stats Section - METRICA ONESTA */}
+          {/* Stats Section - DIMENSIONI CORRETTE */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -555,7 +555,6 @@ export default function DigitalAuraPortfolio() {
               },
               { icon: Clock, value: "24/7", label: language === "it" ? "Supporto Dedicato" : "Dedicated Support" },
               { icon: Shield, value: "SSL", label: language === "it" ? "Sicurezza Garantita" : "Guaranteed Security" },
-              // METRICA ONESTA E PROFESSIONALE
               {
                 icon: Handshake,
                 value: "Partner",
@@ -570,9 +569,9 @@ export default function DigitalAuraPortfolio() {
                 className="text-center"
               >
                 <div className="flex justify-center mb-3">
-                  <stat.icon className="w-8 h-8 text-cyan-400" />
+                  <stat.icon className="w-6 h-6 text-cyan-400" />
                 </div>
-                <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.value}</div>
+                <div className="text-xl md:text-2xl font-bold text-white mb-2">{stat.value}</div>
                 <div className="text-slate-400 text-sm">{stat.label}</div>
               </motion.div>
             ))}
@@ -580,10 +579,10 @@ export default function DigitalAuraPortfolio() {
         </div>
       </section>
 
-      {/* Services Section - TEMA SCURO COERENTE */}
+      {/* Services Section - TEMA SCURO COERENTE E TIPOGRAFIA CORRETTA */}
       <ServicesSection services={services} />
 
-      {/* Process Section - NUOVA SEZIONE */}
+      {/* Process Section */}
       <ProcessSection />
 
       {/* Projects Section */}
@@ -622,7 +621,7 @@ export default function DigitalAuraPortfolio() {
   )
 }
 
-// Services Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
+// Services Section - TEMA SCURO COERENTE E TIPOGRAFIA PROFESSIONALE
 function ServicesSection({ services }: { services: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -688,16 +687,16 @@ function ServicesSection({ services }: { services: any[] }) {
                     {service.icon}
                   </motion.div>
                   <CardTitle className="text-xl font-bold text-white mb-3">{service.title}</CardTitle>
-                  <CardDescription className="text-slate-400 text-sm leading-relaxed mb-4">
+                  <CardDescription className="text-slate-400 text-base leading-relaxed mb-4">
                     {service.description}
                   </CardDescription>
-                  <Badge className={`${service.statsColor} bg-slate-700/80 border-0 font-semibold`}>
+                  <Badge className={`${service.statsColor} bg-slate-700/80 border-0 font-semibold text-sm`}>
                     {service.stats}
                   </Badge>
                 </CardHeader>
                 <CardContent className="pt-0 flex-1 flex flex-col">
                   <div className="mb-6 flex-1">
-                    <h4 className="font-semibold text-white mb-3 text-sm">
+                    <h4 className="font-semibold text-white mb-3 text-base">
                       {language === "it" ? "Vantaggi Principali:" : "Key Benefits:"}
                     </h4>
                     <ul className="space-y-2 mb-6">
@@ -718,7 +717,7 @@ function ServicesSection({ services }: { services: any[] }) {
                       ))}
                     </ul>
 
-                    <h4 className="font-semibold text-white mb-3 text-sm">
+                    <h4 className="font-semibold text-white mb-3 text-base">
                       {language === "it" ? "Funzionalità:" : "Features:"}
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -733,7 +732,7 @@ function ServicesSection({ services }: { services: any[] }) {
                           }}
                           whileHover={{ scale: 1.05 }}
                         >
-                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
+                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
                             {feature}
                           </Badge>
                         </motion.div>
@@ -744,7 +743,7 @@ function ServicesSection({ services }: { services: any[] }) {
                   <div className="mt-auto">
                     <Link href={service.href}>
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button className={`w-full text-white font-semibold ${service.buttonColor}`}>
+                        <Button className={`w-full text-white font-semibold text-base ${service.buttonColor}`}>
                           {language === "it" ? "Scopri di più →" : "Learn more →"}
                         </Button>
                       </motion.div>
@@ -859,11 +858,11 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="bg-white/90 rounded-full p-4 shadow-lg border-2 border-white">
-                      <Eye className="w-8 h-8 text-slate-900" />
+                      <Eye className="w-6 h-6 text-slate-900" />
                     </div>
                   </div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 border-0 shadow-sm">ROI: {project.roi}</Badge>
+                    <Badge className="bg-white/90 text-slate-900 border-0 shadow-sm text-sm">ROI: {project.roi}</Badge>
                   </div>
                 </motion.div>
                 <CardHeader className="flex-shrink-0">
@@ -874,7 +873,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                       transition={{ delay: index * 0.1 + 0.5, duration: 0.3 }}
                     >
                       <Badge
-                        className={`${
+                        className={`text-sm ${
                           project.category === "AI Automation"
                             ? "bg-purple-900/50 text-purple-300 border-purple-700"
                             : project.category === "Chatbot"
@@ -887,12 +886,14 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         {project.category}
                       </Badge>
                     </motion.div>
-                    <div className="text-xs text-slate-500">{project.timeline}</div>
+                    <div className="text-sm text-slate-500">{project.timeline}</div>
                   </div>
                   <CardTitle className="text-xl text-white group-hover:text-cyan-400 transition-colors">
                     {project.title}
                   </CardTitle>
-                  <CardDescription className="text-slate-400 leading-relaxed">{project.description}</CardDescription>
+                  <CardDescription className="text-slate-400 leading-relaxed text-base">
+                    {project.description}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -907,13 +908,13 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
+                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
                           {tag}
                         </Badge>
                       </motion.div>
                     ))}
                     {project.tags.length > 3 && (
-                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs bg-slate-700/50">
+                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
                         +{project.tags.length - 3}
                       </Badge>
                     )}
@@ -930,7 +931,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                     </div>
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto">
+                  <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto text-base">
                     {language === "it" ? "Visualizza Case Study" : "View Case Study"}
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
@@ -993,7 +994,7 @@ function OurStorySection({ values }: { values: any[] }) {
               <h3 className="text-2xl font-bold text-cyan-400 mb-4">
                 {language === "it" ? "La Nostra Visione" : "Our Vision"}
               </h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed text-base">
                 {language === "it"
                   ? "Crediamo in un futuro dove l'intelligenza artificiale non sostituisce l'uomo, ma lo potenzia, creando opportunità di crescita e innovazione senza precedenti. Vogliamo essere il ponte tra la tecnologia avanzata e il successo aziendale."
                   : "We believe in a future where artificial intelligence does not replace humans, but empowers them, creating unprecedented opportunities for growth and innovation. We want to be the bridge between advanced technology and business success."}
@@ -1012,7 +1013,7 @@ function OurStorySection({ values }: { values: any[] }) {
               <h3 className="text-2xl font-bold text-green-400 mb-4">
                 {language === "it" ? "Il Nostro Impegno" : "Our Commitment"}
               </h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed text-base">
                 {language === "it"
                   ? "Ogni progetto è un'opportunità per creare valore reale. Lavoriamo fianco a fianco con i nostri clienti per garantire risultati concreti e misurabili, con un approccio trasparente e orientato al ROI."
                   : "Every project is an opportunity to create real value. We work side by side with our clients to ensure concrete and measurable results, with a transparent and ROI-oriented approach."}
@@ -1041,7 +1042,9 @@ function OurStorySection({ values }: { values: any[] }) {
                   {value.icon}
                 </motion.div>
                 <CardTitle className="text-xl text-white mb-3">{value.title}</CardTitle>
-                <CardDescription className="text-slate-400 leading-relaxed">{value.description}</CardDescription>
+                <CardDescription className="text-slate-400 leading-relaxed text-base">
+                  {value.description}
+                </CardDescription>
               </Card>
             </motion.div>
           ))}
@@ -1071,21 +1074,21 @@ function ContactSection({
 
   const contactInfo = [
     {
-      icon: <Mail className="w-6 h-6 text-white" />,
+      icon: <Mail className="w-5 h-5 text-white" />,
       title: "Email",
       info: "info@digitalaura.it",
       description: language === "it" ? "Rispondiamo entro 2 ore" : "We respond within 2 hours",
       color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
-      icon: <Phone className="w-6 h-6 text-white" />,
+      icon: <Phone className="w-5 h-5 text-white" />,
       title: language === "it" ? "Telefono" : "Phone",
       info: "+393500216480",
       description: language === "it" ? "Lun-Ven 9:00-18:00" : "Mon-Fri 9:00-18:00",
       color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
-      icon: <MapPin className="w-6 h-6 text-white" />,
+      icon: <MapPin className="w-5 h-5 text-white" />,
       title: language === "it" ? "Sede" : "Office",
       info: "Brescia, Italia",
       description: "Via dei Mille 5",
@@ -1147,13 +1150,13 @@ function ContactSection({
                     rotate: 360,
                     transition: { duration: 0.6 },
                   }}
-                  className={`p-4 rounded-full ${contact.color} shadow-lg`}
+                  className={`p-3 rounded-full ${contact.color} shadow-lg`}
                 >
                   {contact.icon}
                 </motion.div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">{contact.title}</h3>
-                  <p className="text-slate-300 font-medium">{contact.info}</p>
+                  <p className="text-slate-300 font-medium text-base">{contact.info}</p>
                   <p className="text-slate-500 text-sm">{contact.description}</p>
                 </div>
               </motion.div>
@@ -1166,7 +1169,7 @@ function ContactSection({
               className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg shadow-lg p-6 text-white"
             >
               <div className="flex items-center space-x-4">
-                <Shield className="w-8 h-8" />
+                <Shield className="w-6 h-6" />
                 <div>
                   <h3 className="text-lg font-semibold">
                     {language === "it" ? "Garanzia di Qualità" : "Quality Guarantee"}
@@ -1191,7 +1194,7 @@ function ContactSection({
                 <CardTitle className="text-white text-2xl">
                   {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-400 text-base">
                   {language === "it"
                     ? "Compila il form e ti ricontatteremo entro 2 ore lavorative con una proposta personalizzata"
                     : "Fill out the form and we'll contact you within 2 business hours with a personalized proposal"}
@@ -1204,11 +1207,11 @@ function ContactSection({
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-8"
                   >
-                    <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                    <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
                     <h3 className="text-2xl font-bold text-white mb-2">
                       {language === "it" ? "Messaggio Inviato!" : "Message Sent!"}
                     </h3>
-                    <p className="text-slate-400">
+                    <p className="text-slate-400 text-base">
                       {language === "it" ? "Ti contatteremo entro 24 ore!" : "We'll contact you within 24 hours!"}
                     </p>
                   </motion.div>
@@ -1216,7 +1219,7 @@ function ContactSection({
                   <form onSubmit={onSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-slate-300 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium text-base">
                           {language === "it" ? "Nome *" : "Name *"}
                         </label>
                         <Input
@@ -1228,7 +1231,7 @@ function ContactSection({
                         />
                       </div>
                       <div>
-                        <label className="block text-slate-300 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium text-base">
                           {language === "it" ? "Email *" : "Email *"}
                         </label>
                         <Input
@@ -1244,7 +1247,7 @@ function ContactSection({
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-slate-300 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium text-base">
                           {language === "it" ? "Telefono" : "Phone"}
                         </label>
                         <Input
@@ -1258,7 +1261,7 @@ function ContactSection({
                         />
                       </div>
                       <div>
-                        <label className="block text-slate-300 mb-2 font-medium">
+                        <label className="block text-slate-300 mb-2 font-medium text-base">
                           {language === "it" ? "Azienda" : "Company"}
                         </label>
                         <Input
@@ -1271,7 +1274,7 @@ function ContactSection({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 mb-2 font-medium">
+                      <label className="block text-slate-300 mb-2 font-medium text-base">
                         {language === "it" ? "Servizio di Interesse" : "Service of Interest"}
                       </label>
                       <Select value={formData.service} onValueChange={(value) => onInputChange("service", value)}>
@@ -1295,7 +1298,7 @@ function ContactSection({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 mb-2 font-medium">
+                      <label className="block text-slate-300 mb-2 font-medium text-base">
                         {language === "it" ? "Messaggio *" : "Message *"}
                       </label>
                       <Textarea
@@ -1354,7 +1357,7 @@ function Footer() {
               </div>
               <span className="text-2xl font-bold">Digital Aura</span>
             </div>
-            <p className="text-slate-400 mb-6 leading-relaxed">
+            <p className="text-slate-400 mb-6 leading-relaxed text-base">
               {language === "it"
                 ? "Trasformiamo le aziende attraverso soluzioni AI innovative e tecnologie all'avanguardia. La tua crescita digitale inizia qui."
                 : "We transform businesses through innovative AI solutions and cutting-edge technologies. Your digital growth starts here."}
@@ -1362,19 +1365,19 @@ function Footer() {
             <div className="space-y-3">
               <div className="flex items-center text-slate-400">
                 <Mail className="w-4 h-4 mr-3" />
-                <a href="mailto:info@digitalaura.it" className="hover:text-white transition-colors">
+                <a href="mailto:info@digitalaura.it" className="hover:text-white transition-colors text-base">
                   info@digitalaura.it
                 </a>
               </div>
               <div className="flex items-center text-slate-400">
                 <Phone className="w-4 h-4 mr-3" />
-                <a href="tel:+393500216480" className="hover:text-white transition-colors">
+                <a href="tel:+393500216480" className="hover:text-white transition-colors text-base">
                   +393500216480
                 </a>
               </div>
               <div className="flex items-center text-slate-400">
                 <MapPin className="w-4 h-4 mr-3" />
-                Brescia, Italia - Via dei Mille 5
+                <span className="text-base">Brescia, Italia - Via dei Mille 5</span>
               </div>
             </div>
           </div>
@@ -1384,27 +1387,27 @@ function Footer() {
             <h3 className="text-xl font-semibold mb-6">{language === "it" ? "Link Rapidi" : "Quick Links"}</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="/" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Home" : "Home"}
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="#services" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Servizi" : "Services"}
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="/blog" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Blog" : "Blog"}
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="#contact" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Contatti" : "Contact"}
                 </Link>
               </li>
               <li>
-                <Link href="/appointments" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="/appointments" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Appuntamenti" : "Appointments"}
                 </Link>
               </li>
@@ -1416,22 +1419,31 @@ function Footer() {
             <h3 className="text-xl font-semibold mb-6">{language === "it" ? "I Nostri Servizi" : "Our Services"}</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/services/ai-automation" className="text-slate-400 hover:text-white transition-colors">
+                <Link
+                  href="/services/ai-automation"
+                  className="text-slate-400 hover:text-white transition-colors text-base"
+                >
                   {language === "it" ? "AI Automation" : "AI Automation"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/chatbot" className="text-slate-400 hover:text-white transition-colors">
+                <Link href="/services/chatbot" className="text-slate-400 hover:text-white transition-colors text-base">
                   {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/web-development" className="text-slate-400 hover:text-white transition-colors">
+                <Link
+                  href="/services/web-development"
+                  className="text-slate-400 hover:text-white transition-colors text-base"
+                >
                   {language === "it" ? "Web Development" : "Web Development"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/ai-marketing" className="text-slate-400 hover:text-white transition-colors">
+                <Link
+                  href="/services/ai-marketing"
+                  className="text-slate-400 hover:text-white transition-colors text-base"
+                >
                   {language === "it" ? "AI Marketing" : "AI Marketing"}
                 </Link>
               </li>
@@ -1442,19 +1454,19 @@ function Footer() {
         {/* Bottom Section */}
         <div className="border-t border-slate-700 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-            <p className="text-slate-500 mb-4 md:mb-0">
+            <p className="text-slate-500 mb-4 md:mb-0 text-base">
               {language === "it"
                 ? "© 2024 Digital Aura. Tutti i diritti riservati."
                 : "© 2024 Digital Aura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
                 {language === "it" ? "Privacy Policy" : "Privacy Policy"}
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
                 {language === "it" ? "Termini di Servizio" : "Terms of Service"}
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
                 {language === "it" ? "Cookie Policy" : "Cookie Policy"}
               </a>
             </div>
