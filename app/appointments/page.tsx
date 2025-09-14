@@ -1,931 +1,741 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { ArrowLeft, CalendarIcon, Clock, CheckCircle, Star, Zap, BarChart3, Headphones } from "lucide-react"
-import { format, addDays, isAfter, isBefore, startOfDay } from "date-fns"
-import { it, enUS } from "date-fns/locale"
-import Link from "next/link"
-
-interface AppointmentType {
-  id: string
-  title: string
-  description: string
-  duration: string
-  price: string
-  icon: React.ReactNode
-  color: string
-  bgColor: string
-  features: string[]
-  popular?: boolean
-}
-
-interface TimeSlot {
-  time: string
-  available: boolean
-  occupied?: boolean
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  MessageSquare,
+  CheckCircle,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 
 interface FormData {
   name: string
   email: string
   phone: string
-  company: string
-  message: string
-  appointmentType: string
-  date: Date | null
+  service: string
+  date: string
   time: string
+  message: string
+}
+
+interface FormErrors {
+  [key: string]: string
 }
 
 export default function AppointmentsPage() {
-  // Self-contained language management
-  const [language, setLanguage] = useState<"it" | "en">("it")
+  const { language } = useLanguage()
   const [currentStep, setCurrentStep] = useState(1)
-  const [selectedType, setSelectedType] = useState<AppointmentType | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [selectedTime, setSelectedTime] = useState("")
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
-    company: "",
-    message: "",
-    appointmentType: "",
-    date: null,
+    service: "",
+    date: "",
     time: "",
+    message: "",
   })
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
+  const [occupiedSlots, setOccupiedSlots] = useState<string[]>([])
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
 
-  // Load language from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedLanguage = localStorage.getItem("language") as "it" | "en"
-      if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
-        setLanguage(savedLanguage)
-      }
+  const t = {
+    it: {
+      title: "Prenota la Tua Consulenza Gratuita",
+      subtitle: "Scopri come l'AI può trasformare il tuo business",
+      step1: "Seleziona Servizio",
+      step2: "Scegli Data e Ora",
+      step3: "I Tuoi Dati",
+      step4: "Conferma",
+      services: {
+        "ai-automation": "AI Automation",
+        chatbot: "Chatbot Intelligenti",
+        "web-development": "Web Development",
+        "ai-marketing": "AI Marketing",
+      },
+      serviceDescriptions: {
+        "ai-automation": "Automatizza i processi aziendali con l'intelligenza artificiale",
+        chatbot: "Assistenti virtuali 24/7 per il customer service",
+        "web-development": "Siti web moderni e e-commerce performanti",
+        "ai-marketing": "Campagne marketing automatizzate e personalizzate",
+      },
+      selectService: "Seleziona un servizio",
+      selectDate: "Seleziona una data",
+      selectTime: "Seleziona un orario",
+      availableTimes: "Orari Disponibili",
+      name: "Nome e Cognome",
+      email: "Email",
+      phone: "Telefono",
+      message: "Messaggio (opzionale)",
+      messagePlaceholder: "Descrivi brevemente le tue esigenze...",
+      back: "Indietro",
+      continue: "Continua",
+      bookAppointment: "Prenota Consulenza",
+      success: "Prenotazione Confermata!",
+      successMessage: "La tua consulenza è stata prenotata con successo. Riceverai una email di conferma a breve.",
+      error: "Errore nella prenotazione",
+      errorMessage: "Si è verificato un errore. Riprova o contattaci direttamente.",
+      required: "Campo obbligatorio",
+      invalidEmail: "Email non valida",
+      invalidPhone: "Numero di telefono non valido",
+      occupied: "Orario già occupato",
+      businessHours: "Orari: 9:00-12:00 e 14:00-18:00",
+      today: "Oggi",
+      selected: "Selezionato",
+      available: "Disponibile",
+      unavailable: "Non disponibile",
+      closed: "Chiuso",
+    },
+    en: {
+      title: "Book Your Free Consultation",
+      subtitle: "Discover how AI can transform your business",
+      step1: "Select Service",
+      step2: "Choose Date & Time",
+      step3: "Your Details",
+      step4: "Confirm",
+      services: {
+        "ai-automation": "AI Automation",
+        chatbot: "Intelligent Chatbots",
+        "web-development": "Web Development",
+        "ai-marketing": "AI Marketing",
+      },
+      serviceDescriptions: {
+        "ai-automation": "Automate business processes with artificial intelligence",
+        chatbot: "24/7 virtual assistants for customer service",
+        "web-development": "Modern websites and high-performance e-commerce",
+        "ai-marketing": "Automated and personalized marketing campaigns",
+      },
+      selectService: "Select a service",
+      selectDate: "Select a date",
+      selectTime: "Select a time",
+      availableTimes: "Available Times",
+      name: "Full Name",
+      email: "Email",
+      phone: "Phone",
+      message: "Message (optional)",
+      messagePlaceholder: "Briefly describe your needs...",
+      back: "Back",
+      continue: "Continue",
+      bookAppointment: "Book Consultation",
+      success: "Booking Confirmed!",
+      successMessage: "Your consultation has been successfully booked. You will receive a confirmation email shortly.",
+      error: "Booking Error",
+      errorMessage: "An error occurred. Please try again or contact us directly.",
+      required: "Required field",
+      invalidEmail: "Invalid email",
+      invalidPhone: "Invalid phone number",
+      occupied: "Time slot occupied",
+      businessHours: "Hours: 9:00-12:00 and 14:00-18:00",
+      today: "Today",
+      selected: "Selected",
+      available: "Available",
+      unavailable: "Unavailable",
+      closed: "Closed",
+    },
+  }
+
+  const currentT = t[language as keyof typeof t] || t.it
+
+  // Generate time slots (every 30 minutes)
+  const generateTimeSlots = () => {
+    const slots: string[] = []
+
+    // Morning: 9:00 - 12:00
+    for (let hour = 9; hour < 12; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`)
+      slots.push(`${hour.toString().padStart(2, "0")}:30`)
     }
-  }, [])
 
-  // Listen for language changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleStorageChange = () => {
-        const savedLanguage = localStorage.getItem("language") as "it" | "en"
-        if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
-          setLanguage(savedLanguage)
-        }
-      }
-
-      window.addEventListener("storage", handleStorageChange)
-      return () => window.removeEventListener("storage", handleStorageChange)
+    // Afternoon: 14:00 - 18:00
+    for (let hour = 14; hour < 18; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`)
+      slots.push(`${hour.toString().padStart(2, "0")}:30`)
     }
-  }, [])
 
-  const appointmentTypes: AppointmentType[] = [
-    {
-      id: "strategic-consultation",
-      title: language === "it" ? "Consulenza Strategica" : "Strategic Consultation",
-      description:
-        language === "it"
-          ? "Strategia digitale personalizzata per il tuo business"
-          : "Personalized digital strategy for your business",
-      duration: "30",
-      price: language === "it" ? "Gratuito" : "Free",
-      icon: <Star className="w-6 h-6" />,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 border-purple-200",
-      features:
-        language === "it"
-          ? ["Analisi completa del business", "Strategia personalizzata", "Piano d'azione dettagliato"]
-          : ["Complete business analysis", "Personalized strategy", "Detailed action plan"],
-      popular: true,
-    },
-    {
-      id: "personalized-demo",
-      title: language === "it" ? "Demo Personalizzata" : "Personalized Demo",
-      description:
-        language === "it" ? "Vedi le nostre soluzioni AI in azione dal vivo" : "See our AI solutions in action live",
-      duration: "30",
-      price: language === "it" ? "Gratuito" : "Free",
-      icon: <Zap className="w-6 h-6" />,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 border-blue-200",
-      features:
-        language === "it"
-          ? ["Demo live personalizzata", "Q&A in tempo reale", "Prova delle funzionalità"]
-          : ["Personalized live demo", "Real-time Q&A", "Feature testing"],
-    },
-    {
-      id: "project-analysis",
-      title: language === "it" ? "Analisi Progetto" : "Project Analysis",
-      description:
-        language === "it"
-          ? "Valutazione tecnica approfondita del tuo progetto"
-          : "In-depth technical evaluation of your project",
-      duration: "30",
-      price: language === "it" ? "Gratuito" : "Free",
-      icon: <BarChart3 className="w-6 h-6" />,
-      color: "text-green-600",
-      bgColor: "bg-green-50 border-green-200",
-      features:
-        language === "it"
-          ? ["Analisi tecnica dettagliata", "Stima tempi e costi", "Roadmap implementazione"]
-          : ["Detailed technical analysis", "Time and cost estimation", "Implementation roadmap"],
-    },
-    {
-      id: "priority-support",
-      title: language === "it" ? "Supporto Prioritario" : "Priority Support",
-      description:
-        language === "it" ? "Risoluzione rapida per problemi critici" : "Quick resolution for critical issues",
-      duration: "30",
-      price: language === "it" ? "Gratuito" : "Free",
-      icon: <Headphones className="w-6 h-6" />,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 border-orange-200",
-      features:
-        language === "it"
-          ? ["Supporto immediato", "Risoluzione prioritaria", "Follow-up garantito"]
-          : ["Immediate support", "Priority resolution", "Guaranteed follow-up"],
-    },
-  ]
+    return slots
+  }
 
-  const timeSlots = [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-  ]
+  const timeSlots = generateTimeSlots()
 
+  // Check availability when date changes
   useEffect(() => {
-    if (selectedDate) {
-      fetchAvailability(selectedDate)
+    if (formData.date) {
+      checkAvailability(formData.date)
     }
-  }, [selectedDate])
+  }, [formData.date])
 
-  const fetchAvailability = async (date: Date) => {
-    setIsLoading(true)
+  const checkAvailability = async (date: string) => {
     try {
-      const dateStr = format(date, "yyyy-MM-dd")
-      console.log("🔍 Fetching availability for date:", dateStr)
-
-      const response = await fetch(`/api/appointments/availability?date=${dateStr}`)
-      const data = await response.json()
-
-      console.log("📅 Availability response:", data)
-
-      if (data.success) {
-        const occupiedTimes = data.occupied_slots || []
-        console.log("⏰ Occupied times:", occupiedTimes)
-
-        const slots = timeSlots.map((time) => ({
-          time,
-          available: !occupiedTimes.includes(time),
-          occupied: occupiedTimes.includes(time),
-        }))
-
-        console.log("🎯 Generated slots:", slots)
-        setAvailableSlots(slots)
-      } else {
-        console.error("❌ Error fetching availability:", data.error)
-        // Fallback: tutti gli slot disponibili
-        setAvailableSlots(timeSlots.map((time) => ({ time, available: true, occupied: false })))
+      const response = await fetch(`/api/appointments/availability?date=${date}`)
+      if (response.ok) {
+        const data = await response.json()
+        setOccupiedSlots(data.occupied_slots || [])
       }
     } catch (error) {
-      console.error("❌ Error fetching availability:", error)
-      // Fallback: tutti gli slot disponibili
-      setAvailableSlots(timeSlots.map((time) => ({ time, available: true, occupied: false })))
-    } finally {
-      setIsLoading(false)
+      console.error("Error checking availability:", error)
     }
   }
 
-  const handleTypeSelect = (type: AppointmentType) => {
-    setSelectedType(type)
-    setFormData((prev) => ({ ...prev, appointmentType: type.id }))
-    setCurrentStep(2)
+  // Calendar functions
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   }
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date)
-      setFormData((prev) => ({ ...prev, date }))
-      setSelectedTime("")
+  const getFirstDayOfMonth = (date: Date) => {
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    return firstDay === 0 ? 6 : firstDay - 1 // Convert Sunday (0) to 6, Monday (1) to 0, etc.
+  }
+
+  const isToday = (date: Date, day: number) => {
+    const today = new Date()
+    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && day === today.getDate()
+  }
+
+  const isSelected = (date: Date, day: number) => {
+    if (!formData.date) return false
+    const selectedDate = new Date(formData.date)
+    return (
+      date.getFullYear() === selectedDate.getFullYear() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      day === selectedDate.getDate()
+    )
+  }
+
+  const formatDateForInput = (date: Date, day: number) => {
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, "0")
+    const dayStr = day.toString().padStart(2, "0")
+    return `${year}-${month}-${dayStr}`
+  }
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth)
+    const firstDay = getFirstDayOfMonth(currentMonth)
+    const days = []
+
+    // Empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="h-12"></div>)
     }
-  }
 
-  const handleTimeSelect = async (time: string) => {
-    if (!selectedDate) return
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isCurrentDay = isToday(currentMonth, day)
+      const isSelectedDay = isSelected(currentMonth, day)
+      const dateStr = formatDateForInput(currentMonth, day)
+      const isPast = new Date(dateStr) < new Date(new Date().toDateString())
 
-    // Double check availability before selecting
-    const dateStr = format(selectedDate, "yyyy-MM-dd")
-
-    try {
-      console.log("🔍 Double-checking availability for:", { date: dateStr, time })
-
-      const response = await fetch("/api/appointments/availability", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ date: dateStr, time }),
-      })
-
-      const data = await response.json()
-      console.log("📊 Availability check result:", data)
-
-      if (data.available) {
-        setSelectedTime(time)
-        setFormData((prev) => ({ ...prev, time }))
-        setCurrentStep(3)
-      } else {
-        alert(
-          language === "it"
-            ? "Questo orario è stato appena prenotato da qualcun altro. Seleziona un altro orario."
-            : "This time slot was just booked by someone else. Please select another time.",
-        )
-        // Refresh availability
-        fetchAvailability(selectedDate)
-      }
-    } catch (error) {
-      console.error("❌ Error checking availability:", error)
-      alert(
-        language === "it"
-          ? "Errore nel controllo disponibilità. Riprova."
-          : "Error checking availability. Please try again.",
+      days.push(
+        <button
+          key={day}
+          onClick={() => {
+            if (!isPast) {
+              setFormData({ ...formData, date: dateStr, time: "" })
+              setSelectedDate(new Date(dateStr))
+            }
+          }}
+          disabled={isPast}
+          className={`
+            h-12 w-full rounded-xl font-medium transition-all duration-200 transform hover:scale-105
+            ${isPast ? "text-slate-500 cursor-not-allowed" : "text-slate-200 hover:bg-slate-700 cursor-pointer"}
+            ${isCurrentDay ? "ring-2 ring-cyan-400 bg-slate-800" : ""}
+            ${isSelectedDay ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg" : ""}
+          `}
+        >
+          {day}
+        </button>,
       )
     }
+
+    return days
   }
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const validateStep = (step: number): boolean => {
+    const newErrors: FormErrors = {}
+
+    switch (step) {
+      case 1:
+        if (!formData.service) newErrors.service = currentT.required
+        break
+      case 2:
+        if (!formData.date) newErrors.date = currentT.required
+        if (!formData.time) newErrors.time = currentT.required
+        break
+      case 3:
+        if (!formData.name.trim()) newErrors.name = currentT.required
+        if (!formData.email.trim()) {
+          newErrors.email = currentT.required
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+          newErrors.email = currentT.invalidEmail
+        }
+        if (!formData.phone.trim()) {
+          newErrors.phone = currentT.required
+        } else if (!/^[+]?[0-9\s\-$$$$]{8,}$/.test(formData.phone)) {
+          newErrors.phone = currentT.invalidPhone
+        }
+        break
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const handleBack = () => {
+    setCurrentStep(currentStep - 1)
+    setErrors({})
+  }
+
+  const handleSubmit = async () => {
+    if (!validateStep(3)) return
+
     setIsSubmitting(true)
+    setSubmitStatus("idle")
 
     try {
-      console.log("📝 Submitting appointment:", formData)
-
-      // Final availability check before submission
-      if (selectedDate && selectedTime) {
-        const dateStr = format(selectedDate, "yyyy-MM-dd")
-
-        const availabilityCheck = await fetch("/api/appointments/availability", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ date: dateStr, time: selectedTime }),
-        })
-
-        const availabilityData = await availabilityCheck.json()
-
-        if (!availabilityData.available) {
-          alert(
-            language === "it"
-              ? "Questo orario è stato appena prenotato. Seleziona un altro orario."
-              : "This time slot was just booked. Please select another time.",
-          )
-          setCurrentStep(2)
-          fetchAvailability(selectedDate)
-          return
-        }
-      }
-
-      const appointmentData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        service: selectedType?.title || formData.appointmentType,
-        date: formData.date ? format(formData.date, "yyyy-MM-dd") : "",
-        time: formData.time,
-        message:
-          formData.message ||
-          `${language === "it" ? "Richiesta appuntamento per" : "Appointment request for"}: ${selectedType?.title}`,
-        status: "pending" as const,
-        priority: selectedType?.id === "priority-support",
-      }
-
-      console.log("🚀 Sending appointment data:", appointmentData)
-
       const response = await fetch("/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(appointmentData),
+        body: JSON.stringify({
+          ...formData,
+          status: "pending",
+          priority: false,
+        }),
       })
 
-      const result = await response.json()
-      console.log("✅ Appointment response:", result)
+      const data = await response.json()
 
-      if (result.success) {
-        setSubmitSuccess(true)
+      if (response.ok && data.success) {
+        setSubmitStatus("success")
         setCurrentStep(4)
-
-        // Reset form after success
-        setTimeout(() => {
-          setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            company: "",
-            message: "",
-            appointmentType: "",
-            date: null,
-            time: "",
-          })
-          setSelectedType(null)
-          setSelectedDate(null)
-          setSelectedTime("")
-          setCurrentStep(1)
-          setSubmitSuccess(false)
-        }, 5000)
       } else {
-        console.error("❌ Error submitting appointment:", result.error)
-
-        if (result.occupied) {
-          alert(
-            language === "it"
-              ? "Questo orario è stato appena prenotato. Seleziona un altro orario."
-              : "This time slot was just booked. Please select another time.",
-          )
+        setSubmitStatus("error")
+        if (data.occupied) {
+          setErrors({ time: currentT.occupied })
           setCurrentStep(2)
-          if (selectedDate) fetchAvailability(selectedDate)
-        } else {
-          alert(
-            language === "it"
-              ? "Errore nell'invio della richiesta. Riprova."
-              : "Error submitting request. Please try again.",
-          )
         }
       }
     } catch (error) {
-      console.error("❌ Error submitting appointment:", error)
-      alert(
-        language === "it"
-          ? "Errore nell'invio della richiesta. Riprova."
-          : "Error submitting request. Please try again.",
-      )
+      console.error("Error submitting appointment:", error)
+      setSubmitStatus("error")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const isDateDisabled = (date: Date) => {
-    const today = startOfDay(new Date())
-    const maxDate = addDays(today, 60) // 60 giorni nel futuro
-    return isBefore(date, today) || isAfter(date, maxDate)
+  const getServiceIcon = (service: string) => {
+    const icons = {
+      "ai-automation": <Zap className="w-6 h-6" />,
+      chatbot: <MessageSquare className="w-6 h-6" />,
+      "web-development": <Target className="w-6 h-6" />,
+      "ai-marketing": <Sparkles className="w-6 h-6" />,
+    }
+    return icons[service as keyof typeof icons] || <Target className="w-6 h-6" />
+  }
+
+  const getServiceColor = (service: string) => {
+    const colors = {
+      "ai-automation": "from-purple-500 to-indigo-600",
+      chatbot: "from-blue-500 to-cyan-600",
+      "web-development": "from-green-500 to-emerald-600",
+      "ai-marketing": "from-orange-500 to-red-600",
+    }
+    return colors[service as keyof typeof colors] || "from-gray-500 to-gray-600"
+  }
+
+  if (submitStatus === "success") {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-slate-800 border-slate-700">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-4">{currentT.success}</h2>
+            <p className="text-slate-300 mb-6">{currentT.successMessage}</p>
+            <Button
+              onClick={() => (window.location.href = "/")}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+            >
+              Torna alla Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-gray-600 hover:text-purple-600 transition-colors">
-                <ArrowLeft className="w-6 h-6" />
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    {language === "it" ? "Prenota Appuntamento" : "Book Appointment"}
-                  </h1>
-                  <p className="text-gray-600 text-sm">
-                    {language === "it" ? "Scegli il servizio perfetto per te" : "Choose the perfect service for you"}
-                  </p>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-slate-900 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">{currentT.title}</h1>
+          <p className="text-xl text-slate-300">{currentT.subtitle}</p>
+        </div>
 
-            {/* Progress Indicator */}
-            <div className="hidden md:flex items-center space-x-2">
-              {[1, 2, 3, 4].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                      step <= currentStep
-                        ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
-                        : "bg-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {step < currentStep ? <CheckCircle className="w-4 h-4" /> : step}
-                  </div>
-                  {step < 4 && (
-                    <div
-                      className={`w-8 h-1 mx-2 rounded-full transition-all ${
-                        step < currentStep ? "bg-gradient-to-r from-purple-600 to-blue-600" : "bg-gray-200"
-                      }`}
-                    />
-                  )}
+        {/* Progress Steps */}
+        <div className="flex justify-center mb-12">
+          <div className="flex items-center space-x-4">
+            {[1, 2, 3].map((step) => (
+              <React.Fragment key={step}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+                    step <= currentStep
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
+                      : "bg-slate-700 text-slate-400"
+                  }`}
+                >
+                  {step}
                 </div>
-              ))}
-            </div>
+                {step < 3 && (
+                  <div
+                    className={`w-12 h-1 rounded transition-all duration-300 ${
+                      step < currentStep ? "bg-gradient-to-r from-cyan-500 to-blue-600" : "bg-slate-700"
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-6 py-8 max-w-6xl">
-        <AnimatePresence mode="wait">
-          {/* Step 1: Select Service Type */}
-          {currentStep === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="text-center mb-12">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl font-bold text-gray-900 mb-4"
-                >
-                  {language === "it" ? "Che tipo di consulenza ti serve?" : "What type of consultation do you need?"}
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-xl text-gray-600"
-                >
-                  {language === "it"
-                    ? "Scegli il servizio più adatto alle tue esigenze"
-                    : "Choose the service that best fits your needs"}
-                </motion.p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {appointmentTypes.map((type, index) => (
-                  <motion.div
-                    key={type.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card
-                      className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-                        type.bgColor
-                      } ${type.popular ? "ring-2 ring-purple-500" : ""}`}
-                      onClick={() => handleTypeSelect(type)}
+        <Card className="bg-slate-800 border-slate-700 shadow-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white text-center">
+              {currentStep === 1 && currentT.step1}
+              {currentStep === 2 && currentT.step2}
+              {currentStep === 3 && currentT.step3}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            {/* Step 1: Service Selection */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(currentT.services).map(([key, name]) => (
+                    <button
+                      key={key}
+                      onClick={() => setFormData({ ...formData, service: key })}
+                      className={`p-6 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 text-left ${
+                        formData.service === key
+                          ? "border-cyan-500 bg-slate-700/50"
+                          : "border-slate-600 bg-slate-700/20 hover:border-slate-500"
+                      }`}
                     >
-                      {type.popular && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                            {language === "it" ? "Più Richiesto" : "Most Popular"}
-                          </span>
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className={`p-3 rounded-lg bg-gradient-to-r ${getServiceColor(key)}`}>
+                          {getServiceIcon(key)}
                         </div>
-                      )}
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className={`p-3 rounded-lg bg-white shadow-sm ${type.color}`}>{type.icon}</div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-900">{type.price}</div>
-                            <div className="text-sm text-gray-500">{type.duration} min</div>
-                          </div>
-                        </div>
-                        <CardTitle className="text-xl text-gray-900">{type.title}</CardTitle>
-                        <p className="text-gray-600">{type.description}</p>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2">
-                          {type.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-center text-sm text-gray-700">
-                              <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+                        <h3 className="text-lg font-semibold text-white">{name}</h3>
+                      </div>
+                      <p className="text-slate-300 text-sm">
+                        {currentT.serviceDescriptions[key as keyof typeof currentT.serviceDescriptions]}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                {errors.service && (
+                  <p className="text-red-400 text-sm flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.service}
+                  </p>
+                )}
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Step 2: Select Date & Time */}
-          {currentStep === 2 && selectedType && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="text-center mb-12">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl font-bold text-gray-900 mb-4"
-                >
-                  {language === "it" ? "Scegli Data e Orario" : "Choose Date and Time"}
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-xl text-gray-600"
-                >
-                  {language === "it"
-                    ? `Seleziona quando vuoi la tua ${selectedType.title.toLowerCase()}`
-                    : `Select when you want your ${selectedType.title.toLowerCase()}`}
-                </motion.p>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Step 2: Date and Time Selection */}
+            {currentStep === 2 && (
+              <div className="space-y-8">
                 {/* Calendar */}
-                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                  <Card className="p-6 shadow-lg border-0">
-                    <CardHeader className="p-0 mb-6">
-                      <CardTitle className="text-xl text-gray-900 flex items-center">
-                        <CalendarIcon className="w-5 h-5 mr-2 text-purple-600" />
-                        {language === "it" ? "Seleziona Data" : "Select Date"}
-                      </CardTitle>
-                    </CardHeader>
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate || undefined}
-                      onSelect={handleDateSelect}
-                      disabled={isDateDisabled}
-                      className="rounded-md border-0"
-                    />
-                  </Card>
-                </motion.div>
+                <div className="bg-slate-700/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-white">{currentT.selectDate}</h3>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newMonth = new Date(currentMonth)
+                          newMonth.setMonth(newMonth.getMonth() - 1)
+                          setCurrentMonth(newMonth)
+                        }}
+                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </Button>
+                      <span className="text-white font-medium min-w-[120px] text-center">
+                        {currentMonth.toLocaleDateString(language === "en" ? "en-US" : "it-IT", {
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newMonth = new Date(currentMonth)
+                          newMonth.setMonth(newMonth.getMonth() + 1)
+                          setCurrentMonth(newMonth)
+                        }}
+                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </div>
 
-                {/* Time Slots */}
-                <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-                  <Card className="p-6 shadow-lg border-0 h-full">
-                    <CardHeader className="p-0 mb-6">
-                      <CardTitle className="text-xl text-gray-900 flex items-center">
-                        <Clock className="w-5 h-5 mr-2 text-purple-600" />
-                        {language === "it" ? "Orari Disponibili" : "Available Times"}
-                      </CardTitle>
-                      {selectedDate && (
-                        <p className="text-gray-600 text-sm">
-                          {format(selectedDate, "EEEE, d MMMM yyyy", {
-                            locale: language === "it" ? it : enUS,
-                          })}
-                        </p>
-                      )}
-                    </CardHeader>
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-2 mb-4">
+                    {["Lu", "Ma", "Me", "Gi", "Ve", "Sa", "Do"].map((day) => (
+                      <div key={day} className="h-10 flex items-center justify-center text-slate-400 font-medium">
+                        {day}
+                      </div>
+                    ))}
+                    {renderCalendar()}
+                  </div>
 
-                    {!selectedDate ? (
-                      <div className="text-center py-12">
-                        <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">
-                          {language === "it" ? "Seleziona prima una data" : "Please select a date first"}
-                        </p>
-                      </div>
-                    ) : isLoading ? (
-                      <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                        <p className="text-gray-500">
-                          {language === "it" ? "Caricamento orari..." : "Loading times..."}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto">
-                          {availableSlots.map((slot) => (
-                            <Button
-                              key={slot.time}
-                              variant={selectedTime === slot.time ? "default" : "outline"}
-                              className={`p-3 h-auto transition-all ${
-                                slot.occupied
-                                  ? "bg-red-50 border-red-200 text-red-600 cursor-not-allowed opacity-60"
-                                  : selectedTime === slot.time
-                                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
-                                    : slot.available
-                                      ? "bg-white hover:bg-purple-50 hover:border-purple-200 hover:text-purple-600"
-                                      : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
-                              }`}
-                              onClick={() => slot.available && !slot.occupied && handleTimeSelect(slot.time)}
-                              disabled={!slot.available || slot.occupied}
-                            >
-                              <div className="text-center">
-                                <div className="font-semibold">{slot.time}</div>
-                                <div className="text-xs opacity-75">
-                                  {slot.occupied
-                                    ? language === "it"
-                                      ? "Occupato"
-                                      : "Occupied"
-                                    : slot.available
-                                      ? language === "it"
-                                        ? "Disponibile"
-                                        : "Available"
-                                      : language === "it"
-                                        ? "Non disponibile"
-                                        : "Unavailable"}
-                                </div>
-                              </div>
-                            </Button>
-                          ))}
-                        </div>
+                  {/* Legend */}
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full ring-2 ring-cyan-400 bg-slate-800"></div>
+                      <span className="text-slate-300">{currentT.today}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600"></div>
+                      <span className="text-slate-300">{currentT.selected}</span>
+                    </div>
+                  </div>
+                </div>
 
-                        {/* Legend */}
-                        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-3 text-sm">
-                            {language === "it" ? "Legenda:" : "Legend:"}
-                          </h4>
-                          <div className="grid grid-cols-3 gap-4 text-xs">
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-white border border-gray-300 rounded mr-2"></div>
-                              <span className="text-gray-600">{language === "it" ? "Disponibile" : "Available"}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-2"></div>
-                              <span className="text-gray-600">{language === "it" ? "Occupato" : "Occupied"}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded mr-2"></div>
-                              <span className="text-gray-600">{language === "it" ? "Selezionato" : "Selected"}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                {/* Time Selection */}
+                {formData.date && (
+                  <div className="bg-slate-700/30 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">{currentT.availableTimes}</h3>
+                    <p className="text-sm text-slate-400 mb-4">{currentT.businessHours}</p>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {timeSlots.map((time) => {
+                        const isOccupied = occupiedSlots.includes(time)
+                        return (
+                          <button
+                            key={time}
+                            onClick={() => !isOccupied && setFormData({ ...formData, time })}
+                            disabled={isOccupied}
+                            className={`p-3 rounded-lg font-medium transition-all duration-200 ${
+                              formData.time === time
+                                ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
+                                : isOccupied
+                                  ? "bg-red-500/20 text-red-400 cursor-not-allowed"
+                                  : "bg-slate-600 text-slate-200 hover:bg-slate-500"
+                            }`}
+                          >
+                            {time}
+                            {isOccupied && <div className="text-xs mt-1">{currentT.occupied}</div>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {(errors.date || errors.time) && (
+                  <div className="space-y-2">
+                    {errors.date && (
+                      <p className="text-red-400 text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.date}
+                      </p>
                     )}
-                  </Card>
-                </motion.div>
+                    {errors.time && (
+                      <p className="text-red-400 text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.time}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Step 3: Personal Information */}
-          {currentStep === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="text-center mb-12">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl font-bold text-gray-900 mb-4"
-                >
-                  {language === "it" ? "I Tuoi Dati" : "Your Information"}
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-xl text-gray-600"
-                >
-                  {language === "it"
-                    ? "Inserisci i tuoi dati per completare la prenotazione"
-                    : "Enter your details to complete the booking"}
-                </motion.p>
-              </div>
+            {/* Step 3: Contact Information */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <User className="w-4 h-4 inline mr-2" />
+                      {currentT.name}
+                    </label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="bg-slate-700 border-slate-600 text-white focus:border-cyan-500"
+                      placeholder="Mario Rossi"
+                    />
+                    {errors.name && (
+                      <p className="text-red-400 text-sm mt-1 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.name}
+                      </p>
+                    )}
+                  </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="max-w-2xl mx-auto"
-              >
-                <Card className="p-8 shadow-lg border-0">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                          {language === "it" ? "Nome completo *" : "Full name *"}
-                        </Label>
-                        <Input
-                          id="name"
-                          type="text"
-                          value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
-                          className="mt-1"
-                          required
-                        />
-                      </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <Mail className="w-4 h-4 inline mr-2" />
+                      {currentT.email}
+                    </label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="bg-slate-700 border-slate-600 text-white focus:border-cyan-500"
+                      placeholder="mario@esempio.com"
+                    />
+                    {errors.email && (
+                      <p className="text-red-400 text-sm mt-1 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-                      <div>
-                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                          Email *
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          className="mt-1"
-                          required
-                        />
-                      </div>
-                    </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <Phone className="w-4 h-4 inline mr-2" />
+                    {currentT.phone}
+                  </label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white focus:border-cyan-500"
+                    placeholder="+39 333 1234567"
+                  />
+                  {errors.phone && (
+                    <p className="text-red-400 text-sm mt-1 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.phone}
+                    </p>
+                  )}
+                </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                          {language === "it" ? "Telefono" : "Phone"}
-                        </Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => handleInputChange("phone", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <MessageSquare className="w-4 h-4 inline mr-2" />
+                    {currentT.message}
+                  </label>
+                  <Textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white focus:border-cyan-500 min-h-[100px]"
+                    placeholder={currentT.messagePlaceholder}
+                  />
+                </div>
 
-                      <div>
-                        <Label htmlFor="company" className="text-sm font-medium text-gray-700">
-                          {language === "it" ? "Azienda" : "Company"}
-                        </Label>
-                        <Input
-                          id="company"
-                          type="text"
-                          value={formData.company}
-                          onChange={(e) => handleInputChange("company", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="message" className="text-sm font-medium text-gray-700">
-                        {language === "it" ? "Messaggio (opzionale)" : "Message (optional)"}
-                      </Label>
-                      <Textarea
-                        id="message"
-                        value={formData.message}
-                        onChange={(e) => handleInputChange("message", e.target.value)}
-                        className="mt-1"
-                        rows={4}
-                        placeholder={
-                          language === "it"
-                            ? "Descrivi brevemente le tue esigenze o domande..."
-                            : "Briefly describe your needs or questions..."
-                        }
-                      />
-                    </div>
-
-                    {/* Summary */}
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <h3 className="font-semibold text-gray-900 mb-4">
-                        {language === "it" ? "Riepilogo Appuntamento" : "Appointment Summary"}
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">{language === "it" ? "Servizio:" : "Service:"}</span>
-                          <span className="font-medium">{selectedType?.title}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">{language === "it" ? "Data:" : "Date:"}</span>
-                          <span className="font-medium">
-                            {selectedDate &&
-                              format(selectedDate, "EEEE, d MMMM yyyy", {
-                                locale: language === "it" ? it : enUS,
-                              })}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">{language === "it" ? "Orario:" : "Time:"}</span>
-                          <span className="font-medium">{selectedTime}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">{language === "it" ? "Durata:" : "Duration:"}</span>
-                          <span className="font-medium">{selectedType?.duration} min</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting || !formData.name || !formData.email}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 text-lg font-semibold"
-                    >
-                      {isSubmitting ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          {language === "it" ? "Prenotazione..." : "Booking..."}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 mr-2" />
-                          {language === "it" ? "Conferma Prenotazione" : "Confirm Booking"}
-                        </div>
-                      )}
-                    </Button>
-                  </form>
-                </Card>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {/* Step 4: Success */}
-          {currentStep === 4 && submitSuccess && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="text-center max-w-2xl mx-auto">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8"
-                >
-                  <CheckCircle className="w-12 h-12 text-green-500" />
-                </motion.div>
-
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-4xl font-bold text-gray-900 mb-4"
-                >
-                  {language === "it" ? "Prenotazione Confermata!" : "Booking Confirmed!"}
-                </motion.h2>
-
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-xl text-gray-600 mb-8"
-                >
-                  {language === "it"
-                    ? "Grazie per aver prenotato con noi. Riceverai una email di conferma a breve."
-                    : "Thank you for booking with us. You will receive a confirmation email shortly."}
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="bg-gray-50 p-6 rounded-lg mb-8"
-                >
-                  <h3 className="font-semibold text-gray-900 mb-4">
-                    {language === "it" ? "Dettagli Appuntamento" : "Appointment Details"}
-                  </h3>
+                {/* Summary */}
+                <div className="bg-slate-700/30 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">Riepilogo Prenotazione</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">{language === "it" ? "Servizio:" : "Service:"}</span>
-                      <span className="font-medium">{selectedType?.title}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">{language === "it" ? "Data:" : "Date:"}</span>
-                      <span className="font-medium">
-                        {selectedDate &&
-                          format(selectedDate, "EEEE, d MMMM yyyy", {
-                            locale: language === "it" ? it : enUS,
-                          })}
+                      <span className="text-slate-400">Servizio:</span>
+                      <span className="text-white">
+                        {currentT.services[formData.service as keyof typeof currentT.services]}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">{language === "it" ? "Orario:" : "Time:"}</span>
-                      <span className="font-medium">{selectedTime}</span>
+                      <span className="text-slate-400">Data:</span>
+                      <span className="text-white">{formData.date}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Orario:</span>
+                      <span className="text-white">{formData.time}</span>
                     </div>
                   </div>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-                  <Link href="/">
-                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3">
-                      {language === "it" ? "Torna alla Home" : "Back to Home"}
-                    </Button>
-                  </Link>
-                </motion.div>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8">
+              {currentStep > 1 && (
+                <Button
+                  onClick={handleBack}
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {currentT.back}
+                </Button>
+              )}
+
+              <div className="ml-auto">
+                {currentStep < 3 ? (
+                  <Button
+                    onClick={handleNext}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  >
+                    {currentT.continue}
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Prenotando...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {currentT.bookAppointment}
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {submitStatus === "error" && (
+              <div className="mt-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+                <div className="flex items-center gap-2 text-red-400">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-medium">{currentT.error}</span>
+                </div>
+                <p className="text-red-300 text-sm mt-1">{currentT.errorMessage}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

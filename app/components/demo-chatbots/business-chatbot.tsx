@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Briefcase, Bot, Send, Calendar } from "lucide-react"
+import { Briefcase, Bot, Send, Calendar, User, X, ArrowLeft } from "lucide-react"
 import { useLanguage } from "../../contexts/language-context"
 
 interface Message {
@@ -16,7 +15,11 @@ interface Message {
   type?: "text" | "services" | "consultation"
 }
 
-export default function BusinessChatbot() {
+interface BusinessChatbotProps {
+  onBack: () => void
+}
+
+export default function BusinessChatbot({ onBack }: BusinessChatbotProps) {
   const { language } = useLanguage()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
@@ -26,6 +29,7 @@ export default function BusinessChatbot() {
     en: {
       title: "Business Consultant",
       subtitle: "Grow your business with AI",
+      online: "Online",
       greeting:
         "Hello! I'm your business consultant. I can help you understand our services, provide business insights, and schedule consultations. How can I help your business grow today?",
       services: "Here are our main business services:",
@@ -38,6 +42,7 @@ export default function BusinessChatbot() {
     it: {
       title: "Consulente Business",
       subtitle: "Fai crescere il tuo business con l'AI",
+      online: "Online",
       greeting:
         "Ciao! Sono il tuo consulente business. Posso aiutarti a capire i nostri servizi, fornire insights aziendali e programmare consulenze. Come posso aiutare la tua azienda a crescere oggi?",
       services: "Ecco i nostri principali servizi business:",
@@ -153,51 +158,76 @@ export default function BusinessChatbot() {
   }
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
-        <CardTitle className="flex items-center space-x-2">
-          <Briefcase className="h-5 w-5" />
-          <div>
-            <div className="font-semibold">{t.title}</div>
-            <div className="text-sm opacity-90">{t.subtitle}</div>
+    <div className="flex flex-col h-full bg-slate-800">
+      {/* Header - STILE BOOKING ASSISTANT */}
+      <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button onClick={onBack} className="hover:bg-white/20 p-1 rounded">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center space-x-2">
+            <Briefcase className="w-5 h-5" />
+            <div>
+              <div className="font-semibold">{t.title}</div>
+              <div className="text-xs opacity-90">{t.subtitle}</div>
+            </div>
           </div>
-        </CardTitle>
-      </CardHeader>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+          <span className="text-sm">{t.online}</span>
+        </div>
+        <button onClick={onBack} className="hover:bg-white/20 p-1 rounded">
+          <X className="w-5 h-5 text-white" />
+        </button>
+      </div>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+      {/* Chat Messages */}
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-800">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+            <div className="flex items-start space-x-3 max-w-xs">
+              {message.sender === "bot" && (
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+              )}
+
               <div
-                className={`max-w-[80%] ${message.sender === "user" ? "bg-purple-600 text-white" : "bg-gray-100"} rounded-lg p-3`}
+                className={`rounded-lg p-3 ${
+                  message.sender === "user" ? "bg-purple-500 text-white" : "bg-slate-700 text-white"
+                }`}
               >
                 {message.sender === "bot" && (
                   <div className="flex items-center space-x-2 mb-2">
-                    <Bot className="h-4 w-4 text-purple-600" />
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-purple-500/20 text-purple-300">
                       Business Consultant
                     </Badge>
                   </div>
                 )}
                 <p className="text-sm">{message.text}</p>
+                <div className="text-xs opacity-75 mt-1">04:27 PM</div>
 
                 {message.type === "services" && (
                   <div className="mt-3 space-y-3">
                     {services.map((service) => (
-                      <div key={service.id} className="border rounded-lg p-3 bg-white">
+                      <div key={service.id} className="border border-slate-600 rounded-lg p-3 bg-slate-800">
                         <div className="flex items-start space-x-3">
                           <div className="text-2xl">{service.icon}</div>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{service.name}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                            <h4 className="font-medium text-white">{service.name}</h4>
+                            <p className="text-sm text-slate-400 mt-1">{service.description}</p>
                             <div className="flex items-center justify-between mt-2">
-                              <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-green-400 border-green-600 bg-green-500/10"
+                              >
                                 {service.benefits}
                               </Badge>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-purple-600 border-purple-200 hover:bg-purple-50 bg-transparent"
+                                className="text-purple-400 border-purple-600 hover:bg-purple-500/10 bg-transparent"
                               >
                                 {t.learnMore}
                               </Button>
@@ -210,62 +240,71 @@ export default function BusinessChatbot() {
                 )}
 
                 {message.type === "consultation" && (
-                  <div className="mt-3 p-4 bg-white rounded-lg border border-purple-200">
+                  <div className="mt-3 p-4 bg-slate-800 rounded-lg border border-purple-600">
                     <div className="text-center">
-                      <Calendar className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                      <h4 className="font-medium text-gray-900 mb-2">
+                      <Calendar className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                      <h4 className="font-medium text-white mb-2">
                         {language === "en" ? "Free Business Consultation" : "Consulenza Business Gratuita"}
                       </h4>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-slate-400 mb-3">
                         {language === "en"
                           ? "30-minute session with our business experts"
                           : "Sessione di 30 minuti con i nostri esperti business"}
                       </p>
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700">{t.bookConsultation}</Button>
+                      <Button className="w-full bg-purple-500 hover:bg-purple-600">{t.bookConsultation}</Button>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
-          ))}
 
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <div className="flex items-center space-x-2">
-                  <Bot className="h-4 w-4 text-purple-600" />
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
-                  </div>
+              {message.sender === "user" && (
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-
-        <div className="border-t p-4">
-          <div className="flex space-x-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder={t.placeholder}
-              onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
-              className="flex-1"
-            />
-            <Button onClick={() => handleSend(inputValue)} className="bg-purple-600 hover:bg-purple-700">
-              <Send className="h-4 w-4" />
-            </Button>
           </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div className="border-t border-slate-700 p-4 bg-slate-800">
+        <div className="flex space-x-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={t.placeholder}
+            onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
+            className="flex-1 bg-slate-700 border-slate-600 text-white"
+          />
+          <Button onClick={() => handleSend(inputValue)} className="bg-purple-500 hover:bg-purple-600">
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

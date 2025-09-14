@@ -1,395 +1,457 @@
 "use client"
-
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ServiceNavbar from "../../components/service-navbar"
-import { useLanguage } from "../../contexts/language-context"
 import {
-  Bot,
-  ArrowRight,
-  CheckCircle,
-  Play,
-  Workflow,
-  Database,
-  Mail,
   Zap,
-  Clock,
-  Users,
-  Settings,
+  Cpu,
   BarChart3,
-  Calendar,
+  Play,
+  Sparkles,
+  Brain,
+  Shield,
+  Cog,
+  Database,
+  Workflow,
+  CheckCircle,
+  Clock,
+  Settings,
+  Users,
   Target,
+  Lightbulb,
+  Factory,
+  Building,
+  ShoppingBag,
+  Stethoscope,
+  GraduationCap,
+  Banknote,
 } from "lucide-react"
+import Link from "next/link"
+import { useLanguage } from "../../contexts/language-context"
+import Navbar from "../../components/navbar"
+import ServiceNavbar from "../../components/service-navbar"
+import ChatbotWidget from "../../components/chatbot-widget"
+import { useState } from "react"
 
 export default function AIAutomationPage() {
   const { language } = useLanguage()
   const [activeTab, setActiveTab] = useState("workflow")
 
-  const texts = {
-    en: {
-      title: "AI Automation",
-      subtitle: "Intelligent Process Automation",
-      description:
-        "Transform your business with AI automation solutions that eliminate manual processes, reduce errors, and increase operational efficiency by up to 75%. Our AI-driven automation tools can handle a wide range of tasks, from routine data entry to complex decision-making processes, ensuring that your business runs smoothly and efficiently.",
-      heroTitle: "Intelligent",
-      heroSubtitle: "Automation",
-      ctaPrimary: "Discover Solutions",
-      ctaSecondary: "Free Analysis",
-      benefitsTitle: "Measurable Results",
-      benefitsSubtitle: "Real impact on your business operations",
-      automationTitle: "Automation Types",
-      automationSubtitle: "Customized solutions for every area of your business",
-      processTitle: "Our Process",
-      processSubtitle: "From analysis to implementation in 4 simple steps",
-      industriesTitle: "Industries We Serve",
-      industriesSubtitle: "Specialized solutions for different sectors",
-      implementationTitle: "Implementation Process",
-      implementationSubtitle: "How we bring automation to life",
-      successMetricsTitle: "Success Metrics",
-      successMetricsSubtitle: "Key indicators of our automation success",
-      ctaFinalTitle: "Ready to Automate Your Business?",
-      ctaFinalSubtitle:
-        "Start today with a personalized automation solution. Free consultation and custom demo included.",
-      ctaFinalPrimary: "Book Free Consultation",
-      ctaFinalSecondary: "Request Demo",
-    },
-    it: {
-      title: "Automazione AI",
-      subtitle: "Automazione Intelligente dei Processi",
-      description:
-        "Trasforma la tua azienda con soluzioni di automazione AI che eliminano i processi manuali, riducono gli errori e aumentano l'efficienza operativa fino al 75%. I nostre strumenti di automazione guidati da AI possono gestire un ampio spettro di compiti, dalla semplice inserimento di dati routine a processi decisionali complessi, garantendo che la tua azienda funzioni in modo fluido e efficiente.",
-      heroTitle: "Automazione",
-      heroSubtitle: "Intelligente",
-      ctaPrimary: "Scopri le Soluzioni",
-      ctaSecondary: "Analisi Gratuita",
-      benefitsTitle: "Risultati Misurabili",
-      benefitsSubtitle: "Impatto reale sulle tue operazioni aziendali",
-      automationTitle: "Tipi di Automazione",
-      automationSubtitle: "Soluzioni personalizzate per ogni area della tua azienda",
-      processTitle: "Il Nostro Processo",
-      processSubtitle: "Dall'analisi all'implementazione in 4 semplici passaggi",
-      industriesTitle: "Settori che Serviamo",
-      industriesSubtitle: "Soluzioni specializzate per diversi settori",
-      implementationTitle: "Processo di Implementazione",
-      implementationSubtitle: "Come portiamo l'automazione alla vita",
-      successMetricsTitle: "Metriche di Successo",
-      successMetricsSubtitle: "Indicatori chiave del nostro successo nell'automazione",
-      ctaFinalTitle: "Pronto ad Automatizzare la Tua Azienda?",
-      ctaFinalSubtitle:
-        "Inizia oggi con una soluzione di automazione personalizzata. Consulenza gratuita e demo personalizzata incluse.",
-      ctaFinalPrimary: "Prenota Consulenza Gratuita",
-      ctaFinalSecondary: "Richiedi Demo",
-    },
-  }
-
-  const t = texts[language]
-
-  const benefits = [
+  const features = [
     {
-      metric: "75%",
-      label: t.benefitsTitle,
-      description: t.benefitsSubtitle,
+      icon: <Workflow className="h-8 w-8" />,
+      title: language === "it" ? "Automazione Processi" : "Process Automation",
+      description:
+        language === "it"
+          ? "Automatizza flussi di lavoro complessi con intelligenza artificiale avanzata"
+          : "Automate complex workflows with advanced artificial intelligence",
+      color: "text-purple-400",
+      bgColor: "bg-purple-900/20",
     },
     {
-      metric: "90%",
-      label: language === "en" ? "Increased Accuracy" : "Precisione Aumentata",
+      icon: <Brain className="h-8 w-8" />,
+      title: language === "it" ? "Machine Learning" : "Machine Learning",
       description:
-        language === "en"
-          ? "Elimination of human errors in automated processes"
-          : "Eliminazione degli errori umani nei processi automatizzati",
+        language === "it"
+          ? "Algoritmi che apprendono e migliorano automaticamente le performance"
+          : "Algorithms that learn and automatically improve performance",
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-900/20",
     },
     {
-      metric: "50%",
-      label: language === "en" ? "Cost Savings" : "Risparmio Costi",
+      icon: <Database className="h-8 w-8" />,
+      title: language === "it" ? "Analisi Predittiva" : "Predictive Analytics",
       description:
-        language === "en"
-          ? "Significant reduction in operational costs"
-          : "Riduzione significativa dei costi operativi aziendali",
+        language === "it"
+          ? "Prevedi tendenze e comportamenti per decisioni strategiche informate"
+          : "Predict trends and behaviors for informed strategic decisions",
+      color: "text-green-400",
+      bgColor: "bg-green-900/20",
     },
     {
-      metric: "24/7",
-      label: language === "en" ? "Continuous Operation" : "Operatività Continua",
+      icon: <Cog className="h-8 w-8" />,
+      title: language === "it" ? "Integrazione Sistemi" : "System Integration",
       description:
-        language === "en" ? "Systems that work without interruptions" : "Sistemi che lavorano senza interruzioni",
+        language === "it"
+          ? "Connetti tutti i tuoi sistemi esistenti in un ecosistema unificato"
+          : "Connect all your existing systems into a unified ecosystem",
+      color: "text-orange-400",
+      bgColor: "bg-orange-900/20",
+    },
+    {
+      icon: <Shield className="h-8 w-8" />,
+      title: language === "it" ? "Sicurezza Avanzata" : "Advanced Security",
+      description:
+        language === "it"
+          ? "Protezione enterprise-grade con crittografia e monitoraggio continuo"
+          : "Enterprise-grade protection with encryption and continuous monitoring",
+      color: "text-red-400",
+      bgColor: "bg-red-900/20",
+    },
+    {
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: language === "it" ? "Dashboard Analytics" : "Analytics Dashboard",
+      description:
+        language === "it"
+          ? "Visualizza metriche in tempo reale e KPI personalizzati"
+          : "View real-time metrics and custom KPIs",
+      color: "text-blue-400",
+      bgColor: "bg-blue-900/20",
     },
   ]
 
+  // CONTENUTO ESTESO PER AI AUTOMATION
   const automationTypes = [
     {
       id: "workflow",
-      title: t.automationTitle,
+      title: language === "it" ? "Automazione Workflow" : "Workflow Automation",
       icon: <Workflow className="h-6 w-6" />,
-      description: t.automationSubtitle,
-      features: [
-        "Automatic document management",
-        "Digital approvals",
-        "Intelligent notifications",
-        "Integration with existing systems",
-      ],
+      description:
+        language === "it"
+          ? "Automatizza processi aziendali complessi con intelligenza artificiale"
+          : "Automate complex business processes with artificial intelligence",
+      features:
+        language === "it"
+          ? [
+              "Gestione documentale automatica",
+              "Approvazioni digitali intelligenti",
+              "Notifiche e alert personalizzati",
+              "Integrazione con sistemi esistenti",
+              "Monitoraggio performance in tempo reale",
+              "Escalation automatica dei processi",
+            ]
+          : [
+              "Automatic document management",
+              "Intelligent digital approvals",
+              "Personalized notifications and alerts",
+              "Integration with existing systems",
+              "Real-time performance monitoring",
+              "Automatic process escalation",
+            ],
     },
     {
       id: "data",
-      title: language === "en" ? "Data Processing" : "Elaborazione Dati",
+      title: language === "it" ? "Elaborazione Dati AI" : "AI Data Processing",
       icon: <Database className="h-6 w-6" />,
       description:
-        language === "en" ? "Automatic data processing and analysis" : "Elaborazione e analisi automatica dei dati",
-      features: ["Automated ETL", "Auto-generated reports", "Predictive analysis", "Real-time dashboards"],
+        language === "it"
+          ? "Analisi e elaborazione automatica di grandi volumi di dati"
+          : "Automatic analysis and processing of large data volumes",
+      features:
+        language === "it"
+          ? [
+              "ETL automatizzato con AI",
+              "Report generati automaticamente",
+              "Analisi predittiva avanzata",
+              "Dashboard in tempo reale",
+              "Pulizia e validazione dati",
+              "Integrazione multi-sorgente",
+            ]
+          : [
+              "AI-powered automated ETL",
+              "Auto-generated reports",
+              "Advanced predictive analysis",
+              "Real-time dashboards",
+              "Data cleaning and validation",
+              "Multi-source integration",
+            ],
     },
     {
       id: "communication",
-      title: language === "en" ? "Communication Automation" : "Automazione Comunicazioni",
-      icon: <Mail className="h-6 w-6" />,
+      title: language === "it" ? "Automazione Comunicazioni" : "Communication Automation",
+      icon: <Settings className="h-6 w-6" />,
       description:
-        language === "en" ? "Automation of business communications" : "Automazione delle comunicazioni aziendali",
-      features: [
-        "Automatic email marketing",
-        "Customer follow-up",
-        "Personalized notifications",
-        "Automatic lead management",
-      ],
+        language === "it"
+          ? "Gestione automatica delle comunicazioni aziendali"
+          : "Automatic management of business communications",
+      features:
+        language === "it"
+          ? [
+              "Email marketing automatizzato",
+              "Follow-up clienti intelligente",
+              "Notifiche personalizzate",
+              "Gestione lead automatica",
+              "Segmentazione audience AI",
+              "A/B testing automatico",
+            ]
+          : [
+              "Automated email marketing",
+              "Intelligent customer follow-up",
+              "Personalized notifications",
+              "Automatic lead management",
+              "AI audience segmentation",
+              "Automatic A/B testing",
+            ],
     },
   ]
 
   const processSteps = [
     {
       step: "01",
-      title: t.processTitle,
-      description: t.processSubtitle,
+      title: language === "it" ? "Analisi e Audit" : "Analysis & Audit",
+      description:
+        language === "it"
+          ? "Analizziamo i tuoi processi attuali e identifichiamo opportunità di automazione"
+          : "We analyze your current processes and identify automation opportunities",
       icon: <BarChart3 className="h-8 w-8" />,
-      duration: language === "en" ? "1-2 weeks" : "1-2 settimane",
+      duration: language === "it" ? "1-2 settimane" : "1-2 weeks",
     },
     {
       step: "02",
-      title: language === "en" ? "Strategy & Design" : "Strategia e Progettazione",
+      title: language === "it" ? "Strategia e Design" : "Strategy & Design",
       description:
-        language === "en"
-          ? "We design a customized automation strategy for your specific needs"
-          : "Progettiamo una strategia di automazione personalizzata per le tue esigenze specifiche",
-      icon: <Settings className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
+        language === "it"
+          ? "Progettiamo una strategia di automazione personalizzata per le tue esigenze"
+          : "We design a customized automation strategy for your needs",
+      icon: <Lightbulb className="h-8 w-8" />,
+      duration: language === "it" ? "1 settimana" : "1 week",
     },
     {
       step: "03",
-      title: language === "en" ? "Development & Testing" : "Sviluppo e Test",
+      title: language === "it" ? "Sviluppo e Test" : "Development & Testing",
       description:
-        language === "en"
-          ? "We develop and thoroughly test the automation solutions"
-          : "Sviluppiamo e testiamo accuratamente le soluzioni di automazione",
-      icon: <Zap className="h-8 w-8" />,
-      duration: language === "en" ? "2-4 weeks" : "2-4 settimane",
+        language === "it"
+          ? "Sviluppiamo e testiamo accuratamente le soluzioni di automazione"
+          : "We develop and thoroughly test the automation solutions",
+      icon: <Cog className="h-8 w-8" />,
+      duration: language === "it" ? "2-4 settimane" : "2-4 weeks",
     },
     {
       step: "04",
-      title: language === "en" ? "Deployment & Training" : "Implementazione e Formazione",
+      title: language === "it" ? "Implementazione e Formazione" : "Implementation & Training",
       description:
-        language === "en"
-          ? "We deploy the solution and train your team for optimal use"
-          : "Implementiamo la soluzione e formiamo il tuo team per un uso ottimale",
+        language === "it"
+          ? "Implementiamo la soluzione e formiamo il tuo team per un uso ottimale"
+          : "We implement the solution and train your team for optimal use",
       icon: <Users className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
+      duration: language === "it" ? "1 settimana" : "1 week",
     },
   ]
 
   const industries = [
     {
-      name: language === "en" ? "Healthcare" : "Sanità",
-      icon: "🏥",
+      name: language === "it" ? "Manifatturiero" : "Manufacturing",
+      icon: <Factory className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "Patient management, appointment scheduling, medical records"
-          : "Gestione pazienti, programmazione appuntamenti, cartelle cliniche",
-      automations: ["Patient registration", "Appointment reminders", "Report generation"],
+        language === "it"
+          ? "Automazione produzione, controllo qualità, gestione inventario"
+          : "Production automation, quality control, inventory management",
+      automations: [
+        language === "it" ? "Pianificazione produzione" : "Production planning",
+        language === "it" ? "Controllo qualità automatico" : "Automatic quality control",
+        language === "it" ? "Gestione supply chain" : "Supply chain management",
+      ],
+      benefits: "45% riduzione costi, 200% aumento produttività",
     },
     {
-      name: language === "en" ? "Finance" : "Finanza",
-      icon: "💰",
+      name: language === "it" ? "Servizi Finanziari" : "Financial Services",
+      icon: <Banknote className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "Transaction processing, compliance reporting, risk analysis"
-          : "Elaborazione transazioni, reporting compliance, analisi rischi",
-      automations: ["Invoice processing", "Compliance checks", "Risk assessment"],
+        language === "it"
+          ? "Elaborazione transazioni, compliance, analisi rischi"
+          : "Transaction processing, compliance, risk analysis",
+      automations: [
+        language === "it" ? "Elaborazione fatture" : "Invoice processing",
+        language === "it" ? "Controlli compliance" : "Compliance checks",
+        language === "it" ? "Valutazione rischi" : "Risk assessment",
+      ],
+      benefits: "60% riduzione errori, 80% velocità processi",
     },
     {
-      name: language === "en" ? "Manufacturing" : "Manifatturiero",
-      icon: "🏭",
+      name: language === "it" ? "Sanità" : "Healthcare",
+      icon: <Stethoscope className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "Production planning, quality control, inventory management"
-          : "Pianificazione produzione, controllo qualità, gestione inventario",
-      automations: ["Production scheduling", "Quality monitoring", "Inventory tracking"],
+        language === "it"
+          ? "Gestione pazienti, programmazione, cartelle cliniche"
+          : "Patient management, scheduling, medical records",
+      automations: [
+        language === "it" ? "Registrazione pazienti" : "Patient registration",
+        language === "it" ? "Promemoria appuntamenti" : "Appointment reminders",
+        language === "it" ? "Generazione report" : "Report generation",
+      ],
+      benefits: "70% efficienza gestionale, 90% soddisfazione",
     },
     {
-      name: language === "en" ? "Retail" : "Retail",
-      icon: "🛍️",
+      name: language === "it" ? "E-commerce" : "E-commerce",
+      icon: <ShoppingBag className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "Customer service, inventory management, sales analysis"
-          : "Servizio clienti, gestione inventario, analisi vendite",
-      automations: ["Order processing", "Customer support", "Sales reporting"],
-    },
-  ]
-
-  const implementationSteps = [
-    {
-      step: "01",
-      title: language === "en" ? "Initial Consultation" : "Consulta Iniziale",
-      description:
-        language === "en"
-          ? "We start by understanding your business needs and goals"
-          : "Iniziamo capendo le esigenze e gli obiettivi della tua azienda",
-      icon: <Users className="h-8 w-8" />,
-      duration: language === "en" ? "1 hour" : "1 ora",
+        language === "it"
+          ? "Gestione ordini, customer service, marketing"
+          : "Order management, customer service, marketing",
+      automations: [
+        language === "it" ? "Elaborazione ordini" : "Order processing",
+        language === "it" ? "Supporto clienti" : "Customer support",
+        language === "it" ? "Campagne marketing" : "Marketing campaigns",
+      ],
+      benefits: "300% aumento conversioni, 50% riduzione costi",
     },
     {
-      step: "02",
-      title: language === "en" ? "Process Mapping" : "Mappatura Processi",
+      name: language === "it" ? "Educazione" : "Education",
+      icon: <GraduationCap className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "We map out your current processes to identify areas for automation"
-          : "Mappiamo i tuoi processi attuali per identificare aree da automatizzare",
-      icon: <Workflow className="h-8 w-8" />,
-      duration: language === "en" ? "2-3 days" : "2-3 giorni",
+        language === "it"
+          ? "Gestione studenti, valutazioni, amministrazione"
+          : "Student management, assessments, administration",
+      automations: [
+        language === "it" ? "Iscrizioni automatiche" : "Automatic enrollments",
+        language === "it" ? "Valutazioni AI" : "AI assessments",
+        language === "it" ? "Comunicazioni genitori" : "Parent communications",
+      ],
+      benefits: "85% efficienza amministrativa, 95% accuratezza",
     },
     {
-      step: "03",
-      title: language === "en" ? "Solution Design" : "Progettazione Soluzione",
+      name: language === "it" ? "Immobiliare" : "Real Estate",
+      icon: <Building className="h-12 w-12" />,
       description:
-        language === "en"
-          ? "We design a tailored automation solution based on our findings"
-          : "Progettiamo una soluzione di automazione personalizzata basata sui nostre risultati",
-      icon: <Settings className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
-    },
-    {
-      step: "04",
-      title: language === "en" ? "Development & Testing" : "Sviluppo e Test",
-      description:
-        language === "en"
-          ? "We develop and thoroughly test the automation solutions"
-          : "Sviluppiamo e testiamo accuratamente le soluzioni di automazione",
-      icon: <Zap className="h-8 w-8" />,
-      duration: language === "en" ? "2-4 weeks" : "2-4 settimane",
-    },
-    {
-      step: "05",
-      title: language === "en" ? "Deployment & Training" : "Implementazione e Formazione",
-      description:
-        language === "en"
-          ? "We deploy the solution and train your team for optimal use"
-          : "Implementiamo la soluzione e formiamo il tuo team per un uso ottimale",
-      icon: <Users className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
+        language === "it"
+          ? "Gestione proprietà, valutazioni, lead management"
+          : "Property management, valuations, lead management",
+      automations: [
+        language === "it" ? "Valutazioni automatiche" : "Automatic valuations",
+        language === "it" ? "Gestione lead" : "Lead management",
+        language === "it" ? "Contratti digitali" : "Digital contracts",
+      ],
+      benefits: "120% aumento lead, 65% riduzione tempi",
     },
   ]
 
-  const successMetrics = [
+  const benefits = [
     {
-      metric: "95%",
-      label: language === "en" ? "Process Efficiency" : "Efficienza Processi",
+      metric: "75%",
+      label: language === "it" ? "Riduzione Costi" : "Cost Reduction",
       description:
-        language === "en" ? "Reduction in process time and errors" : "Riduzione del tempo di processo e degli errori",
+        language === "it"
+          ? "Riduzione media dei costi operativi attraverso l'automazione"
+          : "Average reduction in operational costs through automation",
     },
     {
-      metric: "80%",
-      label: language === "en" ? "Customer Satisfaction" : "Soddisfazione Clienti",
+      metric: "200%",
+      label: language === "it" ? "Aumento Produttività" : "Productivity Increase",
       description:
-        language === "en"
-          ? "Improvement in customer service and response times"
-          : "Miglioramento del servizio clienti e dei tempi di risposta",
+        language === "it"
+          ? "Incremento della produttività del team e dei processi"
+          : "Increase in team and process productivity",
     },
     {
-      metric: "70%",
-      label: language === "en" ? "Cost Reduction" : "Riduzione Costi",
+      metric: "90%",
+      label: language === "it" ? "Riduzione Errori" : "Error Reduction",
       description:
-        language === "en"
-          ? "Decrease in operational costs through automation"
-          : "Riduzione dei costi operativi attraverso l'automazione",
+        language === "it"
+          ? "Eliminazione degli errori umani nei processi automatizzati"
+          : "Elimination of human errors in automated processes",
     },
     {
-      metric: "60%",
-      label: language === "en" ? "Revenue Growth" : "Crescita Ricavi",
+      metric: "24/7",
+      label: language === "it" ? "Operatività" : "Operations",
       description:
-        language === "en"
-          ? "Increase in sales and revenue due to optimized processes"
-          : "Aumento delle vendite e dei ricavi grazie ai processi ottimizzati",
+        language === "it"
+          ? "Sistemi che lavorano continuamente senza interruzioni"
+          : "Systems that work continuously without interruptions",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      <ServiceNavbar />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <Navbar />
+      <ServiceNavbar currentService="ai-automation" />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-purple-100 text-purple-700 hover:bg-purple-200">
-                <Bot className="h-4 w-4 mr-2" />
-                {t.title}
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-40 right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="text-center">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+              <Badge className="mb-6 bg-purple-500/20 text-purple-300 border-purple-500/30 px-4 py-2">
+                <Zap className="h-4 w-4 mr-2" />
+                {language === "it" ? "AI Automation" : "AI Automation"}
               </Badge>
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 leading-[1.1]">{t.heroTitle}</h1>
-              <div className="mb-10">
-                <span className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 leading-[1.3] inline-block pb-4">
-                  {t.heroSubtitle}
-                </span>
-              </div>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">{t.description}</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3">
-                  <Play className="h-5 w-5 mr-2" />
-                  {t.ctaPrimary}
-                </Button>
+
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                {language === "it" ? (
+                  <>
+                    Automazione{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+                      Intelligente
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Intelligent{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+                      Automation
+                    </span>
+                  </>
+                )}
+              </h1>
+
+              <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-3xl mx-auto">
+                {language === "it"
+                  ? "Rivoluziona i tuoi processi aziendali con soluzioni di automazione AI che aumentano l'efficienza, riducono i costi e accelerano la crescita."
+                  : "Revolutionize your business processes with AI automation solutions that increase efficiency, reduce costs and accelerate growth."}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Link href="/appointments">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white px-8 py-4 text-lg font-semibold shadow-lg"
+                  >
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    {language === "it" ? "Richiedi Consulenza" : "Request Consultation"}
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-3 bg-transparent"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold bg-slate-800/50"
                 >
-                  {t.ctaSecondary}
-                  <ArrowRight className="h-5 w-5 ml-2" />
+                  <Play className="h-6 w-6 mr-3" />
+                  {language === "it" ? "Guarda Demo" : "Watch Demo"}
                 </Button>
               </div>
-            </motion.div>
-          </div>
 
-          {/* Benefits Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="text-center h-full border-purple-100 hover:border-purple-200 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="text-3xl font-bold text-purple-600 mb-2">{benefit.metric}</div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{benefit.label}</h3>
-                    <p className="text-sm text-gray-600">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+              <div className="grid grid-cols-4 gap-8 max-w-3xl mx-auto">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl font-bold text-purple-400 mb-1">{benefit.metric}</div>
+                    <div className="text-slate-400 text-sm">{benefit.label}</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Automation Types */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.automationTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.automationSubtitle}</p>
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {language === "it" ? "Tipi di Automazione" : "Automation Types"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Soluzioni personalizzate per ogni area della tua azienda"
+                : "Customized solutions for every area of your business"}
+            </p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-800/50">
               {automationTypes.map((type) => (
-                <TabsTrigger key={type.id} value={type.id} className="flex items-center space-x-2">
+                <TabsTrigger
+                  key={type.id}
+                  value={type.id}
+                  className="flex items-center space-x-2 text-slate-300 data-[state=active]:text-white"
+                >
                   {type.icon}
                   <span className="hidden sm:inline">{type.title}</span>
                 </TabsTrigger>
@@ -398,34 +460,34 @@ export default function AIAutomationPage() {
 
             {automationTypes.map((type) => (
               <TabsContent key={type.id} value={type.id}>
-                <Card className="border-purple-100">
+                <Card className="border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
                   <CardContent className="p-8">
                     <div className="grid md:grid-cols-2 gap-8 items-center">
                       <div>
                         <div className="flex items-center space-x-3 mb-4">
-                          <div className="p-3 bg-purple-100 rounded-lg text-purple-600">{type.icon}</div>
-                          <h3 className="text-2xl font-bold text-gray-900">{type.title}</h3>
+                          <div className="p-3 bg-slate-700/50 rounded-lg text-purple-400">{type.icon}</div>
+                          <h3 className="text-2xl font-bold text-white">{type.title}</h3>
                         </div>
-                        <p className="text-gray-600 mb-6">{type.description}</p>
+                        <p className="text-slate-300 mb-6">{type.description}</p>
                         <div className="space-y-3">
                           {type.features.map((feature, index) => (
                             <div key={index} className="flex items-center space-x-2">
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                              <span>{feature}</span>
+                              <CheckCircle className="h-5 w-5 text-green-400" />
+                              <span className="text-slate-300">{feature}</span>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-lg">
+                      <div className="bg-slate-700/30 p-8 rounded-lg">
                         <div className="text-center">
                           <div className="text-4xl mb-4">🤖</div>
-                          <h4 className="font-semibold mb-2">
-                            {language === "en" ? "Intelligent Automation" : "Automazione Intelligente"}
+                          <h4 className="font-semibold mb-2 text-white">
+                            {language === "it" ? "Automazione Intelligente" : "Intelligent Automation"}
                           </h4>
-                          <p className="text-sm text-gray-600">
-                            {language === "en"
-                              ? "Our AI systems learn from your processes and continuously optimize them"
-                              : "I nostri sistemi AI apprendono dai tuoi processi e li ottimizzano continuamente"}
+                          <p className="text-sm text-slate-300">
+                            {language === "it"
+                              ? "I nostri sistemi AI apprendono dai tuoi processi e li ottimizzano continuamente"
+                              : "Our AI systems learn from your processes and continuously optimize them"}
                           </p>
                         </div>
                       </div>
@@ -438,12 +500,64 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* Process Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-purple-50 to-pink-50">
+      {/* Industries Section */}
+      <section className="py-20 px-6 bg-slate-900/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.processTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.processSubtitle}</p>
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {language === "it" ? "Settori che Serviamo" : "Industries We Serve"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Soluzioni specializzate per diversi settori industriali"
+                : "Specialized solutions for different industrial sectors"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {industries.map((industry, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="h-full border-slate-700/50 bg-slate-800/80 backdrop-blur-sm hover:border-slate-600 transition-all duration-300 hover:shadow-lg">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-purple-400 mb-4 flex justify-center">{industry.icon}</div>
+                    <h3 className="text-xl font-semibold text-white mb-2">{industry.name}</h3>
+                    <p className="text-slate-300 mb-4">{industry.description}</p>
+                    <div className="space-y-2 mb-4">
+                      {industry.automations.map((automation, idx) => (
+                        <div key={idx} className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                          <span className="text-sm text-slate-300">{automation}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Badge className="bg-purple-900/50 text-purple-300 border-purple-700 text-xs">
+                      {industry.benefits}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="py-20 px-6 bg-slate-800/50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {language === "it" ? "Il Nostro Processo" : "Our Process"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Dall'analisi all'implementazione in 4 semplici passaggi"
+                : "From analysis to implementation in 4 simple steps"}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -454,17 +568,17 @@ export default function AIAutomationPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.2 }}
               >
-                <Card className="h-full border-purple-100 hover:border-purple-200 transition-all duration-300 hover:shadow-lg">
+                <Card className="h-full border-slate-700/50 bg-slate-800/80 backdrop-blur-sm hover:border-slate-600 transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-6 text-center">
                     <div className="mb-4">
                       <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
                         {step.step}
                       </div>
-                      <div className="text-purple-600 mb-3">{step.icon}</div>
+                      <div className="text-purple-400 mb-3">{step.icon}</div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{step.description}</p>
-                    <Badge variant="outline" className="text-xs text-purple-600 border-purple-200">
+                    <h3 className="font-semibold text-white mb-2">{step.title}</h3>
+                    <p className="text-sm text-slate-300 mb-3">{step.description}</p>
+                    <Badge variant="outline" className="text-xs text-purple-400 border-purple-500/30">
                       <Clock className="h-3 w-3 mr-1" />
                       {step.duration}
                     </Badge>
@@ -476,108 +590,44 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* Industries Section */}
-      <section className="py-20 px-6 bg-white">
+      {/* Features Section */}
+      <section className="py-20 px-6 bg-slate-900/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.industriesTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.industriesSubtitle}</p>
+            <Badge className="mb-4 bg-slate-800/80 text-cyan-400 border-cyan-500/30">
+              <Cpu className="h-4 w-4 mr-2" />
+              {language === "it" ? "Tecnologie Avanzate" : "Advanced Technologies"}
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {language === "it" ? "Soluzioni AI Complete" : "Complete AI Solutions"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Trasforma ogni aspetto del tuo business con tecnologie di automazione all'avanguardia"
+                : "Transform every aspect of your business with cutting-edge automation technologies"}
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {industries.map((industry, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="h-full border-purple-100 hover:border-purple-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="text-4xl">{industry.icon}</div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{industry.name}</h3>
-                        <p className="text-gray-600 mb-4">{industry.description}</p>
-                        <div className="space-y-2">
-                          {industry.automations.map((automation, idx) => (
-                            <div key={idx} className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                              <span className="text-sm text-gray-700">{automation}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Implementation Process Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.implementationTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.implementationSubtitle}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {implementationSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-              >
-                <Card className="h-full border-purple-100 hover:border-purple-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
-                        {step.step}
-                      </div>
-                      <div className="text-purple-600 mb-3">{step.icon}</div>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{step.description}</p>
-                    <Badge variant="outline" className="text-xs text-purple-600 border-purple-200">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {step.duration}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Success Metrics Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.successMetricsTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.successMetricsSubtitle}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {successMetrics.map((metric, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group"
               >
-                <Card className="h-full border-purple-100 hover:border-purple-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="text-4xl font-bold text-purple-600">{metric.metric}</div>
+                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                  <CardContent className="p-8">
+                    <div
+                      className={`inline-flex p-4 rounded-2xl ${feature.bgColor} mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className={feature.color}>{feature.icon}</div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{metric.label}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{metric.description}</p>
+                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -587,28 +637,38 @@ export default function AIAutomationPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">{t.ctaFinalTitle}</h2>
-            <p className="text-xl text-gray-600 mb-8">{t.ctaFinalSubtitle}</p>
+            <h2 className="text-4xl font-bold text-white mb-6">
+              {language === "it" ? "Pronto ad Automatizzare la Tua Azienda?" : "Ready to Automate Your Business?"}
+            </h2>
+            <p className="text-xl text-slate-300 mb-8">
+              {language === "it"
+                ? "Inizia oggi con una soluzione di automazione personalizzata. Consulenza gratuita e demo personalizzata incluse."
+                : "Start today with a personalized automation solution. Free consultation and custom demo included."}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3">
-                <Calendar className="h-5 w-5 mr-2" />
-                {t.ctaFinalPrimary}
-              </Button>
+              <Link href="/appointments">
+                <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3">
+                  <Target className="h-5 w-5 mr-2" />
+                  {language === "it" ? "Prenota Consulenza Gratuita" : "Book Free Consultation"}
+                </Button>
+              </Link>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-3 bg-transparent"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white px-8 py-3 bg-slate-800/50 backdrop-blur-sm"
               >
-                <Target className="h-5 w-5 mr-2" />
-                {t.ctaFinalSecondary}
+                <BarChart3 className="h-5 w-5 mr-2" />
+                {language === "it" ? "Richiedi Demo" : "Request Demo"}
               </Button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      <ChatbotWidget />
     </div>
   )
 }

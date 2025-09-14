@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Bot,
   Zap,
   ArrowRight,
   Mail,
@@ -28,14 +27,14 @@ import {
   Linkedin,
   Twitter,
   Instagram,
-  Code,
-  Heart,
   Monitor,
   Cpu,
   BarChart3,
   MessageSquare,
   Eye,
   Sparkles,
+  Play,
+  Globe,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -47,7 +46,6 @@ import ROICalculatorSection from "./components/roi-calculator"
 import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
-import HeroBackground from "./components/hero-background"
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -64,94 +62,55 @@ export default function DigitalAuraPortfolio() {
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const { t, language } = useLanguage()
 
+  // SERVIZI COME NELL'IMMAGINE - 4 COLONNE CON ICONE
   const services = [
     {
-      icon: <Zap className="w-8 h-8" />,
-      title: language === "it" ? "AI Automation" : "AI Automation",
+      icon: <MessageSquare className="w-12 h-12" />,
+      title: language === "it" ? "Chatbot Intelligenti" : "Intelligent Chatbots",
       description:
         language === "it"
-          ? "Automatizza i processi aziendali per aumentare l'efficienza e ridurre i costi operativi."
-          : "Automate business processes to increase efficiency and reduce operational costs.",
-      features: ["Process Automation", "Data Analysis", "Workflow Optimization", "Cost Reduction"],
-      bgColor: "bg-purple-900/20",
-      iconColor: "text-purple-400",
-      buttonColor: "bg-purple-600 hover:bg-purple-700",
-      statsColor: "text-purple-400",
-      href: "/services/ai-automation",
-      stats: language === "it" ? "Fino al 60% di riduzione costi" : "Up to 60% cost reduction",
-      benefits: [
-        language === "it" ? "Automazione completa dei processi" : "Complete process automation",
-        language === "it" ? "Analisi predittiva avanzata" : "Advanced predictive analysis",
-        language === "it" ? "Integrazione con sistemi esistenti" : "Integration with existing systems",
-        language === "it" ? "Monitoraggio in tempo reale" : "Real-time monitoring",
-        language === "it" ? "Scalabilità automatica" : "Automatic scalability",
-      ],
-    },
-    {
-      icon: <Bot className="w-8 h-8" />,
-      title: language === "it" ? "Smart Chatbots" : "Smart Chatbots",
-      description:
-        language === "it"
-          ? "Assistenti virtuali intelligenti per migliorare l'esperienza cliente e aumentare le conversioni."
-          : "Intelligent virtual assistants to improve customer experience and increase conversions.",
-      features: ["24/7 Support", "Natural Language", "Multi-platform", "Lead Generation"],
-      bgColor: "bg-blue-900/20",
-      iconColor: "text-blue-400",
-      buttonColor: "bg-blue-600 hover:bg-blue-700",
-      statsColor: "text-blue-400",
+          ? "Chatbot AI avanzati che comprendono il linguaggio naturale e forniscono risposte personalizzate 24/7"
+          : "Advanced AI chatbots that understand natural language and provide personalized responses 24/7",
       href: "/services/chatbot",
-      stats: language === "it" ? "95% soddisfazione clienti" : "95% customer satisfaction",
-      benefits: [
-        language === "it" ? "Supporto clienti automatizzato" : "Automated customer support",
-        language === "it" ? "Generazione lead qualificati" : "Qualified lead generation",
-        language === "it" ? "Integrazione multicanale" : "Multi-channel integration",
-        language === "it" ? "Analisi conversazioni avanzata" : "Advanced conversation analytics",
-        language === "it" ? "Personalizzazione completa" : "Complete customization",
-      ],
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "bg-gradient-to-br from-blue-500/10 to-cyan-500/10",
+      iconBg: "bg-gradient-to-br from-blue-500 to-cyan-500",
     },
     {
-      icon: <Code className="w-8 h-8" />,
-      title: language === "it" ? "Web & App Development" : "Web & App Development",
+      icon: <Zap className="w-12 h-12" />,
+      title: language === "it" ? "Automazione AI" : "AI Automation",
       description:
         language === "it"
-          ? "Siti web ad alte prestazioni e applicazioni moderne per una presenza digitale vincente."
-          : "High-performance websites and modern applications for a winning digital presence.",
-      features: ["Responsive Design", "SEO Optimized", "Fast Loading", "Modern UI/UX"],
-      bgColor: "bg-green-900/20",
-      iconColor: "text-green-400",
-      buttonColor: "bg-green-600 hover:bg-green-700",
-      statsColor: "text-green-400",
+          ? "Soluzioni di automazione intelligente per ottimizzare i processi aziendali e aumentare l'efficienza"
+          : "Intelligent automation solutions to optimize business processes and increase efficiency",
+      href: "/services/ai-automation",
+      gradient: "from-purple-500 to-pink-500",
+      bgGradient: "bg-gradient-to-br from-purple-500/10 to-pink-500/10",
+      iconBg: "bg-gradient-to-br from-purple-500 to-pink-500",
+    },
+    {
+      icon: <Globe className="w-12 h-12" />,
+      title: language === "it" ? "Sviluppo Web" : "Web Development",
+      description:
+        language === "it"
+          ? "Siti web moderni, responsive e ottimizzati per le performance con tecnologie all'avanguardia"
+          : "Modern, responsive and optimized websites with cutting-edge technology",
       href: "/services/web-development",
-      stats: language === "it" ? "300% aumento traffico medio" : "300% average traffic increase",
-      benefits: [
-        language === "it" ? "Design responsive moderno" : "Modern responsive design",
-        language === "it" ? "Performance ottimizzate" : "Optimized performance",
-        language === "it" ? "SEO e conversioni migliorate" : "Improved SEO and conversions",
-        language === "it" ? "Sicurezza enterprise-grade" : "Enterprise-grade security",
-        language === "it" ? "Manutenzione continua" : "Continuous maintenance",
-      ],
+      gradient: "from-green-500 to-emerald-500",
+      bgGradient: "bg-gradient-to-br from-green-500/10 to-emerald-500/10",
+      iconBg: "bg-gradient-to-br from-green-500 to-emerald-500",
     },
     {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: language === "it" ? "AI Marketing & Growth" : "AI Marketing & Growth",
+      icon: <BarChart3 className="w-12 h-12" />,
+      title: language === "it" ? "Marketing AI" : "AI Marketing",
       description:
         language === "it"
-          ? "Strategie di marketing intelligenti e crescita digitale per influencer e aziende."
-          : "Intelligent marketing strategies and digital growth for influencers and businesses.",
-      features: ["Social Growth", "SEO Optimization", "Ad Campaigns", "Analytics"],
-      bgColor: "bg-orange-900/20",
-      iconColor: "text-orange-400",
-      buttonColor: "bg-orange-600 hover:bg-orange-700",
-      statsColor: "text-orange-400",
+          ? "Strategie di marketing potenziate dall'AI per targeting preciso e campagne ad alto ROI"
+          : "AI-powered marketing strategies for precise targeting and high ROI campaigns",
       href: "/services/ai-marketing",
-      stats: language === "it" ? "ROI medio 5x" : "5x average ROI",
-      benefits: [
-        language === "it" ? "Crescita follower organica" : "Organic follower growth",
-        language === "it" ? "Campagne pubblicitarie AI" : "AI advertising campaigns",
-        language === "it" ? "Analytics e insights avanzati" : "Advanced analytics and insights",
-        language === "it" ? "Content strategy personalizzata" : "Personalized content strategy",
-        language === "it" ? "Automazione marketing completa" : "Complete marketing automation",
-      ],
+      gradient: "from-orange-500 to-red-500",
+      bgGradient: "bg-gradient-to-br from-orange-500/10 to-red-500/10",
+      iconBg: "bg-gradient-to-br from-orange-500 to-red-500",
     },
   ]
 
@@ -169,7 +128,6 @@ export default function DigitalAuraPortfolio() {
           ? ["AI", "Machine Learning", "E-commerce", "Raccomandazioni", "Analytics"]
           : ["AI", "Machine Learning", "E-commerce", "Recommendations", "Analytics"],
       timeline: language === "it" ? "3 mesi" : "3 months",
-      investment: "€25.000",
       roi: "320%",
       image: "/ecommerce-project.png",
       problem:
@@ -209,7 +167,6 @@ export default function DigitalAuraPortfolio() {
           ? ["NLP", "Customer Service", "Automation", "Multilingue", "Analytics"]
           : ["NLP", "Customer Service", "Automation", "Multilingual", "Analytics"],
       timeline: language === "it" ? "2 mesi" : "2 months",
-      investment: "€18.000",
       roi: "280%",
       image: "/chatbot-project.png",
       problem:
@@ -249,7 +206,6 @@ export default function DigitalAuraPortfolio() {
           ? ["React", "Next.js", "CMS", "SEO", "Performance", "Analytics"]
           : ["React", "Next.js", "CMS", "SEO", "Performance", "Analytics"],
       timeline: language === "it" ? "6 settimane" : "6 weeks",
-      investment: "€15.000",
       roi: "250%",
       image: "/web-development-project.png",
       problem:
@@ -284,7 +240,6 @@ export default function DigitalAuraPortfolio() {
           ? ["AI Marketing", "Social Media", "Influencer", "Growth", "Analytics"]
           : ["AI Marketing", "Social Media", "Influencer", "Growth", "Analytics"],
       timeline: language === "it" ? "6 mesi" : "6 months",
-      investment: "€12.000",
       roi: "400%",
       image: "/ai-marketing-project.png",
       problem:
@@ -314,7 +269,6 @@ export default function DigitalAuraPortfolio() {
           ? ["IoT", "Predictive AI", "Manufacturing", "Automation", "Quality Control"]
           : ["IoT", "Predictive AI", "Manufacturing", "Automation", "Quality Control"],
       timeline: language === "it" ? "4 mesi" : "4 months",
-      investment: "€45.000",
       roi: "380%",
       image: "/ai-automation-project.png",
       problem:
@@ -344,7 +298,6 @@ export default function DigitalAuraPortfolio() {
           ? ["Healthcare", "Medical AI", "Appointment", "Triage", "GDPR Compliant"]
           : ["Healthcare", "Medical AI", "Appointment", "Triage", "GDPR Compliant"],
       timeline: language === "it" ? "3 mesi" : "3 months",
-      investment: "€22.000",
       roi: "290%",
       image: "/healthcare-project.png",
       problem:
@@ -436,48 +389,39 @@ export default function DigitalAuraPortfolio() {
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section - CON ANIMAZIONE 3D FUNZIONANTE */}
-      <section id="home" className="min-h-screen flex items-center justify-center px-4 pt-0 relative overflow-hidden">
-        {/* 3D Animated Background - FINALMENTE FUNZIONANTE */}
-        <HeroBackground />
+      {/* Hero Section - DIMENSIONE CORRETTA COME NELL'IMMAGINE */}
+      <section
+        id="home"
+        className="relative min-h-screen flex items-center justify-center px-4 pt-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.1),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(6,182,212,0.1),transparent_50%)]" />
+        </div>
 
-        {/* Overlay per leggibilità */}
-        <div className="absolute inset-0 bg-black/20 z-10" />
-
-        <div className="text-center max-w-6xl mx-auto relative z-20">
+        <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-12"
+            className="text-center"
           >
-            {/* Badge - VISIBILITÀ CORRETTA AL 100% */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="mb-8"
-            >
-              <Badge className="mb-4 bg-cyan-400/30 text-cyan-200 border-2 border-cyan-400/60 text-base px-6 py-3 rounded-full backdrop-blur-sm shadow-lg shadow-cyan-400/30 font-semibold">
-                <Zap className="w-4 h-4 mr-2" />
-                {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
-              </Badge>
-            </motion.div>
+            {/* Badge */}
+            <Badge className="mb-6 bg-white/10 text-white border-white/20 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
+              <Sparkles className="w-4 h-4 mr-2" />
+              {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
+            </Badge>
 
-            {/* Main Title - TIPOGRAFIA PROFESSIONALE CORRETTA */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-tight"
-            >
+            {/* Main Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-white leading-tight">
               {language === "it" ? (
                 <>
                   Trasforma il Tuo
                   <br />
-                  Business con
-                  <br />
-                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                  Business con{" "}
+                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
                     l'Intelligenza Artificiale
                   </span>
                 </>
@@ -485,34 +429,23 @@ export default function DigitalAuraPortfolio() {
                 <>
                   Transform Your
                   <br />
-                  Business with
-                  <br />
-                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                  Business with{" "}
+                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
                     Artificial Intelligence
                   </span>
                 </>
               )}
-            </motion.h1>
+            </h1>
 
-            {/* Description - TIPOGRAFIA PROFESSIONALE CORRETTA */}
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-              className="text-lg text-slate-300 mb-12 leading-relaxed max-w-4xl mx-auto"
-            >
+            {/* Description */}
+            <p className="text-lg text-white/80 mb-10 leading-relaxed max-w-3xl mx-auto">
               {language === "it"
-                ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business con le nostre soluzioni AI."
-                : "Intelligent chatbots, advanced automation and innovative web solutions to bring your company into the digital future. Join over 500 companies that have already transformed their business with our AI solutions."}
-            </motion.p>
+                ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business."
+                : "Intelligent chatbots, advanced automation and innovative web solutions to bring your company into the digital future. Join over 500 companies that have already transformed their business."}
+            </p>
 
             {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
-            >
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/appointments">
                   <Button
@@ -530,56 +463,39 @@ export default function DigitalAuraPortfolio() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
+                  className="border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
                   onClick={() => scrollToSection("services")}
                 >
-                  <Eye className="mr-2 w-5 h-5" />
-                  {language === "it" ? "Esplora Demo" : "Explore Demo"}
+                  <Play className="mr-2 w-5 h-5" />
+                  {language === "it" ? "Guarda Demo" : "Watch Demo"}
                 </Button>
               </motion.div>
-            </motion.div>
-          </motion.div>
+            </div>
 
-          {/* Stats Section - DIMENSIONI CORRETTE */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto"
-          >
-            {[
-              {
-                icon: Heart,
-                value: "100%",
-                label: language === "it" ? "Soddisfazione Garantita" : "Satisfaction Guaranteed",
-              },
-              { icon: Clock, value: "24/7", label: language === "it" ? "Supporto Dedicato" : "Dedicated Support" },
-              { icon: Shield, value: "SSL", label: language === "it" ? "Sicurezza Garantita" : "Guaranteed Security" },
-              {
-                icon: Handshake,
-                value: "Partner",
-                label: language === "it" ? "Approccio su Misura" : "Tailored Approach",
-              },
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.3 + index * 0.1 }}
-                className="text-center"
-              >
-                <div className="flex justify-center mb-3">
-                  <stat.icon className="w-6 h-6 text-cyan-400" />
-                </div>
-                <div className="text-xl md:text-2xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-slate-400 text-sm">{stat.label}</div>
-              </motion.div>
-            ))}
+            {/* Stats Mini */}
+            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+              {[
+                { value: "500+", label: language === "it" ? "Clienti Soddisfatti" : "Happy Clients" },
+                { value: "95%", label: language === "it" ? "Tasso Successo" : "Success Rate" },
+                { value: "24/7", label: language === "it" ? "Supporto" : "Support" },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.0 + index * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="text-2xl md:text-3xl font-bold text-cyan-400 mb-2">{stat.value}</div>
+                  <div className="text-white/70 text-sm">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Services Section - TEMA SCURO COERENTE E TIPOGRAFIA CORRETTA */}
+      {/* Services Section - COME NELL'IMMAGINE */}
       <ServicesSection services={services} />
 
       {/* Process Section */}
@@ -621,14 +537,14 @@ export default function DigitalAuraPortfolio() {
   )
 }
 
-// Services Section - TEMA SCURO COERENTE E TIPOGRAFIA PROFESSIONALE
+// Services Section - COME NELL'IMMAGINE CON 4 COLONNE E ICONE
 function ServicesSection({ services }: { services: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const { t, language } = useLanguage()
 
   return (
-    <section id="services" className="py-20 px-4">
+    <section id="services" className="py-20 px-4 bg-slate-800/30">
       <div className="container mx-auto max-w-7xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -651,12 +567,13 @@ function ServicesSection({ services }: { services: any[] }) {
             className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
-              ? "Soluzioni digitali innovative per trasformare il tuo business con tecnologie AI all'avanguardia. Ogni servizio è progettato per massimizzare il ROI e accelerare la crescita."
-              : "Innovative digital solutions to transform your business with cutting-edge AI technologies. Each service is designed to maximize ROI and accelerate growth."}
+              ? "Soluzioni digitali complete su misura per i tuoi obiettivi aziendali"
+              : "Complete digital solutions tailored to your business objectives"}
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* LAYOUT COME NELL'IMMAGINE - 4 COLONNE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {services.map((service, index) => (
             <motion.div
               key={index}
@@ -674,83 +591,37 @@ function ServicesSection({ services }: { services: any[] }) {
               }}
               className="h-full"
             >
-              <Card className="bg-slate-800/50 border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500">
-                <CardHeader className="text-center pb-4 flex-shrink-0">
-                  <motion.div
-                    whileHover={{
-                      scale: 1.2,
-                      rotate: [0, -10, 10, -10, 0],
-                      transition: { duration: 0.6 },
-                    }}
-                    className={`inline-flex p-3 rounded-lg bg-slate-700 shadow-sm mb-4 mx-auto ${service.iconColor}`}
-                  >
-                    {service.icon}
-                  </motion.div>
-                  <CardTitle className="text-xl font-bold text-white mb-3">{service.title}</CardTitle>
-                  <CardDescription className="text-slate-400 text-base leading-relaxed mb-4">
-                    {service.description}
-                  </CardDescription>
-                  <Badge className={`${service.statsColor} bg-slate-700/80 border-0 font-semibold text-sm`}>
-                    {service.stats}
-                  </Badge>
-                </CardHeader>
-                <CardContent className="pt-0 flex-1 flex flex-col">
-                  <div className="mb-6 flex-1">
-                    <h4 className="font-semibold text-white mb-3 text-base">
-                      {language === "it" ? "Vantaggi Principali:" : "Key Benefits:"}
-                    </h4>
-                    <ul className="space-y-2 mb-6">
-                      {service.benefits.map((benefit: string, benefitIndex: number) => (
-                        <motion.li
-                          key={benefitIndex}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                          transition={{
-                            duration: 0.4,
-                            delay: index * 0.1 + benefitIndex * 0.1 + 0.5,
-                          }}
-                          className="flex items-start text-slate-300 text-sm"
-                        >
-                          <CheckCircle className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${service.iconColor}`} />
-                          {benefit}
-                        </motion.li>
-                      ))}
-                    </ul>
+              <Link href={service.href}>
+                <Card className="bg-slate-800/80 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500/50 cursor-pointer group">
+                  <CardContent className="p-8 text-center flex-1 flex flex-col">
+                    {/* ICONA GRANDE COME NELL'IMMAGINE */}
+                    <motion.div
+                      whileHover={{
+                        scale: 1.1,
+                        rotate: [0, -5, 5, -5, 0],
+                        transition: { duration: 0.6 },
+                      }}
+                      className={`inline-flex p-6 rounded-3xl ${service.iconBg} shadow-lg mb-6 mx-auto text-white`}
+                    >
+                      {service.icon}
+                    </motion.div>
 
-                    <h4 className="font-semibold text-white mb-3 text-base">
-                      {language === "it" ? "Funzionalità:" : "Features:"}
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {service.features.map((feature: string, featureIndex: number) => (
-                        <motion.div
-                          key={featureIndex}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: index * 0.1 + featureIndex * 0.05 + 0.7,
-                          }}
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
-                            {feature}
-                          </Badge>
-                        </motion.div>
-                      ))}
+                    {/* TITOLO */}
+                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                      {service.title}
+                    </h3>
+
+                    {/* DESCRIZIONE */}
+                    <p className="text-slate-300 text-base leading-relaxed mb-6 flex-1">{service.description}</p>
+
+                    {/* LINK - FRECCIA PIÙ VISIBILE */}
+                    <div className="flex items-center justify-center text-cyan-400 font-semibold group-hover:text-white transition-colors">
+                      <span className="mr-2">{language === "it" ? "Scopri di più" : "Learn more"}</span>
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300 text-cyan-300" />
                     </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <Link href={service.href}>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button className={`w-full text-white font-semibold text-base ${service.buttonColor}`}>
-                          {language === "it" ? "Scopri di più →" : "Learn more →"}
-                        </Button>
-                      </motion.div>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -759,7 +630,7 @@ function ServicesSection({ services }: { services: any[] }) {
   )
 }
 
-// Projects Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
+// Projects Section - SENZA INVESTIMENTI
 function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProjectClick: (project: any) => void }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -933,7 +804,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
 
                   <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto text-base">
                     {language === "it" ? "Visualizza Case Study" : "View Case Study"}
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    <ArrowRight className="ml-2 w-4 h-4 text-cyan-300" />
                   </Button>
                 </CardContent>
               </Card>
@@ -945,7 +816,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
   )
 }
 
-// Our Story Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
+// Our Story Section
 function OurStorySection({ values }: { values: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -1054,7 +925,7 @@ function OurStorySection({ values }: { values: any[] }) {
   )
 }
 
-// Contact Section - TEMA SCURO E TIPOGRAFIA PROFESSIONALE
+// Contact Section
 function ContactSection({
   formData,
   isSubmitting,
@@ -1326,7 +1197,7 @@ function ContactSection({
                       ) : (
                         <>
                           {language === "it" ? "Invia Richiesta" : "Send Request"}
-                          <ArrowRight className="ml-2 w-4 h-4" />
+                          <ArrowRight className="ml-2 w-4 h-4 text-cyan-300" />
                         </>
                       )}
                     </Button>

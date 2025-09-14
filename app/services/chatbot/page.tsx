@@ -2,175 +2,142 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
+import {
+  Bot,
+  MessageSquare,
+  Zap,
+  Clock,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Star,
+  Play,
+  Sparkles,
+  Brain,
+  Target,
+  BarChart3,
+  Calendar,
+  ShoppingCart,
+  Headphones,
+  HelpCircle,
+} from "lucide-react"
+import Link from "next/link"
+import { useLanguage } from "../../contexts/language-context"
+import Navbar from "../../components/navbar"
 import ServiceNavbar from "../../components/service-navbar"
-import ROICalculator from "../../components/roi-calculator"
+import ChatbotWidget from "../../components/chatbot-widget"
 import BookingChatbot from "../../components/demo-chatbots/booking-chatbot"
 import EcommerceChatbot from "../../components/demo-chatbots/ecommerce-chatbot"
 import BusinessChatbot from "../../components/demo-chatbots/business-chatbot"
 import SupportChatbot from "../../components/demo-chatbots/support-chatbot"
 import FAQChatbot from "../../components/demo-chatbots/faq-chatbot"
-import { useLanguage } from "../../contexts/language-context"
-import {
-  MessageSquare,
-  Bot,
-  Zap,
-  TrendingUp,
-  Shield,
-  Clock,
-  Globe,
-  CheckCircle,
-  Smartphone,
-  Monitor,
-  Headphones,
-  ShoppingCart,
-  Calendar,
-  HelpCircle,
-  Star,
-  Sparkles,
-  Brain,
-  Rocket,
-  Target,
-  Award,
-  Layers,
-  Cpu,
-  Database,
-  Lock,
-  BarChart3,
-  Settings,
-  Calculator,
-  Lightbulb,
-} from "lucide-react"
 
 export default function ChatbotPage() {
   const { language } = useLanguage()
-  const router = useRouter()
   const [activeDemo, setActiveDemo] = useState("booking")
 
-  const heroStats = [
+  const features = [
     {
-      number: "500+",
-      label: language === "it" ? "Chatbot Attivi" : "Active Chatbots",
-      icon: <Bot className="h-6 w-6" />,
+      icon: <MessageSquare className="h-8 w-8" />,
+      title: language === "it" ? "Conversazioni Naturali" : "Natural Conversations",
+      description:
+        language === "it"
+          ? "Comprensione avanzata del linguaggio naturale per conversazioni fluide e contestuali"
+          : "Advanced natural language understanding for fluid and contextual conversations",
+      color: "text-blue-400",
+      bgColor: "bg-blue-900/20",
     },
     {
-      number: "99.9%",
-      label: language === "it" ? "Uptime Garantito" : "Guaranteed Uptime",
-      icon: <Shield className="h-6 w-6" />,
+      icon: <Clock className="h-8 w-8" />,
+      title: language === "it" ? "Disponibilità 24/7" : "24/7 Availability",
+      description:
+        language === "it"
+          ? "Assistenza continua per i tuoi clienti, senza interruzioni e in qualsiasi momento"
+          : "Continuous assistance for your customers, without interruptions and at any time",
+      color: "text-green-400",
+      bgColor: "bg-green-900/20",
     },
     {
-      number: "24/7",
-      label: language === "it" ? "Supporto Continuo" : "Continuous Support",
-      icon: <Clock className="h-6 w-6" />,
+      icon: <Users className="h-8 w-8" />,
+      title: language === "it" ? "Gestione Multi-utente" : "Multi-user Management",
+      description:
+        language === "it"
+          ? "Gestione simultanea di migliaia di conversazioni con personalizzazione per ogni utente"
+          : "Simultaneous management of thousands of conversations with personalization for each user",
+      color: "text-purple-400",
+      bgColor: "bg-purple-900/20",
     },
     {
-      number: "50+",
-      label: language === "it" ? "Lingue Supportate" : "Supported Languages",
-      icon: <Globe className="h-6 w-6" />,
+      icon: <Brain className="h-8 w-8" />,
+      title: language === "it" ? "Apprendimento Continuo" : "Continuous Learning",
+      description:
+        language === "it"
+          ? "Il chatbot migliora costantemente attraverso machine learning e feedback degli utenti"
+          : "The chatbot constantly improves through machine learning and user feedback",
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-900/20",
+    },
+    {
+      icon: <Target className="h-8 w-8" />,
+      title: language === "it" ? "Lead Generation" : "Lead Generation",
+      description:
+        language === "it"
+          ? "Qualifica automaticamente i lead e raccoglie informazioni preziose sui potenziali clienti"
+          : "Automatically qualifies leads and collects valuable information about potential customers",
+      color: "text-orange-400",
+      bgColor: "bg-orange-900/20",
+    },
+    {
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: language === "it" ? "Analytics Avanzati" : "Advanced Analytics",
+      description:
+        language === "it"
+          ? "Dashboard completa con metriche dettagliate su performance e soddisfazione clienti"
+          : "Complete dashboard with detailed metrics on performance and customer satisfaction",
+      color: "text-pink-400",
+      bgColor: "bg-pink-900/20",
     },
   ]
 
   const benefits = [
     {
-      metric: "85%",
-      label: language === "it" ? "Riduzione Ticket" : "Ticket Reduction",
+      title: language === "it" ? "Riduzione Costi Operativi" : "Operational Cost Reduction",
       description:
         language === "it"
-          ? "Meno richieste manuali grazie all'automazione intelligente"
-          : "Fewer manual requests thanks to intelligent automation",
-      icon: <TrendingUp className="h-8 w-8" />,
-      gradient: "from-emerald-500 to-teal-600",
-      bgGradient: "from-emerald-50 to-teal-50",
+          ? "Fino al 70% di riduzione nei costi del customer service"
+          : "Up to 70% reduction in customer service costs",
+      percentage: "70%",
+      color: "text-green-400",
     },
     {
-      metric: "3x",
-      label: language === "it" ? "Aumento Conversioni" : "Conversion Boost",
+      title: language === "it" ? "Aumento Soddisfazione Cliente" : "Increased Customer Satisfaction",
       description:
         language === "it"
-          ? "Più lead qualificati attraverso conversazioni guidate"
-          : "More qualified leads through guided conversations",
-      icon: <Target className="h-8 w-8" />,
-      gradient: "from-blue-500 to-indigo-600",
-      bgGradient: "from-blue-50 to-indigo-50",
+          ? "95% di soddisfazione media dei clienti che interagiscono con il chatbot"
+          : "95% average satisfaction of customers who interact with the chatbot",
+      percentage: "95%",
+      color: "text-blue-400",
     },
     {
-      metric: "60%",
-      label: language === "it" ? "Risparmio Costi" : "Cost Savings",
+      title: language === "it" ? "Tempo di Risposta" : "Response Time",
       description:
         language === "it"
-          ? "Riduzione significativa dei costi operativi"
-          : "Significant reduction in operational costs",
-      icon: <Award className="h-8 w-8" />,
-      gradient: "from-purple-500 to-pink-600",
-      bgGradient: "from-purple-50 to-pink-50",
+          ? "Risposte istantanee invece di minuti o ore di attesa"
+          : "Instant responses instead of minutes or hours of waiting",
+      percentage: "<1s",
+      color: "text-purple-400",
     },
     {
-      metric: "24/7",
-      label: language === "it" ? "Disponibilità" : "Availability",
-      description: language === "it" ? "Assistenza sempre attiva per i clienti" : "Always active customer support",
-      icon: <Rocket className="h-8 w-8" />,
-      gradient: "from-orange-500 to-red-600",
-      bgGradient: "from-orange-50 to-red-50",
-    },
-  ]
-
-  const features = [
-    {
-      icon: <Brain className="h-8 w-8" />,
-      title: language === "it" ? "AI Conversazionale Avanzata" : "Advanced Conversational AI",
+      title: language === "it" ? "Conversioni Lead" : "Lead Conversions",
       description:
         language === "it"
-          ? "Comprensione del linguaggio naturale con risposte intelligenti e contestuali"
-          : "Natural language understanding with intelligent and contextual responses",
-      gradient: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: <Zap className="h-8 w-8" />,
-      title: language === "it" ? "Integrazione Rapida" : "Rapid Integration",
-      description:
-        language === "it"
-          ? "Setup in 24 ore con integrazione completa nei tuoi sistemi esistenti"
-          : "24-hour setup with complete integration into your existing systems",
-      gradient: "from-yellow-500 to-orange-500",
-    },
-    {
-      icon: <Layers className="h-8 w-8" />,
-      title: language === "it" ? "Supporto Multicanale" : "Multichannel Support",
-      description:
-        language === "it"
-          ? "Funziona su sito web, WhatsApp, Telegram, Facebook Messenger e app mobile"
-          : "Works on website, WhatsApp, Telegram, Facebook Messenger and mobile apps",
-      gradient: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
-      title: language === "it" ? "Analytics Avanzate" : "Advanced Analytics",
-      description:
-        language === "it"
-          ? "Dashboard completa con metriche di performance e insights sui clienti"
-          : "Complete dashboard with performance metrics and customer insights",
-      gradient: "from-purple-500 to-violet-500",
-    },
-    {
-      icon: <Lock className="h-8 w-8" />,
-      title: language === "it" ? "Sicurezza Enterprise" : "Enterprise Security",
-      description:
-        language === "it"
-          ? "Crittografia end-to-end e conformità GDPR per la massima sicurezza"
-          : "End-to-end encryption and GDPR compliance for maximum security",
-      gradient: "from-red-500 to-pink-500",
-    },
-    {
-      icon: <Cpu className="h-8 w-8" />,
-      title: language === "it" ? "Performance Ottimizzata" : "Optimized Performance",
-      description:
-        language === "it"
-          ? "Tempi di risposta ultra-rapidi e scalabilità automatica"
-          : "Ultra-fast response times and automatic scalability",
-      gradient: "from-indigo-500 to-blue-500",
+          ? "Aumento del 40% nelle conversioni grazie alla qualificazione automatica"
+          : "40% increase in conversions thanks to automatic qualification",
+      percentage: "+40%",
+      color: "text-cyan-400",
     },
   ]
 
@@ -181,7 +148,6 @@ export default function ChatbotPage() {
       icon: <Calendar className="h-6 w-6" />,
       description: language === "it" ? "Gestione prenotazioni e appuntamenti" : "Booking and appointment management",
       color: "from-green-500 to-emerald-600",
-      badge: "Popular",
       features: [
         language === "it" ? "Controllo disponibilità" : "Availability check",
         language === "it" ? "Conferma automatica" : "Auto confirmation",
@@ -194,7 +160,6 @@ export default function ChatbotPage() {
       icon: <ShoppingCart className="h-6 w-6" />,
       description: language === "it" ? "Assistente vendite e prodotti" : "Sales and product assistant",
       color: "from-blue-500 to-indigo-600",
-      badge: "Sales",
       features: [
         language === "it" ? "Catalogo prodotti" : "Product catalog",
         language === "it" ? "Carrello integrato" : "Integrated cart",
@@ -207,7 +172,6 @@ export default function ChatbotPage() {
       icon: <Bot className="h-6 w-6" />,
       description: language === "it" ? "Consulenza e lead generation" : "Consulting and lead generation",
       color: "from-purple-500 to-pink-600",
-      badge: "AI",
       features: [
         language === "it" ? "Qualificazione lead" : "Lead qualification",
         language === "it" ? "Analisi bisogni" : "Needs analysis",
@@ -220,7 +184,6 @@ export default function ChatbotPage() {
       icon: <Headphones className="h-6 w-6" />,
       description: language === "it" ? "Supporto tecnico e assistenza" : "Technical support and assistance",
       color: "from-orange-500 to-red-600",
-      badge: "24/7",
       features: [
         language === "it" ? "Risoluzione problemi" : "Problem solving",
         language === "it" ? "Escalation automatica" : "Auto escalation",
@@ -233,164 +196,11 @@ export default function ChatbotPage() {
       icon: <HelpCircle className="h-6 w-6" />,
       description: language === "it" ? "Domande frequenti e informazioni" : "FAQ and information",
       color: "from-cyan-500 to-blue-600",
-      badge: "Fast",
       features: [
         language === "it" ? "Ricerca intelligente" : "Smart search",
         language === "it" ? "Risposte istantanee" : "Instant answers",
         language === "it" ? "Apprendimento continuo" : "Continuous learning",
       ],
-    },
-  ]
-
-  const integrationPlatforms = [
-    {
-      icon: <Monitor className="h-12 w-12" />,
-      title: language === "it" ? "Sito Web" : "Website",
-      description: language === "it" ? "Widget integrato nel tuo sito" : "Widget integrated into your site",
-      gradient: "from-blue-500 to-indigo-500",
-    },
-    {
-      icon: <Smartphone className="h-12 w-12" />,
-      title: "WhatsApp",
-      description: language === "it" ? "Integrazione WhatsApp Business" : "WhatsApp Business integration",
-      gradient: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: <MessageSquare className="h-12 w-12" />,
-      title: "Telegram",
-      description: language === "it" ? "Bot Telegram personalizzato" : "Custom Telegram bot",
-      gradient: "from-cyan-500 to-blue-500",
-    },
-    {
-      icon: <Globe className="h-12 w-12" />,
-      title: "Social Media",
-      description: language === "it" ? "Facebook Messenger e altro" : "Facebook Messenger and more",
-      gradient: "from-purple-500 to-pink-500",
-    },
-    {
-      icon: <Database className="h-12 w-12" />,
-      title: "CRM",
-      description: language === "it" ? "Integrazione con sistemi CRM" : "Integration with CRM systems",
-      gradient: "from-orange-500 to-red-500",
-    },
-    {
-      icon: <Settings className="h-12 w-12" />,
-      title: "API",
-      description: language === "it" ? "API personalizzate" : "Custom APIs",
-      gradient: "from-violet-500 to-purple-500",
-    },
-  ]
-
-  const howItWorksSteps = [
-    {
-      icon: <Lightbulb className="h-8 w-8" />,
-      title: language === "it" ? "Analisi Requisiti" : "Requirements Analysis",
-      description:
-        language === "it"
-          ? "Analizziamo le tue esigenze e definiamo gli obiettivi del chatbot"
-          : "We analyze your needs and define the chatbot objectives",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: <Brain className="h-8 w-8" />,
-      title: language === "it" ? "Sviluppo AI" : "AI Development",
-      description:
-        language === "it"
-          ? "Creiamo e addestriamo il modello AI specifico per il tuo business"
-          : "We create and train the AI model specific to your business",
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      icon: <Zap className="h-8 w-8" />,
-      title: language === "it" ? "Integrazione" : "Integration",
-      description:
-        language === "it"
-          ? "Integriamo il chatbot nei tuoi sistemi e canali di comunicazione"
-          : "We integrate the chatbot into your systems and communication channels",
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: language === "it" ? "Ottimizzazione" : "Optimization",
-      description:
-        language === "it"
-          ? "Monitoriamo le performance e ottimizziamo continuamente"
-          : "We monitor performance and continuously optimize",
-      color: "from-orange-500 to-red-500",
-    },
-  ]
-
-  const whatYouGetBenefits = [
-    {
-      icon: <Target className="h-8 w-8" />,
-      title: language === "it" ? "Riduzione Costi Operativi" : "Operational Cost Reduction",
-      description:
-        language === "it"
-          ? "Automatizza le attività ripetitive e riduci i costi del customer service"
-          : "Automate repetitive tasks and reduce customer service costs",
-      color: "text-green-600",
-    },
-    {
-      icon: <Clock className="h-8 w-8" />,
-      title: language === "it" ? "Risposta Immediata" : "Immediate Response",
-      description:
-        language === "it"
-          ? "Rispondi ai clienti 24/7 senza tempi di attesa"
-          : "Respond to customers 24/7 without waiting times",
-      color: "text-blue-600",
-    },
-    {
-      icon: <Award className="h-8 w-8" />,
-      title: language === "it" ? "Miglior Esperienza Cliente" : "Better Customer Experience",
-      description:
-        language === "it"
-          ? "Offri un servizio personalizzato e sempre disponibile"
-          : "Provide personalized and always available service",
-      color: "text-purple-600",
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
-      title: language === "it" ? "Insights Avanzati" : "Advanced Insights",
-      description:
-        language === "it"
-          ? "Ottieni dati preziosi sui comportamenti e preferenze dei clienti"
-          : "Get valuable data on customer behaviors and preferences",
-      color: "text-orange-600",
-    },
-  ]
-
-  const insightFactors = [
-    {
-      title: language === "it" ? "Complessità Processi" : "Process Complexity",
-      description:
-        language === "it"
-          ? "Processi più complessi tipicamente generano maggiori benefici dall'automazione"
-          : "More complex processes typically generate greater benefits from automation",
-      icon: <Target className="h-6 w-6" />,
-    },
-    {
-      title: language === "it" ? "Adozione Team" : "Team Adoption",
-      description:
-        language === "it"
-          ? "Il tasso di adozione degli utenti impatta significativamente il successo"
-          : "User adoption rate significantly impacts success",
-      icon: <TrendingUp className="h-6 w-6" />,
-    },
-    {
-      title: language === "it" ? "Qualità Dati" : "Data Quality",
-      description:
-        language === "it"
-          ? "Dati puliti e strutturati abilitano implementazioni AI più efficaci"
-          : "Clean and structured data enables more effective AI implementations",
-      icon: <Database className="h-6 w-6" />,
-    },
-    {
-      title: language === "it" ? "Livello Integrazione" : "Integration Level",
-      description:
-        language === "it"
-          ? "Integrazione più profonda dei sistemi fornisce maggiori guadagni"
-          : "Deeper system integration provides greater gains",
-      icon: <Layers className="h-6 w-6" />,
     },
   ]
 
@@ -412,67 +222,81 @@ export default function ChatbotPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <ServiceNavbar />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <Navbar />
+      <ServiceNavbar currentService="chatbot" />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-pink-600/5" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl" />
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-40 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl" />
+        </div>
 
         <div className="container mx-auto max-w-7xl relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center">
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-              <Badge className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 text-sm font-medium">
+              <Badge className="mb-6 bg-blue-500/20 text-blue-300 border-blue-500/30 px-4 py-2">
                 <Bot className="h-4 w-4 mr-2" />
-                {language === "it" ? "Tecnologia AI Avanzata" : "Advanced AI Technology"}
+                {language === "it" ? "Chatbot Intelligenti" : "Intelligent Chatbots"}
               </Badge>
 
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-8">
-                <span className="text-gray-900">{language === "it" ? "Chatbot" : "Chatbot"}</span>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-                  {language === "it" ? "Intelligenti" : "Intelligent"}
-                </span>
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                {language === "it" ? (
+                  <>
+                    Assistenti Virtuali{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                      Intelligenti
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Intelligent{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                      Virtual
+                    </span>{" "}
+                    Assistants
+                  </>
+                )}
               </h1>
 
-              <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-12 leading-relaxed">
+              <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-3xl mx-auto">
                 {language === "it"
-                  ? "Trasforma il tuo customer service con assistenti virtuali AI che comprendono, apprendono e risolvono. Disponibili 24/7 per un'esperienza cliente eccezionale."
-                  : "Transform your customer service with AI virtual assistants that understand, learn and solve. Available 24/7 for an exceptional customer experience."}
+                  ? "Trasforma il tuo customer service con chatbot AI avanzati che comprendono, apprendono e migliorano continuamente l'esperienza dei tuoi clienti."
+                  : "Transform your customer service with advanced AI chatbots that understand, learn and continuously improve your customers' experience."}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Link href="/appointments">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 text-lg font-semibold shadow-lg"
+                  >
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    {language === "it" ? "Richiedi Demo Gratuita" : "Request Free Demo"}
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
-                  onClick={() => router.push("/appointments")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300"
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold bg-slate-800/50"
                 >
-                  <Calendar className="h-6 w-6 mr-3" />
-                  {language === "it" ? "Prenota Appuntamento" : "Book Appointment"}
+                  <Play className="h-6 w-6 mr-3" />
+                  {language === "it" ? "Guarda Video" : "Watch Video"}
                 </Button>
               </div>
 
-              {/* Hero Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {heroStats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                    className="text-center"
-                  >
-                    <div className="flex justify-center mb-3">
-                      <div className="p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl text-blue-600">
-                        {stat.icon}
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stat.number}</div>
-                    <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
-                  </motion.div>
+              <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                {[
+                  { value: "95%", label: language === "it" ? "Soddisfazione" : "Satisfaction" },
+                  { value: "24/7", label: language === "it" ? "Disponibilità" : "Availability" },
+                  { value: "<1s", label: language === "it" ? "Risposta" : "Response" },
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl font-bold text-blue-400 mb-1">{stat.value}</div>
+                    <div className="text-slate-400 text-sm">{stat.label}</div>
+                  </div>
                 ))}
               </div>
             </motion.div>
@@ -480,213 +304,19 @@ export default function ChatbotPage() {
         </div>
       </section>
 
-      {/* ROI Calculator Section - PRIMA COSA VISIBILE */}
-      <section className="py-20 px-6 bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200">
-                <Calculator className="h-4 w-4 mr-2" />
-                {language === "it" ? "Calcola il Tuo ROI" : "Calculate Your ROI"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Calcolatore ROI Chatbot" : "Chatbot ROI Calculator"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "Scopri quanto puoi risparmiare e guadagnare implementando un chatbot AI nella tua attività"
-                  : "Discover how much you can save and earn by implementing an AI chatbot in your business"}
-              </p>
-            </motion.div>
-          </div>
-
-          <ROICalculator />
-        </div>
-      </section>
-
-      {/* Come Funziona Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200">
-                <Lightbulb className="h-4 w-4 mr-2" />
-                {language === "it" ? "Processo Semplice" : "Simple Process"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Come Funziona" : "How It Works"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "Il nostro processo strutturato garantisce il successo del tuo progetto chatbot"
-                  : "Our structured process ensures the success of your chatbot project"}
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorksSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/90 backdrop-blur-sm group overflow-hidden">
-                  <CardContent className="p-8 text-center relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full -translate-y-12 translate-x-12" />
-
-                    <div className="relative z-10 mb-6">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
-                        {index + 1}
-                      </div>
-                      <div
-                        className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${step.color} text-white group-hover:scale-110 transition-transform duration-300`}
-                      >
-                        {step.icon}
-                      </div>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{step.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{step.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Cosa Ottieni Section */}
-      <section className="py-20 px-6 bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200">
-                <Award className="h-4 w-4 mr-2" />
-                {language === "it" ? "Benefici Concreti" : "Concrete Benefits"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Cosa Ottieni" : "What You Get"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "I vantaggi tangibili che otterrai implementando un chatbot AI nella tua attività"
-                  : "The tangible benefits you'll get by implementing an AI chatbot in your business"}
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {whatYouGetBenefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/90 backdrop-blur-sm group">
-                  <CardContent className="p-8 text-center">
-                    <div
-                      className={`inline-flex p-4 rounded-2xl bg-gray-100 ${benefit.color} mb-6 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      {benefit.icon}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{benefit.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Benefits Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card
-                  className={`h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br ${benefit.bgGradient} overflow-hidden group`}
-                >
-                  <CardContent className="p-8 text-center relative">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full -translate-y-16 translate-x-16" />
-
-                    <div
-                      className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${benefit.gradient} text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      {benefit.icon}
-                    </div>
-
-                    <div className="text-4xl font-bold text-gray-900 mb-3">{benefit.metric}</div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{benefit.label}</h3>
-                    <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Insights Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                {language === "it" ? "Insights Avanzati" : "Advanced Insights"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Fattori Chiave per il Successo" : "Key Success Factors"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "Elementi che influenzano significativamente il ROI e il successo del tuo chatbot"
-                  : "Elements that significantly influence the ROI and success of your chatbot"}
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {insightFactors.map((factor, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-start space-x-4 p-6 bg-white/90 backdrop-blur-sm rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="p-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl text-purple-600 flex-shrink-0">
-                  {factor.icon}
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2 text-lg">{factor.title}</h4>
-                  <p className="text-gray-600 leading-relaxed">{factor.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Interactive Demo Section */}
-      <section className="py-20 px-6 bg-white/50 backdrop-blur-sm">
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200">
+              <Badge className="mb-4 bg-slate-800/80 backdrop-blur-sm text-purple-400 border-purple-500/30">
                 <Sparkles className="h-4 w-4 mr-2" />
                 {language === "it" ? "Demo Interattiva" : "Interactive Demo"}
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 {language === "it" ? "Prova i Nostri Chatbot" : "Try Our Chatbots"}
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-slate-300 max-w-3xl mx-auto">
                 {language === "it"
                   ? "Interagisci con diversi tipi di assistenti virtuali e scopri come possono trasformare la tua attività"
                   : "Interact with different types of virtual assistants and discover how they can transform your business"}
@@ -697,69 +327,63 @@ export default function ChatbotPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Chatbot Selector */}
             <div className="lg:col-span-1 space-y-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-xl">
-                    <Bot className="h-6 w-6 mr-3 text-blue-600" />
+              <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700/50">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                    <Bot className="h-6 w-6 mr-3 text-blue-400" />
                     {language === "it" ? "Scegli il Chatbot" : "Choose Chatbot"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {chatbotTypes.map((type) => (
-                    <motion.div key={type.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button
-                        variant={activeDemo === type.id ? "default" : "outline"}
-                        className={`w-full h-auto p-6 transition-all duration-300 ${
-                          activeDemo === type.id
-                            ? `bg-gradient-to-r ${type.color} text-white shadow-lg border-0`
-                            : "bg-white/80 hover:bg-gray-50 border-gray-200 text-gray-700"
-                        }`}
-                        onClick={() => setActiveDemo(type.id)}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center space-x-4">
-                            <div className={`p-2 rounded-lg ${activeDemo === type.id ? "bg-white/20" : "bg-gray-100"}`}>
-                              {type.icon}
-                            </div>
-                            <div className="text-left">
-                              <div className="font-semibold text-base">{type.name}</div>
-                              <div className="text-sm opacity-80">{type.description}</div>
+                  </h3>
+                  <div className="space-y-3">
+                    {chatbotTypes.map((type) => (
+                      <motion.div key={type.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          variant={activeDemo === type.id ? "default" : "outline"}
+                          className={`w-full h-auto p-4 transition-all duration-300 ${
+                            activeDemo === type.id
+                              ? `bg-gradient-to-r ${type.color} text-white shadow-lg border-0`
+                              : "bg-slate-700/50 hover:bg-slate-600/50 border-slate-600 text-slate-300"
+                          }`}
+                          onClick={() => setActiveDemo(type.id)}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className={`p-2 rounded-lg ${
+                                  activeDemo === type.id ? "bg-white/20" : "bg-slate-600/50"
+                                }`}
+                              >
+                                {type.icon}
+                              </div>
+                              <div className="text-left">
+                                <div className="font-semibold text-sm">{type.name}</div>
+                                <div className="text-xs opacity-80">{type.description}</div>
+                              </div>
                             </div>
                           </div>
-                          <Badge
-                            variant="secondary"
-                            className={`text-xs font-medium ${
-                              activeDemo === type.id
-                                ? "bg-white/20 text-white border-white/20"
-                                : "bg-blue-100 text-blue-700 border-blue-200"
-                            }`}
-                          >
-                            {type.badge}
-                          </Badge>
-                        </div>
-                      </Button>
-                    </motion.div>
-                  ))}
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Features Card */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg flex items-center">
-                    <Star className="h-5 w-5 mr-2 text-yellow-500" />
+              <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700/50">
+                <CardContent className="p-6">
+                  <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+                    <Star className="h-5 w-5 mr-2 text-yellow-400" />
                     {language === "it" ? "Caratteristiche Principali" : "Key Features"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {chatbotTypes
-                    .find((type) => type.id === activeDemo)
-                    ?.features.map((feature, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-gray-700">{feature}</span>
-                      </div>
-                    ))}
+                  </h4>
+                  <div className="space-y-3">
+                    {chatbotTypes
+                      .find((type) => type.id === activeDemo)
+                      ?.features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-3">
+                          <CheckCircle className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <span className="text-sm text-slate-300">{feature}</span>
+                        </div>
+                      ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -773,7 +397,7 @@ export default function ChatbotPage() {
                 transition={{ duration: 0.4 }}
                 className="h-full"
               >
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-0">
+                <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-slate-700/50">
                   {renderChatbot()}
                 </div>
               </motion.div>
@@ -783,23 +407,21 @@ export default function ChatbotPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-20 px-6 bg-slate-900/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200">
-                <Zap className="h-4 w-4 mr-2" />
-                {language === "it" ? "Tecnologie Avanzate" : "Advanced Technologies"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Funzionalità All'Avanguardia" : "Cutting-Edge Features"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "I nostri chatbot sono dotati delle tecnologie AI più avanzate per offrire un'esperienza utente superiore"
-                  : "Our chatbots are equipped with the most advanced AI technologies to deliver a superior user experience"}
-              </p>
-            </motion.div>
+            <Badge className="mb-4 bg-slate-800/80 text-cyan-400 border-cyan-500/30">
+              <Zap className="h-4 w-4 mr-2" />
+              {language === "it" ? "Funzionalità Avanzate" : "Advanced Features"}
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {language === "it" ? "Tecnologia All'Avanguardia" : "Cutting-Edge Technology"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "I nostri chatbot utilizzano le più avanzate tecnologie di intelligenza artificiale per offrire esperienze conversazionali naturali e coinvolgenti"
+                : "Our chatbots use the most advanced artificial intelligence technologies to deliver natural and engaging conversational experiences"}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -809,19 +431,19 @@ export default function ChatbotPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group"
               >
-                <Card className="h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm group overflow-hidden">
-                  <CardContent className="p-8 relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full -translate-y-12 translate-x-12" />
-
+                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                  <CardContent className="p-8">
                     <div
-                      className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${feature.gradient} text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
+                      className={`inline-flex p-4 rounded-2xl ${feature.bgColor} mb-6 group-hover:scale-110 transition-transform duration-300`}
                     >
-                      {feature.icon}
+                      <div className={feature.color}>{feature.icon}</div>
                     </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{feature.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -830,42 +452,43 @@ export default function ChatbotPage() {
         </div>
       </section>
 
-      {/* Integration Section */}
-      <section className="py-20 px-6 bg-white/50 backdrop-blur-sm">
+      {/* Benefits Section */}
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-4 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200">
-                <Globe className="h-4 w-4 mr-2" />
-                {language === "it" ? "Integrazioni Universali" : "Universal Integrations"}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === "it" ? "Ovunque Tu Sia" : "Wherever You Are"}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {language === "it"
-                  ? "I nostri chatbot si integrano perfettamente con tutte le piattaforme e i sistemi che utilizzi"
-                  : "Our chatbots integrate seamlessly with all the platforms and systems you use"}
-              </p>
-            </motion.div>
+            <Badge className="mb-4 bg-slate-800/80 text-green-400 border-green-500/30">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              {language === "it" ? "Risultati Misurabili" : "Measurable Results"}
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {language === "it" ? "Benefici Concreti per il Tuo Business" : "Concrete Benefits for Your Business"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "I nostri chatbot non sono solo tecnologia avanzata, ma strumenti che generano risultati tangibili e misurabili per la tua azienda"
+                : "Our chatbots are not just advanced technology, but tools that generate tangible and measurable results for your business"}
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {integrationPlatforms.map((platform, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {benefits.map((benefit, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="text-center group"
               >
-                <Card className="text-center p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm group">
-                  <div
-                    className={`inline-flex p-6 rounded-3xl bg-gradient-to-r ${platform.gradient} text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    {platform.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{platform.title}</h3>
-                  <p className="text-gray-600">{platform.description}</p>
+                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
+                  <CardContent className="p-8">
+                    <div
+                      className={`text-4xl font-bold ${benefit.color} mb-4 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {benefit.percentage}
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-4">{benefit.title}</h3>
+                    <p className="text-slate-300 leading-relaxed">{benefit.description}</p>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
@@ -874,43 +497,43 @@ export default function ChatbotPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="container mx-auto max-w-5xl text-center relative z-10">
+      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-cyan-600">
+        <div className="container mx-auto max-w-4xl text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Badge className="mb-6 bg-white/20 text-white border-white/30 px-6 py-2">
-              <Rocket className="h-4 w-4 mr-2" />
-              {language === "it" ? "Inizia Oggi" : "Start Today"}
-            </Badge>
-
-            <h2 className="text-4xl md:text-6xl font-bold mb-8">
-              {language === "it" ? "Pronto a Rivoluzionare il Tuo Business?" : "Ready to Revolutionize Your Business?"}
-            </h2>
-
-            <p className="text-xl md:text-2xl mb-12 opacity-90 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               {language === "it"
-                ? "Inizia oggi stesso con un chatbot AI personalizzato. Consulenza gratuita, demo live e supporto completo inclusi."
-                : "Start today with a personalized AI chatbot. Free consultation, live demo and complete support included."}
+                ? "Pronto a Rivoluzionare il Tuo Customer Service?"
+                : "Ready to Revolutionize Your Customer Service?"}
+            </h2>
+            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+              {language === "it"
+                ? "Inizia oggi stesso con una demo gratuita e scopri come i nostri chatbot possono trasformare la tua azienda"
+                : "Start today with a free demo and discover how our chatbots can transform your business"}
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/appointments">
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 text-lg font-semibold shadow-lg"
+                >
+                  <Sparkles className="h-6 w-6 mr-3" />
+                  {language === "it" ? "Richiedi Demo Gratuita" : "Request Free Demo"}
+                </Button>
+              </Link>
               <Button
                 size="lg"
-                onClick={() => router.push("/appointments")}
-                className="bg-white text-blue-600 hover:bg-gray-100 px-10 py-4 text-lg font-semibold shadow-2xl"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold bg-transparent"
               >
-                <Calendar className="h-6 w-6 mr-3" />
-                {language === "it" ? "Prenota Appuntamento" : "Book Appointment"}
+                <MessageSquare className="h-6 w-6 mr-3" />
+                {language === "it" ? "Parla con un Esperto" : "Talk to an Expert"}
               </Button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      <ChatbotWidget />
     </div>
   )
 }

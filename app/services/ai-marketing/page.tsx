@@ -1,85 +1,28 @@
 "use client"
-
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ServiceNavbar from "../../components/service-navbar"
-import { useLanguage } from "../../contexts/language-context"
 import {
-  Brain,
   TrendingUp,
-  CheckCircle,
-  ArrowRight,
-  Target,
-  Users,
   BarChart3,
+  Target,
+  Brain,
+  Play,
+  Sparkles,
   MessageSquare,
-  Zap,
-  Clock,
-  Settings,
+  Search,
+  Megaphone,
+  Star,
 } from "lucide-react"
+import Link from "next/link"
+import { useLanguage } from "../../contexts/language-context"
+import Navbar from "../../components/navbar"
+import ServiceNavbar from "../../components/service-navbar"
+import ChatbotWidget from "../../components/chatbot-widget"
 
 export default function AIMarketingPage() {
   const { language } = useLanguage()
-  const [activeTab, setActiveTab] = useState("automation")
-
-  const texts = {
-    en: {
-      title: "AI Marketing",
-      subtitle: "Future Marketing Intelligence",
-      description:
-        "Revolutionize your marketing strategy with artificial intelligence. Predictive analytics, advanced personalization, and intelligent automation for extraordinary results and guaranteed ROI.",
-      heroTitle: "AI Marketing",
-      heroSubtitle: "of the Future",
-      ctaPrimary: "Start Now",
-      ctaSecondary: "See Live Demo",
-      benefitsTitle: "Marketing Results",
-      benefitsSubtitle: "Measurable impact on your marketing performance",
-      strategiesTitle: "AI Marketing Strategies",
-      strategiesSubtitle: "Advanced solutions for every marketing channel",
-      toolsTitle: "AI Marketing Tools",
-      toolsSubtitle: "Cutting-edge technology for marketing success",
-      processTitle: "Our Marketing Process",
-      processSubtitle: "From strategy to execution in data-driven phases",
-      caseStudiesTitle: "Success Stories",
-      caseStudiesSubtitle: "Real results achieved for our clients",
-      ctaFinalTitle: "Ready to Transform Your Marketing?",
-      ctaFinalSubtitle:
-        "Start today with AI-powered marketing that delivers results. Free strategy session and custom analysis included.",
-      ctaFinalPrimary: "Get Free Strategy Session",
-      ctaFinalSecondary: "Request Custom Analysis",
-    },
-    it: {
-      title: "Marketing AI",
-      subtitle: "Intelligenza Marketing del Futuro",
-      description:
-        "Rivoluziona la tua strategia di marketing con l'intelligenza artificiale. Analisi predittive, personalizzazione avanzata e automazione intelligente per risultati straordinari e ROI garantito.",
-      heroTitle: "Marketing AI",
-      heroSubtitle: "del Futuro",
-      ctaPrimary: "Inizia Ora",
-      ctaSecondary: "Vedi Demo Live",
-      benefitsTitle: "Risultati Marketing",
-      benefitsSubtitle: "Impatto misurabile sulle tue performance di marketing",
-      strategiesTitle: "Strategie Marketing AI",
-      strategiesSubtitle: "Soluzioni avanzate per ogni canale di marketing",
-      toolsTitle: "Strumenti Marketing AI",
-      toolsSubtitle: "Tecnologia all'avanguardia per il successo del marketing",
-      processTitle: "Il Nostro Processo Marketing",
-      processSubtitle: "Dalla strategia all'esecuzione in fasi data-driven",
-      caseStudiesTitle: "Storie di Successo",
-      caseStudiesSubtitle: "Risultati reali ottenuti per i nostre clienti",
-      ctaFinalTitle: "Pronto a Trasformare il Tuo Marketing?",
-      ctaFinalSubtitle:
-        "Inizia oggi con marketing potenziato dall'AI che genera risultati. Sessione strategica gratuita e analisi personalizzata incluse.",
-      ctaFinalPrimary: "Sessione Strategica Gratuita",
-      ctaFinalSecondary: "Richiedi Analisi Personalizzata",
-    },
-  }
-
-  const t = texts[language]
 
   const benefits = [
     {
@@ -111,223 +54,66 @@ export default function AIMarketingPage() {
     },
   ]
 
-  const marketingStrategies = [
+  const features = [
     {
-      id: "automation",
-      title: language === "en" ? "Marketing Automation" : "Automazione Marketing",
-      icon: <Zap className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "Intelligent automation of marketing campaigns and customer journeys"
-          : "Automazione intelligente di campagne marketing e customer journey",
-      features:
-        language === "en"
-          ? [
-              "Automated email sequences",
-              "Lead nurturing workflows",
-              "Behavioral triggers",
-              "Multi-channel orchestration",
-            ]
-          : [
-              "Sequenze email automatiche",
-              "Workflow nurturing lead",
-              "Trigger comportamentali",
-              "Orchestrazione multi-canale",
-            ],
-    },
-    {
-      id: "personalization",
-      title: language === "en" ? "AI Personalization" : "Personalizzazione AI",
-      icon: <Target className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "Hyper-personalized content and offers based on user behavior"
-          : "Contenuti e offerte iper-personalizzati basati sul comportamento utente",
-      features:
-        language === "en"
-          ? [
-              "Dynamic content optimization",
-              "Personalized product recommendations",
-              "Behavioral segmentation",
-              "Real-time personalization",
-            ]
-          : [
-              "Ottimizzazione contenuti dinamici",
-              "Raccomandazioni prodotti personalizzate",
-              "Segmentazione comportamentale",
-              "Personalizzazione in tempo reale",
-            ],
-    },
-    {
-      id: "analytics",
-      title: language === "en" ? "Predictive Analytics" : "Analytics Predittive",
-      icon: <BarChart3 className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "Advanced analytics to predict trends and optimize campaigns"
-          : "Analytics avanzate per predire trend e ottimizzare campagne",
-      features:
-        language === "en"
-          ? [
-              "Customer lifetime value prediction",
-              "Churn prediction models",
-              "Campaign performance forecasting",
-              "Market trend analysis",
-            ]
-          : [
-              "Predizione customer lifetime value",
-              "Modelli predizione churn",
-              "Forecasting performance campagne",
-              "Analisi trend mercato",
-            ],
-    },
-    {
-      id: "advancedAnalytics",
-      title: language === "en" ? "Advanced Analytics" : "Analisi Avanzate",
-      icon: <BarChart3 className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "Deep insights and predictive analytics for data-driven decision-making"
-          : "Profondi insights e analytics predittive per decisioni basate sui dati",
-      features:
-        language === "en"
-          ? ["Behavioral analytics", "Customer segmentation", "Predictive modeling", "Real-time data analysis"]
-          : [
-              "Analisi comportamentale",
-              "Segmentazione clienti",
-              "Modellazione predittiva",
-              "Analisi dati in tempo reale",
-            ],
-    },
-    {
-      id: "campaignOptimization",
-      title: language === "en" ? "Campaign Optimization" : "Ottimizzazione Campagne",
-      icon: <TrendingUp className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "Real-time optimization of marketing campaigns using machine learning"
-          : "Ottimizzazione in tempo reale delle campagne marketing usando machine learning",
-      features:
-        language === "en"
-          ? ["Bid optimization", "Budget allocation", "Creative testing", "Performance monitoring"]
-          : ["Ottimizzazione bid", "Allocazione budget", "Test creatività", "Monitoraggio performance"],
-    },
-    {
-      id: "marketIntelligence",
-      title: language === "en" ? "Market Intelligence" : "Intelligenza del Mercato",
-      icon: <Brain className="h-6 w-6" />,
-      description:
-        language === "en"
-          ? "AI-driven insights into market trends and customer behavior"
-          : "Insights basati su AI sui trend del mercato e sul comportamento dei clienti",
-      features:
-        language === "en"
-          ? [
-              "Competitor analysis",
-              "Market trend forecasting",
-              "Customer sentiment analysis",
-              "Personalized recommendations",
-            ]
-          : [
-              "Analisi concorrenti",
-              "Forecasting trend mercato",
-              "Analisi sentimenti clienti",
-              "Raccomandazioni personalizzate",
-            ],
-    },
-  ]
-
-  const aiTools = [
-    {
-      name: language === "en" ? "Content Generator" : "Generatore Contenuti",
-      icon: <MessageSquare className="h-8 w-8" />,
-      description:
-        language === "en"
-          ? "AI-powered content creation for all marketing channels"
-          : "Creazione contenuti potenziata dall'AI per tutti i canali marketing",
-      capabilities:
-        language === "en"
-          ? ["Blog posts", "Social media", "Email copy", "Ad creatives"]
-          : ["Post blog", "Social media", "Copy email", "Creatività ads"],
-    },
-    {
-      name: language === "en" ? "Audience Analyzer" : "Analizzatore Audience",
-      icon: <Users className="h-8 w-8" />,
-      description:
-        language === "en"
-          ? "Deep audience insights and segmentation with AI"
-          : "Insights profondi audience e segmentazione con AI",
-      capabilities:
-        language === "en"
-          ? ["Behavioral analysis", "Demographic insights", "Interest mapping", "Lookalike audiences"]
-          : ["Analisi comportamentale", "Insights demografici", "Mappatura interessi", "Audience lookalike"],
-    },
-    {
-      name: language === "en" ? "Campaign Optimizer" : "Ottimizzatore Campagne",
-      icon: <TrendingUp className="h-8 w-8" />,
-      description:
-        language === "en"
-          ? "Real-time campaign optimization with machine learning"
-          : "Ottimizzazione campagne in tempo reale con machine learning",
-      capabilities:
-        language === "en"
-          ? ["Bid optimization", "Budget allocation", "Creative testing", "Performance monitoring"]
-          : ["Ottimizzazione bid", "Allocazione budget", "Test creatività", "Monitoraggio performance"],
-    },
-    {
-      name: language === "en" ? "Conversion Predictor" : "Predittore Conversioni",
       icon: <Target className="h-8 w-8" />,
+      title: language === "it" ? "Targeting Intelligente" : "Intelligent Targeting",
       description:
-        language === "en"
-          ? "Predict and optimize conversion rates with AI models"
-          : "Predici e ottimizza tassi conversione con modelli AI",
-      capabilities:
-        language === "en"
-          ? ["Lead scoring", "Conversion probability", "Optimal timing", "Channel attribution"]
-          : ["Lead scoring", "Probabilità conversione", "Timing ottimale", "Attribuzione canali"],
-    },
-  ]
-
-  const processSteps = [
-    {
-      step: "01",
-      title: language === "en" ? "Data Analysis & Audit" : "Analisi Dati e Audit",
-      description:
-        language === "en"
-          ? "We analyze your current marketing data and identify optimization opportunities"
-          : "Analizziamo i tuoi dati marketing attuali e identifichiamo opportunità di ottimizzazione",
-      icon: <BarChart3 className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
+        language === "it"
+          ? "Raggiungi il pubblico giusto al momento giusto con precisione millimetrica"
+          : "Reach the right audience at the right time with millimeter precision",
+      color: "text-orange-400",
+      bgColor: "bg-orange-900/20",
     },
     {
-      step: "02",
-      title: language === "en" ? "AI Strategy Development" : "Sviluppo Strategia AI",
-      description:
-        language === "en"
-          ? "We create a customized AI marketing strategy based on your goals"
-          : "Creiamo una strategia marketing AI personalizzata basata sui tuoi obiettivi",
       icon: <Brain className="h-8 w-8" />,
-      duration: language === "en" ? "1 week" : "1 settimana",
+      title: language === "it" ? "Ottimizzazione AI" : "AI Optimization",
+      description:
+        language === "it"
+          ? "Algoritmi che ottimizzano automaticamente le campagne per massimizzare il ROI"
+          : "Algorithms that automatically optimize campaigns to maximize ROI",
+      color: "text-purple-400",
+      bgColor: "bg-purple-900/20",
     },
     {
-      step: "03",
-      title: language === "en" ? "Implementation & Setup" : "Implementazione e Setup",
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: language === "it" ? "Analytics Predittivi" : "Predictive Analytics",
       description:
-        language === "en"
-          ? "We implement AI tools and set up automated marketing workflows"
-          : "Implementiamo strumenti AI e configuriamo workflow marketing automatizzati",
-      icon: <Settings className="h-8 w-8" />,
-      duration: language === "en" ? "2 weeks" : "2 settimane",
+        language === "it"
+          ? "Prevedi tendenze e comportamenti per strategie marketing vincenti"
+          : "Predict trends and behaviors for winning marketing strategies",
+      color: "text-blue-400",
+      bgColor: "bg-blue-900/20",
     },
     {
-      step: "04",
-      title: language === "en" ? "Optimization & Scaling" : "Ottimizzazione e Scaling",
+      icon: <MessageSquare className="h-8 w-8" />,
+      title: language === "it" ? "Content Automation" : "Content Automation",
       description:
-        language === "en"
-          ? "We continuously optimize campaigns and scale successful strategies"
-          : "Ottimizziamo continuamente le campagne e scaliamo le strategie di successo",
-      icon: <TrendingUp className="h-8 w-8" />,
-      duration: language === "en" ? "Ongoing" : "Continuo",
+        language === "it"
+          ? "Genera contenuti personalizzati e coinvolgenti su larga scala"
+          : "Generate personalized and engaging content at scale",
+      color: "text-green-400",
+      bgColor: "bg-green-900/20",
+    },
+    {
+      icon: <Search className="h-8 w-8" />,
+      title: language === "it" ? "SEO Intelligente" : "Intelligent SEO",
+      description:
+        language === "it"
+          ? "Ottimizzazione automatica per motori di ricerca con AI avanzata"
+          : "Automatic search engine optimization with advanced AI",
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-900/20",
+    },
+    {
+      icon: <Megaphone className="h-8 w-8" />,
+      title: language === "it" ? "Social Media AI" : "Social Media AI",
+      description:
+        language === "it"
+          ? "Gestione intelligente dei social media con engagement automatizzato"
+          : "Intelligent social media management with automated engagement",
+      color: "text-pink-400",
+      bgColor: "bg-pink-900/20",
     },
   ]
 
@@ -385,110 +171,183 @@ export default function AIMarketingPage() {
     },
   ]
 
+  // MANTENIAMO LE TESTIMONIANZE PER AI MARKETING
+  const testimonials = [
+    {
+      name: "Marco Rossi",
+      role: language === "it" ? "CEO, TechStart" : "CEO, TechStart",
+      content:
+        language === "it"
+          ? "Digital Aura ha trasformato completamente il nostro marketing. ROI aumentato del 300% in soli 4 mesi."
+          : "Digital Aura completely transformed our marketing. ROI increased by 300% in just 4 months.",
+      rating: 5,
+      company: "TechStart",
+    },
+    {
+      name: "Laura Bianchi",
+      role: language === "it" ? "Marketing Director, Fashion Co" : "Marketing Director, Fashion Co",
+      content:
+        language === "it"
+          ? "Le strategie AI hanno rivoluzionato le nostre campagne. Risultati incredibili e automazione perfetta."
+          : "AI strategies revolutionized our campaigns. Incredible results and perfect automation.",
+      rating: 5,
+      company: "Fashion Co",
+    },
+    {
+      name: "Giuseppe Verde",
+      role: language === "it" ? "Founder, E-commerce Plus" : "Founder, E-commerce Plus",
+      content:
+        language === "it"
+          ? "Crescita follower del 500% e ricavi triplicati. Il marketing AI funziona davvero."
+          : "500% follower growth and tripled revenue. AI marketing really works.",
+      rating: 5,
+      company: "E-commerce Plus",
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      <ServiceNavbar />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <Navbar />
+      <ServiceNavbar currentService="ai-marketing" />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="mb-6 bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors px-4 py-2">
-                🚀 {language === "en" ? "Marketing Innovation" : "Innovazione nel Marketing"}
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-40 right-20 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="text-center">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+              <Badge className="mb-6 bg-orange-500/20 text-orange-300 border-orange-500/30 px-4 py-2">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                {language === "it" ? "AI Marketing" : "AI Marketing"}
               </Badge>
-              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600">
-                  {t.heroTitle}
-                </span>
-                <br />
-                <span className="text-gray-900">{t.heroSubtitle}</span>
+
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                {language === "it" ? (
+                  <>
+                    Marketing{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">
+                      Intelligente
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Intelligent{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">
+                      Marketing
+                    </span>
+                  </>
+                )}
               </h1>
-              <p className="text-xl text-gray-700 mb-8 leading-relaxed">{t.description}</p>
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-4 text-lg"
-                >
-                  {t.ctaPrimary} <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+
+              <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-3xl mx-auto">
+                {language === "it"
+                  ? "Potenzia le tue strategie di marketing con intelligenza artificiale avanzata per risultati straordinari e ROI massimizzato."
+                  : "Supercharge your marketing strategies with advanced artificial intelligence for extraordinary results and maximized ROI."}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Link href="/appointments">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold shadow-lg"
+                  >
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    {language === "it" ? "Inizia Ora" : "Start Now"}
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-orange-300 hover:border-orange-500 px-8 py-4 text-lg bg-transparent"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold bg-slate-800/50"
                 >
-                  {t.ctaSecondary}
+                  <Play className="h-6 w-6 mr-3" />
+                  {language === "it" ? "Vedi Risultati" : "View Results"}
                 </Button>
               </div>
-              <div className="flex items-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>{language === "en" ? "Setup in 24h" : "Setup in 24h"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>{language === "en" ? "ROI guaranteed +150%" : "ROI garantito +150%"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>{language === "en" ? "24/7 Support" : "Supporto 24/7"}</span>
-                </div>
-              </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="relative">
-                <div className="w-full h-96 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden">
-                  <div className="text-center relative z-10">
-                    <div className="flex justify-center mb-6">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="w-4 h-16 bg-orange-500 rounded-sm animate-pulse"></div>
-                        <div
-                          className="w-4 h-20 bg-orange-600 rounded-sm animate-pulse"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                        <div
-                          className="w-4 h-24 bg-orange-700 rounded-sm animate-pulse"
-                          style={{ animationDelay: "0.4s" }}
-                        ></div>
-                      </div>
-                    </div>
-                    <h3 className="text-3xl font-bold text-gray-800 mb-4">AI Marketing Platform</h3>
-                    <p className="text-gray-600 text-lg">
-                      {language === "en"
-                        ? "Artificial intelligence for marketing"
-                        : "Intelligenza artificiale per il marketing"}
-                    </p>
+              <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                {[
+                  { value: "5x", label: language === "it" ? "ROI Medio" : "Average ROI" },
+                  { value: "500%", label: language === "it" ? "Crescita Follower" : "Follower Growth" },
+                  { value: "300%", label: language === "it" ? "Aumento Ricavi" : "Revenue Increase" },
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl font-bold text-orange-400 mb-1">{stat.value}</div>
+                    <div className="text-slate-400 text-sm">{stat.label}</div>
                   </div>
-                </div>
-                <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <div>
-                      <p className="font-bold text-2xl text-gray-900">+180%</p>
-                      <p className="text-sm text-gray-600">
-                        {language === "en" ? "Average performance" : "Performance media"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -top-6 -left-6 bg-orange-500 text-white p-4 rounded-xl shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-6 w-6" />
-                    <span className="font-semibold">AI Powered</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
 
-          {/* Stats Section */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
+      {/* Features Section */}
+      <section className="py-20 px-6 bg-slate-800/50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-slate-800/80 text-cyan-400 border-cyan-500/30">
+              <Brain className="h-4 w-4 mr-2" />
+              {language === "it" ? "Strategie Avanzate" : "Advanced Strategies"}
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {language === "it" ? "Marketing del Futuro" : "Marketing of the Future"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Sfrutta il potere dell'intelligenza artificiale per campagne marketing che superano ogni aspettativa"
+                : "Harness the power of artificial intelligence for marketing campaigns that exceed all expectations"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group"
+              >
+                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                  <CardContent className="p-8">
+                    <div
+                      className={`inline-flex p-4 rounded-2xl ${feature.bgColor} mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className={feature.color}>{feature.icon}</div>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 px-6 bg-slate-900/50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {language === "it" ? "Risultati Straordinari" : "Extraordinary Results"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "I numeri parlano chiaro: il marketing AI genera risultati concreti e misurabili"
+                : "The numbers speak for themselves: AI marketing generates concrete and measurable results"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={index}
@@ -496,149 +355,11 @@ export default function AIMarketingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="text-center h-full border-orange-100 hover:border-orange-200 transition-colors">
+                <Card className="text-center h-full border-slate-700/50 bg-slate-800/80 backdrop-blur-sm hover:border-slate-600 transition-colors">
                   <CardContent className="p-6">
-                    <div className="text-3xl font-bold text-orange-600 mb-2">{benefit.metric}</div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{benefit.label}</h3>
-                    <p className="text-sm text-gray-600">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Marketing Strategies */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.strategiesTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.strategiesSubtitle}</p>
-          </div>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
-              {marketingStrategies.map((strategy) => (
-                <TabsTrigger key={strategy.id} value={strategy.id} className="flex items-center space-x-2">
-                  {strategy.icon}
-                  <span className="hidden sm:inline">{strategy.title}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {marketingStrategies.map((strategy) => (
-              <TabsContent key={strategy.id} value={strategy.id}>
-                <Card className="border-orange-100">
-                  <CardContent className="p-8">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                      <div>
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className="p-3 bg-orange-100 rounded-lg text-orange-600">{strategy.icon}</div>
-                          <h3 className="text-2xl font-bold text-gray-900">{strategy.title}</h3>
-                        </div>
-                        <p className="text-gray-600 mb-6">{strategy.description}</p>
-                        <div className="space-y-3">
-                          {strategy.features.map((feature, index) => (
-                            <div key={index} className="flex items-center space-x-2">
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="bg-gradient-to-br from-orange-50 to-red-50 p-8 rounded-lg">
-                        <div className="text-center">
-                          <div className="text-4xl mb-4">🎯</div>
-                          <h4 className="font-semibold mb-2">
-                            {language === "en" ? "Smart Marketing" : "Marketing Intelligente"}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {language === "en"
-                              ? "Our AI algorithms continuously learn and optimize your marketing campaigns"
-                              : "I nostri algoritmi AI apprendono continuamente e ottimizzano le tue campagne marketing"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
-      </section>
-
-      {/* AI Tools Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-orange-50 to-red-50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.toolsTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.toolsSubtitle}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {aiTools.map((tool, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="h-full border-orange-100 hover:border-orange-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-orange-100 rounded-lg text-orange-600">{tool.icon}</div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{tool.name}</h3>
-                        <p className="text-gray-600 mb-4">{tool.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {tool.capabilities.map((capability, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs text-orange-600 border-orange-200">
-                              {capability}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.processTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.processSubtitle}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {processSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-              >
-                <Card className="h-full border-orange-100 hover:border-orange-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
-                        {step.step}
-                      </div>
-                      <div className="text-orange-600 mb-3">{step.icon}</div>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{step.description}</p>
-                    <Badge variant="outline" className="text-xs text-orange-600 border-orange-200">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {step.duration}
-                    </Badge>
+                    <div className="text-3xl font-bold text-orange-400 mb-2">{benefit.metric}</div>
+                    <h3 className="font-semibold text-white mb-2">{benefit.label}</h3>
+                    <p className="text-sm text-slate-300">{benefit.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -648,11 +369,17 @@ export default function AIMarketingPage() {
       </section>
 
       {/* Case Studies Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-orange-50 to-red-50">
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.caseStudiesTitle}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.caseStudiesSubtitle}</p>
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {language === "it" ? "Storie di Successo" : "Success Stories"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Risultati reali ottenuti per i nostri clienti attraverso strategie marketing AI"
+                : "Real results achieved for our clients through AI marketing strategies"}
+            </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -663,29 +390,29 @@ export default function AIMarketingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.2 }}
               >
-                <Card className="h-full border-orange-100 hover:border-orange-200 transition-all duration-300 hover:shadow-lg">
+                <Card className="h-full border-slate-700/50 bg-slate-800/80 backdrop-blur-sm hover:border-slate-600 transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{study.client}</CardTitle>
-                      <Badge className="bg-orange-100 text-orange-700">{study.industry}</Badge>
+                      <CardTitle className="text-lg text-white">{study.client}</CardTitle>
+                      <Badge className="bg-slate-700/50 text-orange-400">{study.industry}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-1">{language === "en" ? "Challenge" : "Sfida"}</h4>
-                      <p className="text-sm text-gray-600">{study.challenge}</p>
+                      <h4 className="font-medium text-white mb-1">{language === "en" ? "Challenge" : "Sfida"}</h4>
+                      <p className="text-sm text-slate-300">{study.challenge}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-1">{language === "en" ? "Solution" : "Soluzione"}</h4>
-                      <p className="text-sm text-gray-600">{study.solution}</p>
+                      <h4 className="font-medium text-white mb-1">{language === "en" ? "Solution" : "Soluzione"}</h4>
+                      <p className="text-sm text-slate-300">{study.solution}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">{language === "en" ? "Results" : "Risultati"}</h4>
+                      <h4 className="font-medium text-white mb-2">{language === "en" ? "Results" : "Risultati"}</h4>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         {Object.entries(study.results).map(([key, value]) => (
-                          <div key={key} className="bg-white p-2 rounded border">
-                            <div className="text-lg font-bold text-orange-600">{value}</div>
-                            <div className="text-xs text-gray-500 capitalize">{key}</div>
+                          <div key={key} className="bg-slate-700/50 p-2 rounded border border-slate-600/50">
+                            <div className="text-lg font-bold text-orange-400">{value}</div>
+                            <div className="text-xs text-slate-400 capitalize">{key}</div>
                           </div>
                         ))}
                       </div>
@@ -698,29 +425,86 @@ export default function AIMarketingPage() {
         </div>
       </section>
 
+      {/* TESTIMONIANZE - MANTENUTE PER AI MARKETING */}
+      <section className="py-20 px-6 bg-slate-900/50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-slate-800/80 text-yellow-400 border-yellow-500/30">
+              <Star className="h-4 w-4 mr-2" />
+              {language === "it" ? "Testimonianze" : "Testimonials"}
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {language === "it" ? "Cosa Dicono i Nostri Clienti" : "What Our Clients Say"}
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              {language === "it"
+                ? "Storie di successo reali da aziende che hanno trasformato il loro marketing con le nostre soluzioni AI"
+                : "Real success stories from companies that have transformed their marketing with our AI solutions"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+              >
+                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
+                  <CardContent className="p-8">
+                    <div className="flex mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-slate-300 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
+                    <div>
+                      <div className="font-semibold text-white">{testimonial.name}</div>
+                      <div className="text-sm text-slate-400">{testimonial.role}</div>
+                      <div className="text-sm text-orange-400">{testimonial.company}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-orange-50 to-red-50">
+      <section className="py-20 px-6 bg-slate-800/50">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">{t.ctaFinalTitle}</h2>
-            <p className="text-xl text-gray-600 mb-8">{t.ctaFinalSubtitle}</p>
+            <h2 className="text-4xl font-bold text-white mb-6">
+              {language === "it" ? "Pronto a Trasformare il Tuo Marketing?" : "Ready to Transform Your Marketing?"}
+            </h2>
+            <p className="text-xl text-slate-300 mb-8">
+              {language === "it"
+                ? "Inizia oggi con marketing potenziato dall'AI che genera risultati. Sessione strategica gratuita e analisi personalizzata incluse."
+                : "Start today with AI-powered marketing that delivers results. Free strategy session and custom analysis included."}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3">
-                <Brain className="h-5 w-5 mr-2" />
-                {t.ctaFinalPrimary}
-              </Button>
+              <Link href="/appointments">
+                <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3">
+                  <Brain className="h-5 w-5 mr-2" />
+                  {language === "it" ? "Sessione Strategica Gratuita" : "Free Strategy Session"}
+                </Button>
+              </Link>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-orange-200 text-orange-700 hover:bg-orange-50 px-8 py-3 bg-transparent"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white px-8 py-3 bg-slate-800/50 backdrop-blur-sm"
               >
                 <BarChart3 className="h-5 w-5 mr-2" />
-                {t.ctaFinalSecondary}
+                {language === "it" ? "Richiedi Analisi Personalizzata" : "Request Custom Analysis"}
               </Button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      <ChatbotWidget />
     </div>
   )
 }

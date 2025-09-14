@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, ArrowLeft, Bot, User, CheckCircle } from "lucide-react"
+import { Calendar, ArrowLeft, Bot, User, CheckCircle, X } from "lucide-react"
 
 interface BookingChatbotProps {
   onBack: () => void
@@ -199,7 +199,7 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-slate-800">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -218,18 +218,21 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
           <div className="w-2 h-2 bg-green-400 rounded-full"></div>
           <span className="text-sm">{t.online}</span>
         </div>
+        <button onClick={onBack} className="hover:bg-white/20 p-1 rounded">
+          <X className="w-5 h-5 text-white" />
+        </button>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-800">
         {/* Bot greeting */}
         <div className="flex items-start space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
             <Bot className="w-4 h-4 text-white" />
           </div>
-          <div className="bg-gray-100 rounded-lg p-3 max-w-xs">
-            <p className="text-sm">{t.greeting}</p>
-            <div className="text-xs text-gray-500 mt-1">04:27 PM</div>
+          <div className="bg-slate-700 rounded-lg p-3 max-w-xs">
+            <p className="text-sm text-white">{t.greeting}</p>
+            <div className="text-xs text-slate-400 mt-1">04:27 PM</div>
           </div>
         </div>
 
@@ -240,9 +243,9 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="space-y-2 max-w-xs">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm">{t.serviceQuestion}</p>
-                <div className="text-xs text-gray-500 mt-1">04:27 PM</div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <p className="text-sm text-white">{t.serviceQuestion}</p>
+                <div className="text-xs text-slate-400 mt-1">04:27 PM</div>
               </div>
 
               {currentStep === 0 && (
@@ -285,9 +288,9 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="space-y-2 max-w-xs">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm">{t.dateQuestion}</p>
-                <div className="text-xs text-gray-500 mt-1">04:28 PM</div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <p className="text-sm text-white">{t.dateQuestion}</p>
+                <div className="text-xs text-slate-400 mt-1">04:28 PM</div>
               </div>
 
               {currentStep === 1 && (
@@ -331,9 +334,9 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="space-y-2 max-w-xs">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm">{t.timeQuestion}</p>
-                <div className="text-xs text-gray-500 mt-1">04:29 PM</div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <p className="text-sm text-white">{t.timeQuestion}</p>
+                <div className="text-xs text-slate-400 mt-1">04:29 PM</div>
               </div>
 
               {currentStep === 2 && (
@@ -375,42 +378,42 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="space-y-3 flex-1">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm">{t.infoQuestion}</p>
-                <div className="text-xs text-gray-500 mt-1">04:30 PM</div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <p className="text-sm text-white">{t.infoQuestion}</p>
+                <div className="text-xs text-slate-400 mt-1">04:30 PM</div>
               </div>
 
-              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+              <div className="space-y-3 bg-slate-700 p-4 rounded-lg">
                 <Input
                   placeholder={t.form.name}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-white"
+                  className="bg-slate-800 border-slate-600 text-white"
                 />
                 <Input
                   type="email"
                   placeholder={t.form.email}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-white"
+                  className="bg-slate-800 border-slate-600 text-white"
                 />
                 <Input
                   placeholder={t.form.phone}
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="bg-white"
+                  className="bg-slate-800 border-slate-600 text-white"
                 />
                 <Input
                   placeholder={t.form.company}
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="bg-white"
+                  className="bg-slate-800 border-slate-600 text-white"
                 />
                 <Textarea
                   placeholder={t.form.message}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="bg-white"
+                  className="bg-slate-800 border-slate-600 text-white"
                   rows={3}
                 />
                 <Button
@@ -441,9 +444,9 @@ export default function BookingChatbot({ onBack }: BookingChatbotProps) {
             <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
               <CheckCircle className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-green-100 border border-green-200 rounded-lg p-3 max-w-xs">
-              <p className="text-sm text-green-800">{t.success}</p>
-              <div className="text-xs text-green-600 mt-1">04:31 PM</div>
+            <div className="bg-green-700 border border-green-600 rounded-lg p-3 max-w-xs">
+              <p className="text-sm text-green-100">{t.success}</p>
+              <div className="text-xs text-green-300 mt-1">04:31 PM</div>
             </div>
           </div>
         )}

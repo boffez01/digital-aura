@@ -3,8 +3,6 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
 export interface AIResponse {
   success: boolean
   message: string
@@ -13,15 +11,36 @@ export interface AIResponse {
 }
 
 export class GeminiAI {
-  private model: any
+  private genAI: GoogleGenerativeAI | null
+  private model: any | null
   private readonly TIMEOUT = 3000 // 3 seconds timeout
   private readonly MAX_RETRIES = 0 // Zero retries for 503 errors
 
   constructor() {
-    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("⚠️ GEMINI_API_KEY not found - AI responses will use fallback")
+      this.genAI = null
+      this.model = null
+      return
+    }
+
+    try {
+      this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+      console.log("✅ Gemini AI initialized successfully")
+    } catch (error) {
+      console.error("❌ Failed to initialize Gemini AI:", error)
+      this.genAI = null
+      this.model = null
+    }
   }
 
   async generateResponse(prompt: string, context: any = {}, language = "it"): Promise<AIResponse> {
+    if (!this.model) {
+      console.log("🚫 Gemini AI not available - using fallback")
+      return this.getFallbackResponse(prompt, context, language)
+    }
+
     try {
       console.log("🤖 Gemini AI request started")
 
@@ -355,5 +374,53 @@ How can I help you today?`,
       message: responses[language as keyof typeof responses] || responses.it,
       fallback: true,
     }
+  }
+
+  private getSystemPrompt(language: string): string {
+    const prompts = {
+      it: `Sei AuraBot, l'assistente AI di Digital Aura, un'azienda italiana specializzata in:
+
+🤖 AI AUTOMATION - Automazione processi aziendali e chatbot intelligenti
+🌐 WEB DEVELOPMENT - Siti web moderni, e-commerce e applicazioni web
+📊 AI MARKETING - Campagne automatizzate e analisi predittiva
+📅 CONSULENZE GRATUITE - Offriamo consulenze gratuite per valutare progetti
+
+ISTRUZIONI:
+- Rispondi sempre in italiano professionale ma amichevole
+- Usa emoji per rendere i messaggi più accattivanti
+- Promuovi i nostri servizi quando appropriato
+- Suggerisci sempre la prenotazione di una consulenza gratuita
+- Se non sai qualcosa, indirizza al team: info@digitalaura.it
+- Mantieni risposte concise ma informative
+- Usa formattazione markdown per strutturare le risposte
+
+CONTATTI:
+- Email: info@digitalaura.it  
+- Telefono: +39 02 1234567
+- Sito: digitalaura.it`,
+
+      en: `You are AuraBot, Digital Aura's AI assistant, an Italian company specialized in:
+
+🤖 AI AUTOMATION - Business process automation and intelligent chatbots
+🌐 WEB DEVELOPMENT - Modern websites, e-commerce and web applications
+📊 AI MARKETING - Automated campaigns and predictive analysis
+📅 FREE CONSULTATIONS - We offer free consultations to evaluate projects
+
+INSTRUCTIONS:
+- Always respond in professional but friendly English
+- Use emojis to make messages more engaging
+- Promote our services when appropriate
+- Always suggest booking a free consultation
+- If you don't know something, direct to team: info@digitalaura.it
+- Keep responses concise but informative
+- Use markdown formatting to structure responses
+
+CONTACTS:
+- Email: info@digitalaura.it  
+- Phone: +39 02 1234567
+- Website: digitalaura.it`,
+    }
+
+    return prompts[language as keyof typeof prompts] || prompts.it
   }
 }

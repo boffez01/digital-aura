@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Headphones, AlertCircle, CheckCircle, Bot, Send, Phone } from "lucide-react"
+import { Headphones, AlertCircle, CheckCircle, Bot, Send, Phone, User, X, ArrowLeft } from "lucide-react"
 import { useLanguage } from "../../contexts/language-context"
 
 interface Message {
@@ -17,7 +16,11 @@ interface Message {
   priority?: "low" | "medium" | "high"
 }
 
-export default function SupportChatbot() {
+interface SupportChatbotProps {
+  onBack: () => void
+}
+
+export default function SupportChatbot({ onBack }: SupportChatbotProps) {
   const { language } = useLanguage()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
@@ -27,6 +30,7 @@ export default function SupportChatbot() {
     en: {
       title: "Customer Support",
       subtitle: "We're here to help 24/7",
+      online: "Online",
       greeting:
         "Hi! I'm your support assistant. I can help you with technical issues, account problems, or general questions. What can I help you with today?",
       commonIssues: "Here are some common issues I can help with:",
@@ -38,6 +42,7 @@ export default function SupportChatbot() {
     it: {
       title: "Supporto Clienti",
       subtitle: "Siamo qui per aiutarti 24/7",
+      online: "Online",
       greeting:
         "Ciao! Sono il tuo assistente di supporto. Posso aiutarti con problemi tecnici, problemi dell'account o domande generali. Con cosa posso aiutarti oggi?",
       commonIssues: "Ecco alcuni problemi comuni con cui posso aiutare:",
@@ -168,39 +173,60 @@ export default function SupportChatbot() {
   const getPriorityColor = (priority: "low" | "medium" | "high") => {
     switch (priority) {
       case "high":
-        return "text-red-600 bg-red-100"
+        return "text-red-400 bg-red-500/10 border-red-600"
       case "medium":
-        return "text-yellow-600 bg-yellow-100"
+        return "text-yellow-400 bg-yellow-500/10 border-yellow-600"
       case "low":
-        return "text-green-600 bg-green-100"
+        return "text-green-400 bg-green-500/10 border-green-600"
       default:
-        return "text-gray-600 bg-gray-100"
+        return "text-slate-400 bg-slate-500/10 border-slate-600"
     }
   }
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-t-lg">
-        <CardTitle className="flex items-center space-x-2">
-          <Headphones className="h-5 w-5" />
-          <div>
-            <div className="font-semibold">{t.title}</div>
-            <div className="text-sm opacity-90">{t.subtitle}</div>
+    <div className="flex flex-col h-full bg-slate-800">
+      {/* Header - STILE BOOKING ASSISTANT */}
+      <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button onClick={onBack} className="hover:bg-white/20 p-1 rounded">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center space-x-2">
+            <Headphones className="w-5 h-5" />
+            <div>
+              <div className="font-semibold">{t.title}</div>
+              <div className="text-xs opacity-90">{t.subtitle}</div>
+            </div>
           </div>
-        </CardTitle>
-      </CardHeader>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+          <span className="text-sm">{t.online}</span>
+        </div>
+        <button onClick={onBack} className="hover:bg-white/20 p-1 rounded">
+          <X className="w-5 h-5 text-white" />
+        </button>
+      </div>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+      {/* Chat Messages */}
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-800">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+            <div className="flex items-start space-x-3 max-w-xs">
+              {message.sender === "bot" && (
+                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+              )}
+
               <div
-                className={`max-w-[80%] ${message.sender === "user" ? "bg-orange-600 text-white" : "bg-gray-100"} rounded-lg p-3`}
+                className={`rounded-lg p-3 ${
+                  message.sender === "user" ? "bg-orange-500 text-white" : "bg-slate-700 text-white"
+                }`}
               >
                 {message.sender === "bot" && (
                   <div className="flex items-center space-x-2 mb-2">
-                    <Bot className="h-4 w-4 text-orange-600" />
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-orange-500/20 text-orange-300">
                       Support Agent
                     </Badge>
                     {message.priority && (
@@ -211,6 +237,7 @@ export default function SupportChatbot() {
                   </div>
                 )}
                 <p className="text-sm">{message.text}</p>
+                <div className="text-xs opacity-75 mt-1">04:27 PM</div>
 
                 {message.type === "issue" && (
                   <div className="mt-3 space-y-2">
@@ -218,22 +245,22 @@ export default function SupportChatbot() {
                       <Button
                         key={issue.id}
                         variant="outline"
-                        className="w-full text-left justify-start h-auto py-3 bg-transparent"
+                        className="w-full text-left justify-start h-auto py-3 bg-slate-800 border-slate-600 hover:bg-slate-700"
                         onClick={() => handleIssueSelect(issue)}
                       >
                         <div className="flex items-center space-x-3">
                           <AlertCircle
                             className={`h-4 w-4 ${
                               issue.priority === "high"
-                                ? "text-red-500"
+                                ? "text-red-400"
                                 : issue.priority === "medium"
-                                  ? "text-yellow-500"
-                                  : "text-green-500"
+                                  ? "text-yellow-400"
+                                  : "text-green-400"
                             }`}
                           />
                           <div>
-                            <div className="font-medium">{issue.title}</div>
-                            <div className="text-xs text-gray-600">{issue.description}</div>
+                            <div className="font-medium text-white">{issue.title}</div>
+                            <div className="text-xs text-slate-400">{issue.description}</div>
                           </div>
                         </div>
                       </Button>
@@ -242,72 +269,89 @@ export default function SupportChatbot() {
                 )}
 
                 {message.type === "solution" && (
-                  <div className="mt-3 p-3 bg-white rounded-lg border">
+                  <div className="mt-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm font-medium text-gray-900">
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                        <span className="text-sm font-medium text-white">
                           {language === "en" ? "Solution Provided" : "Soluzione Fornita"}
                         </span>
                       </div>
                       {message.priority === "high" && (
-                        <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                        <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
                           <Phone className="h-3 w-3 mr-1" />
                           {t.contactSupport}
                         </Button>
                       )}
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 bg-slate-700 border-slate-600 hover:bg-slate-600"
+                      >
                         {t.solved}
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 bg-slate-700 border-slate-600 hover:bg-slate-600"
+                      >
                         {language === "en" ? "Need More Help" : "Serve Altro Aiuto"}
                       </Button>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
-          ))}
 
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <div className="flex items-center space-x-2">
-                  <Bot className="h-4 w-4 text-orange-600" />
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
-                  </div>
+              {message.sender === "user" && (
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="bg-slate-700 rounded-lg p-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-
-        <div className="border-t p-4">
-          <div className="flex space-x-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder={t.placeholder}
-              onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
-              className="flex-1"
-            />
-            <Button onClick={() => handleSend(inputValue)} className="bg-orange-600 hover:bg-orange-700">
-              <Send className="h-4 w-4" />
-            </Button>
           </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div className="border-t border-slate-700 p-4 bg-slate-800">
+        <div className="flex space-x-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={t.placeholder}
+            onKeyPress={(e) => e.key === "Enter" && handleSend(inputValue)}
+            className="flex-1 bg-slate-700 border-slate-600 text-white"
+          />
+          <Button onClick={() => handleSend(inputValue)} className="bg-orange-500 hover:bg-orange-600">
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
