@@ -1,379 +1,149 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
+import { useRef } from "react"
+import { motion, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowRight, CheckCircle, AlertCircle, Calendar, MessageCircle } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Target, Sparkles, Zap, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "../contexts/language-context"
 
+// ASSICURATI CHE SIA export default
 export default function BusinessTransformationCTA() {
-  const [language, setLanguage] = useState<"it" | "en">("it")
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    service: "",
-    message: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
-  const [errorMessage, setErrorMessage] = useState("")
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const { language } = useLanguage()
 
-  // Load language from localStorage
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("language") as "it" | "en"
-    if (savedLanguage) {
-      setLanguage(savedLanguage)
-    }
-  }, [])
-
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      setLanguage(event.detail)
-    }
-
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "language" && event.newValue) {
-        setLanguage(event.newValue as "it" | "en")
-      }
-    }
-
-    window.addEventListener("languageChange", handleLanguageChange as EventListener)
-    window.addEventListener("storage", handleStorageChange)
-
-    return () => {
-      window.removeEventListener("languageChange", handleLanguageChange as EventListener)
-      window.removeEventListener("storage", handleStorageChange)
-    }
-  }, [])
-
-  const translations = {
-    it: {
-      title: "Trasforma il Tuo Business con l'AI",
-      subtitle:
-        "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda. Prenota una consulenza gratuita e inizia il tuo percorso di trasformazione digitale.",
-      bookConsultation: "Prenota Consulenza",
-      contactNow: "Contattaci Ora",
-      name: "Nome",
-      email: "Email",
-      phone: "Telefono",
-      company: "Azienda",
-      serviceInterest: "Servizio di Interesse",
-      message: "Messaggio",
-      selectService: "Seleziona un servizio",
-      aiAutomation: "AI Automation",
-      smartChatbots: "Smart Chatbots",
-      webDevelopment: "Web Development",
-      aiMarketing: "AI Marketing",
-      consultation: "Consulenza",
-      sendRequest: "Invia Richiesta",
-      sending: "Invio in corso...",
-      successMessage: "Grazie! La tua richiesta è stata inviata con successo. Ti contatteremo presto.",
-      errorMessage: "Si è verificato un errore. Riprova o contattaci direttamente.",
-      requiredFields: "Compila tutti i campi obbligatori",
-      invalidEmail: "Inserisci un indirizzo email valido",
+  const features = [
+    {
+      icon: <Target className="w-8 h-8" />,
+      title: language === "it" ? "Analisi gratuita del tuo business" : "Free business analysis",
+      description:
+        language === "it" ? "Valutiamo il potenziale AI della tua azienda" : "We evaluate your company's AI potential",
     },
-    en: {
-      title: "Transform Your Business with AI",
-      subtitle:
-        "Discover how artificial intelligence can revolutionize your company. Book a free consultation and start your digital transformation journey.",
-      bookConsultation: "Book Consultation",
-      contactNow: "Contact Now",
-      name: "Name",
-      email: "Email",
-      phone: "Phone",
-      company: "Company",
-      serviceInterest: "Service of Interest",
-      message: "Message",
-      selectService: "Select a service",
-      aiAutomation: "AI Automation",
-      smartChatbots: "Smart Chatbots",
-      webDevelopment: "Web Development",
-      aiMarketing: "AI Marketing",
-      consultation: "Consultation",
-      sendRequest: "Send Request",
-      sending: "Sending...",
-      successMessage: "Thank you! Your request has been sent successfully. We'll contact you soon.",
-      errorMessage: "An error occurred. Please try again or contact us directly.",
-      requiredFields: "Please fill in all required fields",
-      invalidEmail: "Please enter a valid email address",
+    {
+      icon: <Sparkles className="w-8 h-8" />,
+      title: language === "it" ? "Strategia AI personalizzata" : "Personalized AI strategy",
+      description: language === "it" ? "Piano su misura per i tuoi obiettivi" : "Tailored plan for your goals",
     },
-  }
-
-  const t = translations[language]
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-    // Clear error status when user starts typing
-    if (submitStatus === "error") {
-      setSubmitStatus("idle")
-      setErrorMessage("")
-    }
-  }
-
-  const validateForm = () => {
-    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
-      setErrorMessage(t.requiredFields)
-      return false
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setErrorMessage(t.invalidEmail)
-      return false
-    }
-
-    return true
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    console.log("🚀 Form submission started")
-
-    if (!validateForm()) {
-      setSubmitStatus("error")
-      return
-    }
-
-    setIsSubmitting(true)
-    setSubmitStatus("idle")
-    setErrorMessage("")
-
-    try {
-      console.log("📤 Sending form data:", formData)
-
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
-          company: formData.company.trim() || null,
-          service_type: formData.service || null,
-          message: formData.message.trim(),
-        }),
-      })
-
-      console.log("📡 Response status:", response.status)
-
-      const responseData = await response.json()
-      console.log("📋 Response data:", responseData)
-
-      if (!response.ok) {
-        throw new Error(responseData.error || "Network error")
-      }
-
-      console.log("✅ Form submitted successfully")
-      setSubmitStatus("success")
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        service: "",
-        message: "",
-      })
-
-      // Auto-hide success message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus("idle")
-      }, 5000)
-    } catch (error) {
-      console.error("❌ Form submission error:", error)
-      setSubmitStatus("error")
-      setErrorMessage(error instanceof Error ? error.message : t.errorMessage)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const scrollToContact = () => {
-    const contactSection = document.getElementById("contact")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-    }
-  }
+    {
+      icon: <Zap className="w-8 h-8" />,
+      title: language === "it" ? "ROI garantito entro 6 mesi" : "ROI guaranteed within 6 months",
+      description: language === "it" ? "Risultati misurabili e concreti" : "Measurable and concrete results",
+    },
+  ]
 
   return (
-    <section id="contact" className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">{t.title}</h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">{t.subtitle}</p>
-          </div>
+    <section className="py-20 px-4 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(6,182,212,0.3),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(59,130,246,0.3),transparent_70%)]" />
+      </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Left Column - CTA Buttons */}
-            <div className="space-y-8">
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700">
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  {language === "it" ? "Inizia Subito" : "Get Started Now"}
-                </h3>
+      <div className="container mx-auto max-w-6xl relative z-10" ref={ref}>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          {/* Question */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg text-slate-300 mb-6"
+          >
+            {language === "it"
+              ? "Non hai trovato la risposta che cercavi?"
+              : "Haven't found the answer you were looking for?"}
+          </motion.p>
 
-                <div className="space-y-4">
-                  <Link href="/appointments">
-                    <Button
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
-                    >
-                      <Calendar className="mr-3 h-5 w-5" />
-                      {t.bookConsultation}
-                      <ArrowRight className="ml-3 h-5 w-5" />
-                    </Button>
-                  </Link>
+          {/* Main Title */}
+          <motion.h2
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-4xl md:text-5xl font-bold mb-8"
+          >
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              {language === "it" ? "Pronto a trasformare il tuo business?" : "Ready to transform your business?"}
+            </span>
+          </motion.h2>
 
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={scrollToContact}
-                    className="w-full border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 bg-transparent"
-                  >
-                    <MessageCircle className="mr-3 h-5 w-5" />
-                    {t.contactNow}
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed mb-12"
+          >
+            {language === "it"
+              ? "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda. Prenota una consulenza gratuita e personalizzata con i nostri esperti."
+              : "Discover how artificial intelligence can revolutionize your business. Book a free and personalized consultation with our experts."}
+          </motion.p>
+        </motion.div>
 
-            {/* Right Column - Contact Form */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.name} *</label>
-                    <Input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
-                      placeholder={t.name}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.email} *</label>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
-                      placeholder="info@example.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.phone}</label>
-                    <Input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
-                      placeholder="+39 123 456 7890"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.company}</label>
-                    <Input
-                      type="text"
-                      value={formData.company}
-                      onChange={(e) => handleInputChange("company", e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
-                      placeholder={t.company}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">{t.serviceInterest}</label>
-                  <Select value={formData.service} onValueChange={(value) => handleInputChange("service", value)}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500">
-                      <SelectValue placeholder={t.selectService} className="text-slate-400" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-700 border-slate-600">
-                      <SelectItem value="ai-automation" className="text-white hover:bg-slate-600 focus:bg-slate-600">
-                        {t.aiAutomation}
-                      </SelectItem>
-                      <SelectItem value="chatbot" className="text-white hover:bg-slate-600 focus:bg-slate-600">
-                        {t.smartChatbots}
-                      </SelectItem>
-                      <SelectItem value="web-development" className="text-white hover:bg-slate-600 focus:bg-slate-600">
-                        {t.webDevelopment}
-                      </SelectItem>
-                      <SelectItem value="ai-marketing" className="text-white hover:bg-slate-600 focus:bg-slate-600">
-                        {t.aiMarketing}
-                      </SelectItem>
-                      <SelectItem value="consultation" className="text-white hover:bg-slate-600 focus:bg-slate-600">
-                        {t.consultation}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">{t.message} *</label>
-                  <Textarea
-                    value={formData.message}
-                    onChange={(e) => handleInputChange("message", e.target.value)}
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500 min-h-[120px]"
-                    placeholder={t.message}
-                    required
-                  />
-                </div>
-
-                {/* Status Messages */}
-                {submitStatus === "success" && (
-                  <div className="flex items-center space-x-2 text-green-400 bg-green-400/10 p-4 rounded-lg border border-green-400/20">
-                    <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                    <span>{t.successMessage}</span>
-                  </div>
-                )}
-
-                {submitStatus === "error" && (
-                  <div className="flex items-center space-x-2 text-red-400 bg-red-400/10 p-4 rounded-lg border border-red-400/20">
-                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                    <span>{errorMessage || t.errorMessage}</span>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+              transition={{ duration: 0.6, delay: index * 0.2 + 0.8 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="text-center"
+            >
+              <Card className="bg-slate-800/50 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                  className="inline-flex p-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg mb-6 text-white"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      {t.sending}
-                    </>
-                  ) : (
-                    <>
-                      {t.sendRequest}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </div>
-          </div>
+                  {feature.icon}
+                </motion.div>
+                <h3 className="text-xl font-bold text-white mb-4">{feature.title}</h3>
+                <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+              </Card>
+            </motion.div>
+          ))}
         </div>
+
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 1.4 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center"
+        >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link href="/appointments">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300"
+              >
+                {language === "it" ? "Prenota Consulenza Gratuita" : "Book Free Consultation"}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-cyan-500 text-lg px-10 py-4 rounded-full bg-transparent backdrop-blur-sm transition-all duration-300"
+              onClick={() => {
+                const element = document.getElementById("contact")
+                element?.scrollIntoView({ behavior: "smooth" })
+              }}
+            >
+              {language === "it" ? "Contattaci Ora" : "Contact Us Now"}
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )
