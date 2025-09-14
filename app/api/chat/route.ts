@@ -1,393 +1,473 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { google } from "@ai-sdk/google"
-import { createAppointment, type CreateAppointmentData } from "@/lib/database"
-import { getSession, updateSession, createSession, type ChatSession } from "@/lib/session-manager"
-import { handleSupportFlow, isBookingComplete } from "@/lib/support-flow"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { neon } from "@neondatabase/serverless"
+import { language } from "some-module" // Declare or import the language variable
 
-export async function POST(request: NextRequest) {
-  try {
-    const { message, sessionId, language = "it" } = await request.json()
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const sql = neon(process.env.DATABASE_URL!)
 
-    // Get or create session
-    let session: ChatSession
-    if (sessionId) {
-      session = (await getSession(sessionId)) || (await createSession(`session_${Date.now()}`))
-    } else {
-      session = await createSession(`session_${Date.now()}`)
+interface ChatSession {
+  id: string
+  messages: Array<{
+    role: "user" | "assistant"
+    content: string
+    timestamp: Date
+  }>
+  context: {
+    flow: string
+    step: number | string
+    hasUserInfo: boolean
+    needsHuman: boolean
+    escalationActive?: boolean
+    bookingMode?: boolean
+    completed?: boolean
+    userInfo?: {
+      name?: string
+      email?: string
+      phone?: string
+      company?: string
+      service?: string
+      date?: string
+      time?: string
     }
-
-    // Handle support flow first (priority)
-    const supportResponse = handleSupportFlow(message, session, language)
-    if (supportResponse) {
-      // Update session with support state
-      await updateSession(session.session_id, {
-        support_mode: true,
-        last_activity: new Date().toISOString(),
-      })
-
-      return NextResponse.json({
-        response: supportResponse.message,
-        sessionId: session.session_id,
-        supportMode: true,
-        escalated: supportResponse.escalated || false,
-      })
-    }
-
-    // Handle booking flow
-    if (session.booking_mode) {
-      const bookingResponse = await handleBookingFlow(message, session, language)
-      if (bookingResponse) {
-        return NextResponse.json(bookingResponse)
-      }
-    }
-
-    // Check for booking intent
-    const bookingKeywords = {
-      it: ["prenota", "prenotare", "appuntamento", "consulenza", "incontro", "meeting"],
-      en: ["book", "booking", "appointment", "consultation", "meeting", "schedule"],
-    }
-
-    const keywords = bookingKeywords[language as keyof typeof bookingKeywords] || bookingKeywords.it
-    const hasBookingIntent = keywords.some((keyword) => message.toLowerCase().includes(keyword.toLowerCase()))
-
-    if (hasBookingIntent) {
-      // Start booking flow
-      await updateSession(session.session_id, {
-        booking_mode: true,
-        flow_step: "service",
-        last_activity: new Date().toISOString(),
-      })
-
-      const t = {
-        it: {
-          greeting: "🎯 Perfetto! Ti aiuto a prenotare una consulenza gratuita.",
-          servicePrompt: "Quale servizio ti interessa?",
-          services: [
-            "🤖 AI Automation - Automatizza i processi aziendali",
-            "💬 Chatbot Intelligenti - Assistenti virtuali 24/7",
-            "🌐 Web Development - Siti web e e-commerce",
-            "📈 AI Marketing - Campagne automatizzate",
-          ],
-        },
-        en: {
-          greeting: "🎯 Perfect! I'll help you book a free consultation.",
-          servicePrompt: "Which service are you interested in?",
-          services: [
-            "🤖 AI Automation - Automate business processes",
-            "💬 Intelligent Chatbots - 24/7 virtual assistants",
-            "🌐 Web Development - Websites and e-commerce",
-            "📈 AI Marketing - Automated campaigns",
-          ],
-        },
-      }
-
-      const currentT = t[language as keyof typeof t] || t.it
-      const servicesText = currentT.services.join("\n")
-
-      return NextResponse.json({
-        response: `${currentT.greeting}\n\n${currentT.servicePrompt}\n\n${servicesText}`,
-        sessionId: session.session_id,
-        bookingFlow: true,
-        step: "service",
-      })
-    }
-
-    // Regular AI conversation with Gemini
-    try {
-      const systemPrompt =
-        language === "en"
-          ? `You are a helpful AI assistant for Digital Aura, an Italian company specializing in AI automation, chatbots, web development, and AI marketing. 
-
-Key information about Digital Aura:
-- We create intelligent chatbots and AI automation solutions
-- We develop modern websites and e-commerce platforms  
-- We offer AI-powered marketing campaigns
-- We provide free consultations to discuss business needs
-- We help businesses transform through AI technology
-
-Guidelines:
-- Be professional, helpful, and enthusiastic about AI solutions
-- Keep responses concise and focused
-- If users ask about services, briefly explain and suggest booking a consultation
-- If users want to book, guide them to use booking keywords like "book appointment"
-- Answer in English since the user is using English
-- Don't mention technical details unless specifically asked`
-          : `Sei un assistente AI per Digital Aura, un'azienda italiana specializzata in automazione AI, chatbot, sviluppo web e marketing AI.
-
-Informazioni chiave su Digital Aura:
-- Creiamo chatbot intelligenti e soluzioni di automazione AI
-- Sviluppiamo siti web moderni e piattaforme e-commerce
-- Offriamo campagne di marketing potenziate dall'AI  
-- Forniamo consulenze gratuite per discutere le esigenze aziendali
-- Aiutiamo le aziende a trasformarsi attraverso la tecnologia AI
-
-Linee guida:
-- Sii professionale, utile ed entusiasta delle soluzioni AI
-- Mantieni le risposte concise e focalizzate
-- Se gli utenti chiedono dei servizi, spiega brevemente e suggerisci di prenotare una consulenza
-- Se gli utenti vogliono prenotare, guidali a usare parole chiave come "prenota appuntamento"
-- Rispondi in italiano dato che l'utente sta usando l'italiano
-- Non menzionare dettagli tecnici a meno che non vengano specificamente richiesti`
-
-      const { text } = await generateText({
-        model: google("gemini-1.5-flash"),
-        system: systemPrompt,
-        prompt: message,
-        maxTokens: 300,
-      })
-
-      // Update session with conversation
-      await updateSession(session.session_id, {
-        last_activity: new Date().toISOString(),
-      })
-
-      return NextResponse.json({
-        response: text,
-        sessionId: session.session_id,
-      })
-    } catch (aiError) {
-      console.error("AI Error:", aiError)
-
-      // Fallback response when AI fails
-      const fallbackResponse =
-        language === "en"
-          ? "I'm having trouble connecting right now. For immediate assistance, please contact us directly or try booking an appointment through our website."
-          : "Sto avendo problemi di connessione. Per assistenza immediata, contattaci direttamente o prova a prenotare un appuntamento tramite il nostro sito."
-
-      return NextResponse.json({
-        response: fallbackResponse,
-        sessionId: session.session_id,
-        fallback: true,
-      })
-    }
-  } catch (error) {
-    console.error("Chat API Error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
+  supportActive: boolean
+  supportLevel: number
+  language: "it" | "en"
+  createdAt: Date
+  updatedAt: Date
 }
 
-async function handleBookingFlow(message: string, session: ChatSession, language: string) {
-  const step = session.flow_step
-  const bookingData = session.context || {}
+// In-memory session storage (in production, use Redis or database)
+const sessions = new Map<string, ChatSession>()
 
-  const t = {
-    it: {
-      serviceSelected: "Perfetto! Hai scelto:",
-      datePrompt: "Ora dimmi la data che preferisci (es: 2025-01-16):",
-      timePrompt: "Che orario preferisci? (es: 10:00, 14:30)\n\nOrari disponibili: 9:00-12:00 e 14:00-18:00",
-      namePrompt: "Come ti chiami?",
-      emailPrompt: "Qual è la tua email?",
-      phonePrompt: "Qual è il tuo numero di telefono?",
-      confirmPrompt:
-        "Perfetto! Ecco il riepilogo della tua prenotazione:\n\n📋 **RIEPILOGO PRENOTAZIONE**\n\n🔹 **Servizio:** {service}\n🔹 **Data:** {date}\n🔹 **Orario:** {time}\n🔹 **Nome:** {name}\n🔹 **Email:** {email}\n🔹 **Telefono:** {phone}\n\n✅ Scrivi **CONFERMA** per completare la prenotazione\n❌ Scrivi **MODIFICA** per cambiare qualcosa",
-      success:
-        "🎉 **PRENOTAZIONE CONFERMATA!**\n\nLa tua consulenza è stata prenotata con successo!\n\n📧 Riceverai una email di conferma a breve\n📞 Ti contatteremo per confermare i dettagli\n\n✨ Grazie per aver scelto Digital Aura!",
-      error:
-        "❌ Si è verificato un errore nel salvare la prenotazione.\n\n📞 Contattaci direttamente:\n• Email: info@digitalaura.it\n• Telefono: +39 123 456 7890\n\nCi scusiamo per l'inconveniente!",
-      invalidService:
-        "Servizio non riconosciuto. Scegli tra:\n🤖 AI Automation\n💬 Chatbot\n🌐 Web Development\n📈 AI Marketing",
-      invalidDate: "Formato data non valido. Usa il formato YYYY-MM-DD (es: 2025-01-16)",
-      invalidTime: "Orario non valido. Usa il formato HH:MM (es: 10:00, 14:30)",
-      invalidEmail: "Email non valida. Inserisci un indirizzo email corretto.",
-      invalidPhone: "Numero di telefono non valido. Inserisci un numero valido.",
-      modify:
-        "Cosa vuoi modificare?\n\n1️⃣ Servizio\n2️⃣ Data\n3️⃣ Orario\n4️⃣ Nome\n5️⃣ Email\n6️⃣ Telefono\n\nScrivi il numero o il nome del campo da modificare.",
-    },
-    en: {
-      serviceSelected: "Perfect! You chose:",
-      datePrompt: "Now tell me your preferred date (e.g., 2025-01-16):",
-      timePrompt: "What time do you prefer? (e.g., 10:00, 14:30)\n\nAvailable hours: 9:00-12:00 and 14:00-18:00",
-      namePrompt: "What's your name?",
-      emailPrompt: "What's your email?",
-      phonePrompt: "What's your phone number?",
-      confirmPrompt:
-        "Perfect! Here's your booking summary:\n\n📋 **BOOKING SUMMARY**\n\n🔹 **Service:** {service}\n🔹 **Date:** {date}\n🔹 **Time:** {time}\n🔹 **Name:** {name}\n🔹 **Email:** {email}\n🔹 **Phone:** {phone}\n\n✅ Write **CONFIRM** to complete the booking\n❌ Write **MODIFY** to change something",
-      success:
-        "🎉 **BOOKING CONFIRMED!**\n\nYour consultation has been successfully booked!\n\n📧 You'll receive a confirmation email shortly\n📞 We'll contact you to confirm the details\n\n✨ Thank you for choosing Digital Aura!",
-      error:
-        "❌ An error occurred while saving the booking.\n\n📞 Contact us directly:\n• Email: info@digitalaura.it\n• Phone: +39 123 456 7890\n\nWe apologize for the inconvenience!",
-      invalidService:
-        "Service not recognized. Choose from:\n🤖 AI Automation\n💬 Chatbot\n🌐 Web Development\n📈 AI Marketing",
-      invalidDate: "Invalid date format. Use YYYY-MM-DD format (e.g., 2025-01-16)",
-      invalidTime: "Invalid time format. Use HH:MM format (e.g., 10:00, 14:30)",
-      invalidEmail: "Invalid email. Please enter a correct email address.",
-      invalidPhone: "Invalid phone number. Please enter a valid number.",
-      modify:
-        "What do you want to modify?\n\n1️⃣ Service\n2️⃣ Date\n3️⃣ Time\n4️⃣ Name\n5️⃣ Email\n6️⃣ Phone\n\nWrite the number or name of the field to modify.",
-    },
+const translations = {
+  it: {
+    greeting: "👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura.**",
+    servicePrompt: "Posso aiutarti con:",
+    services: [
+      "🤖 **Servizi AI** - Automazione e chatbots intelligenti",
+      "🌐 **Sviluppo Web** - Siti moderni e e-commerce",
+      "📊 **AI Marketing** - Campagne automatizzate",
+      "📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI",
+    ],
+    howCanHelp: "**Come posso aiutarti oggi?** 😊",
+    supportActivated:
+      "🔴 **SUPPORTO TECNICO ATTIVATO**\n\nHo rilevato che hai bisogno di assistenza tecnica. Ti sto trasferendo al nostro team di supporto specializzato.\n\n**Descrivi il problema che stai riscontrando:**",
+    bookingStart:
+      "📅 **PRENOTAZIONE CONSULENZA GRATUITA**\n\nPerfetto! Ti aiuto a prenotare la tua consulenza gratuita.\n\n**Per quale servizio sei interessato?**\n\n1. 🤖 AI Automation\n2. 🌐 Web Development\n3. 📊 AI Marketing\n4. 💬 Chatbot Development",
+    nameRequest: "Perfect! Now I need your **full name**:",
+    emailRequest: "Thanks! Now enter your **email**:",
+    phoneRequest: "Great! Enter your **phone number**:",
+    companyRequest: "Perfect! What's your **company name**? (optional)",
+    dateRequest: "Excellent! When would you prefer the consultation? Enter a **date** (e.g., January 15th):",
+    timeRequest: "Perfect! What **time** would you prefer? (e.g., 2:00 PM):",
+    bookingComplete:
+      "🎉 **PRENOTAZIONE COMPLETATA!**\n\nLa tua consulenza è stata prenotata con successo!\n\n**Dettagli:**\n- Servizio: {service}\n- Data: {date}\n- Ora: {time}\n\nRiceverai una email di conferma a breve. Grazie per aver scelto Digital Aura!",
+    errorMessage: "Mi dispiace, c'è stato un errore. Riprova o contattaci direttamente.",
+    escalationMessage: "Ti sto trasferendo a un operatore umano per un'assistenza più approfondita.",
+    supportIntro:
+      "🔧 **ASSISTENZA TECNICA**\n\nSono qui per aiutarti con qualsiasi problema tecnico. Descrivi il problema che stai riscontrando:",
+    supportEscalation:
+      "Capisco la tua frustrazione. Ti sto mettendo in contatto con il nostro team di supporto tecnico specializzato.",
+    generalResponse: "Grazie per il tuo messaggio. Come posso aiutarti specificamente oggi?",
+  },
+  en: {
+    greeting: "👋 **Hello! I'm AuraBot, Digital Aura's AI assistant.**",
+    servicePrompt: "I can help you with:",
+    services: [
+      "🤖 **AI Services** - Automation and intelligent chatbots",
+      "🌐 **Web Development** - Modern websites and e-commerce",
+      "📊 **AI Marketing** - Automated campaigns",
+      "📅 **Bookings** - Free consultations DIRECTLY HERE",
+    ],
+    howCanHelp: "**How can I help you today?** 😊",
+    supportActivated:
+      "🔴 **TECHNICAL SUPPORT ACTIVATED**\n\nI detected that you need technical assistance. I'm transferring you to our specialized support team.\n\n**Describe the problem you're experiencing:**",
+    bookingStart:
+      "📅 **FREE CONSULTATION BOOKING**\n\nPerfect! I'll help you book your free consultation.\n\n**Which service are you interested in?**\n\n1. 🤖 AI Automation\n2. 🌐 Web Development\n3. 📊 AI Marketing\n4. 💬 Chatbot Development",
+    nameRequest: "Perfect! Now I need your **full name**:",
+    emailRequest: "Thanks! Now enter your **email**:",
+    phoneRequest: "Great! Enter your **phone number**:",
+    companyRequest: "Perfect! What's your **company name**? (optional)",
+    dateRequest: "Excellent! When would you prefer the consultation? Enter a **date** (e.g., January 15th):",
+    timeRequest: "Perfect! What **time** would you prefer? (e.g., 2:00 PM):",
+    bookingComplete:
+      "🎉 **BOOKING COMPLETED!**\n\nYour consultation has been successfully booked!\n\n**Details:**\n- Service: {service}\n- Date: {date}\n- Time: {time}\n\nYou'll receive a confirmation email shortly. Thank you for choosing Digital Aura!",
+    errorMessage: "Sorry, there was an error. Please try again or contact us directly.",
+    escalationMessage: "I'm transferring you to a human operator for more in-depth assistance.",
+    supportIntro:
+      "🔧 **TECHNICAL SUPPORT**\n\nI'm here to help you with any technical issues. Describe the problem you're experiencing:",
+    supportEscalation: "I understand your frustration. I'm connecting you with our specialized technical support team.",
+    generalResponse: "Thank you for your message. How can I help you specifically today?",
+  },
+}
+
+function getOrCreateSession(sessionId: string, language: "it" | "en"): ChatSession {
+  if (!sessions.has(sessionId)) {
+    const newSession: ChatSession = {
+      id: sessionId,
+      messages: [],
+      context: {
+        flow: "general",
+        step: 0,
+        hasUserInfo: false,
+        needsHuman: false,
+        escalationActive: false,
+        bookingMode: false,
+        completed: false,
+        userInfo: {},
+      },
+      supportActive: false,
+      supportLevel: 0,
+      language,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    sessions.set(sessionId, newSession)
   }
 
-  const currentT = t[language as keyof typeof t] || t.it
+  const session = sessions.get(sessionId)!
+  session.language = language
+  session.updatedAt = new Date()
+  return session
+}
 
-  // Handle modification requests
-  if (message.toLowerCase().includes("modifica") || message.toLowerCase().includes("modify")) {
-    await updateSession(session.session_id, {
-      flow_step: "modify",
-      last_activity: new Date().toISOString(),
-    })
-    return { response: currentT.modify, sessionId: session.session_id, bookingFlow: true, step: "modify" }
+function detectIntent(message: string, language: "it" | "en") {
+  const lowerMessage = message.toLowerCase()
+
+  // Support keywords
+  const supportKeywords = {
+    it: ["problema", "errore", "bug", "non funziona", "aiuto", "assistenza", "supporto", "tecnico"],
+    en: ["problem", "error", "bug", "not working", "help", "support", "technical", "issue"],
   }
 
-  // Handle confirmation
-  if (message.toLowerCase().includes("conferma") || message.toLowerCase().includes("confirm")) {
-    if (isBookingComplete(bookingData)) {
-      try {
-        // Prepare appointment data for database
-        const appointmentData: CreateAppointmentData = {
-          name: bookingData.name!,
-          email: bookingData.email!,
-          phone: bookingData.phone!,
-          service: bookingData.service!,
-          date: bookingData.date!,
-          time: bookingData.time!,
-          message: `Prenotazione via chatbot - Lingua: ${language}`,
-          status: "pending",
-          priority: false,
-        }
+  // Booking keywords
+  const bookingKeywords = {
+    it: ["prenotare", "appuntamento", "consulenza", "incontrare", "parlare", "prenota"],
+    en: ["book", "appointment", "consultation", "meeting", "schedule", "talk"],
+  }
 
-        // Save appointment to database
-        const newAppointment = await createAppointment(appointmentData)
+  // Check for support intent
+  if (supportKeywords[language].some((keyword) => lowerMessage.includes(keyword))) {
+    return "support"
+  }
 
-        if (newAppointment) {
-          // Clear booking flow
-          await updateSession(session.session_id, {
-            booking_mode: false,
-            flow_step: undefined,
-            context: {},
-            last_activity: new Date().toISOString(),
-          })
+  // Check for booking intent
+  if (bookingKeywords[language].some((keyword) => lowerMessage.includes(keyword))) {
+    return "booking"
+  }
 
-          return {
-            response: currentT.success,
-            sessionId: session.session_id,
-            bookingFlow: false,
-            bookingComplete: true,
-          }
-        } else {
-          return { response: currentT.error, sessionId: session.session_id, bookingFlow: true, step: "error" }
-        }
-      } catch (error) {
-        console.error("❌ Error saving appointment:", error)
-        return { response: currentT.error, sessionId: session.session_id, bookingFlow: true, step: "error" }
-      }
+  return "general"
+}
+
+async function handleBookingFlow(session: ChatSession, message: string, currentT: any) {
+  const { context } = session
+
+  if (!context.bookingMode) {
+    context.bookingMode = true
+    context.flow = "booking"
+    context.step = 1
+    return {
+      message: currentT.bookingStart,
+      supportActive: false,
+      supportLevel: 0,
+      context,
     }
   }
 
-  // Process booking steps
-  switch (step) {
-    case "service":
-      const serviceMap = {
-        "ai automation": "ai-automation",
-        automation: "ai-automation",
-        automazione: "ai-automation",
-        chatbot: "chatbot",
-        bot: "chatbot",
-        "web development": "web-development",
-        web: "web-development",
-        sito: "web-development",
-        website: "web-development",
-        "ai marketing": "ai-marketing",
-        marketing: "ai-marketing",
-      }
-
-      const service = serviceMap[message.toLowerCase() as keyof typeof serviceMap]
-      if (service) {
-        const newBookingData = { ...bookingData, service }
-        await updateSession(session.session_id, {
-          flow_step: "date",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
+  switch (context.step) {
+    case 1: // Service selection
+      const services = ["AI Automation", "Web Development", "AI Marketing", "Chatbot Development"]
+      const serviceIndex = Number.parseInt(message) - 1
+      if (serviceIndex >= 0 && serviceIndex < services.length) {
+        context.userInfo!.service = services[serviceIndex]
+        context.step = 2
         return {
-          response: `${currentT.serviceSelected} **${message}**\n\n${currentT.datePrompt}`,
-          sessionId: session.session_id,
-          bookingFlow: true,
-          step: "date",
+          message: currentT.nameRequest,
+          supportActive: false,
+          supportLevel: 0,
+          context,
         }
       } else {
-        return { response: currentT.invalidService, sessionId: session.session_id, bookingFlow: true, step: "service" }
+        context.userInfo!.service = message
+        context.step = 2
+        return {
+          message: currentT.nameRequest,
+          supportActive: false,
+          supportLevel: 0,
+          context,
+        }
       }
 
-    case "date":
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/
-      if (dateRegex.test(message.trim())) {
-        const newBookingData = { ...bookingData, date: message.trim() }
-        await updateSession(session.session_id, {
-          flow_step: "time",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
-        return { response: currentT.timePrompt, sessionId: session.session_id, bookingFlow: true, step: "time" }
-      } else {
-        return { response: currentT.invalidDate, sessionId: session.session_id, bookingFlow: true, step: "date" }
+    case 2: // Name
+      context.userInfo!.name = message
+      context.step = 3
+      return {
+        message: currentT.emailRequest,
+        supportActive: false,
+        supportLevel: 0,
+        context,
       }
 
-    case "time":
-      const timeRegex = /^\d{1,2}:\d{2}$/
-      if (timeRegex.test(message.trim())) {
-        const newBookingData = { ...bookingData, time: message.trim() }
-        await updateSession(session.session_id, {
-          flow_step: "name",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
-        return { response: currentT.namePrompt, sessionId: session.session_id, bookingFlow: true, step: "name" }
+    case 3: // Email
+      if (message.includes("@")) {
+        context.userInfo!.email = message
+        context.step = 4
+        return {
+          message: currentT.phoneRequest,
+          supportActive: false,
+          supportLevel: 0,
+          context,
+        }
       } else {
-        return { response: currentT.invalidTime, sessionId: session.session_id, bookingFlow: true, step: "time" }
+        return {
+          message: "Per favore inserisci un'email valida:",
+          supportActive: false,
+          supportLevel: 0,
+          context,
+        }
       }
 
-    case "name":
-      if (message.trim().length >= 2) {
-        const newBookingData = { ...bookingData, name: message.trim() }
-        await updateSession(session.session_id, {
-          flow_step: "email",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
-        return { response: currentT.emailPrompt, sessionId: session.session_id, bookingFlow: true, step: "email" }
-      } else {
-        return { response: currentT.namePrompt, sessionId: session.session_id, bookingFlow: true, step: "name" }
+    case 4: // Phone
+      context.userInfo!.phone = message
+      context.step = 5
+      return {
+        message: currentT.companyRequest,
+        supportActive: false,
+        supportLevel: 0,
+        context,
       }
 
-    case "email":
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (emailRegex.test(message.trim())) {
-        const newBookingData = { ...bookingData, email: message.trim() }
-        await updateSession(session.session_id, {
-          flow_step: "phone",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
-        return { response: currentT.phonePrompt, sessionId: session.session_id, bookingFlow: true, step: "phone" }
-      } else {
-        return { response: currentT.invalidEmail, sessionId: session.session_id, bookingFlow: true, step: "email" }
+    case 5: // Company (optional)
+      context.userInfo!.company = message
+      context.step = 6
+      return {
+        message: currentT.dateRequest,
+        supportActive: false,
+        supportLevel: 0,
+        context,
       }
 
-    case "phone":
-      const phoneRegex = /^[+]?[0-9\s\-()]{8,}$/
-      if (phoneRegex.test(message.trim())) {
-        const newBookingData = { ...bookingData, phone: message.trim() }
-        await updateSession(session.session_id, {
-          flow_step: "confirm",
-          context: newBookingData,
-          last_activity: new Date().toISOString(),
-        })
+    case 6: // Date
+      context.userInfo!.date = message
+      context.step = 7
+      return {
+        message: currentT.timeRequest,
+        supportActive: false,
+        supportLevel: 0,
+        context,
+      }
 
-        const confirmMessage = currentT.confirmPrompt
-          .replace("{service}", newBookingData.service || "")
-          .replace("{date}", newBookingData.date || "")
-          .replace("{time}", newBookingData.time || "")
-          .replace("{name}", newBookingData.name || "")
-          .replace("{email}", newBookingData.email || "")
-          .replace("{phone}", newBookingData.phone || "")
+    case 7: // Time - Complete booking
+      context.userInfo!.time = message
+      context.completed = true
 
-        return { response: confirmMessage, sessionId: session.session_id, bookingFlow: true, step: "confirm" }
-      } else {
-        return { response: currentT.invalidPhone, sessionId: session.session_id, bookingFlow: true, step: "phone" }
+      // Save to database
+      try {
+        await sql`
+          INSERT INTO appointments (
+            name, email, phone, company, service, preferred_date, preferred_time, 
+            status, created_at, notes
+          ) VALUES (
+            ${context.userInfo!.name},
+            ${context.userInfo!.email},
+            ${context.userInfo!.phone},
+            ${context.userInfo!.company || ""},
+            ${context.userInfo!.service},
+            ${context.userInfo!.date},
+            ${context.userInfo!.time},
+            'pending',
+            NOW(),
+            'Booked via chatbot'
+          )
+        `
+      } catch (error) {
+        console.error("Error saving appointment:", error)
+      }
+
+      const completionMessage = currentT.bookingComplete
+        .replace("{service}", context.userInfo!.service)
+        .replace("{date}", context.userInfo!.date)
+        .replace("{time}", context.userInfo!.time)
+
+      return {
+        message: completionMessage,
+        supportActive: false,
+        supportLevel: 0,
+        context,
       }
 
     default:
-      return null
+      return {
+        message: currentT.errorMessage,
+        supportActive: false,
+        supportLevel: 0,
+        context,
+      }
+  }
+}
+
+async function handleSupportFlow(session: ChatSession, message: string, currentT: any) {
+  session.supportActive = true
+  session.supportLevel = Math.min(session.supportLevel + 1, 4)
+
+  if (session.supportLevel >= 3) {
+    session.context.escalationActive = true
+    return {
+      message: currentT.supportEscalation,
+      supportActive: true,
+      supportLevel: session.supportLevel,
+      context: session.context,
+    }
+  }
+
+  return {
+    message: currentT.supportIntro,
+    supportActive: true,
+    supportLevel: session.supportLevel,
+    context: session.context,
+  }
+}
+
+async function generateAIResponse(message: string, language: "it" | "en") {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+
+    const prompt = `
+    You are AuraBot, Digital Aura's AI assistant. Respond in ${language === "it" ? "Italian" : "English"}.
+    
+    Digital Aura offers:
+    - AI Automation and Chatbots
+    - Web Development
+    - AI Marketing
+    - Free consultations
+    
+    User message: "${message}"
+    
+    Provide a helpful, professional response in ${language === "it" ? "Italian" : "English"}. Keep it concise and friendly.
+    `
+
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    return response.text()
+  } catch (error) {
+    console.error("Gemini API error:", error)
+    return language === "it"
+      ? "Grazie per il tuo messaggio. Come posso aiutarti specificamente oggi?"
+      : "Thank you for your message. How can I help you specifically today?"
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { message, language = "it", sessionId } = await request.json()
+
+    if (!message || !sessionId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Message and sessionId are required",
+        },
+        { status: 400 },
+      )
+    }
+
+    const session = getOrCreateSession(sessionId, language)
+    const currentT = translations[language]
+
+    // Add user message to session
+    session.messages.push({
+      role: "user",
+      content: message,
+      timestamp: new Date(),
+    })
+
+    // Detect intent
+    const intent = detectIntent(message, language)
+
+    let response
+
+    // Handle different flows
+    if (intent === "support" || session.supportActive) {
+      response = await handleSupportFlow(session, message, currentT)
+    } else if (intent === "booking" || session.context.bookingMode) {
+      response = await handleBookingFlow(session, message, currentT)
+    } else {
+      // General conversation with AI
+      const aiResponse = await generateAIResponse(message, language)
+      response = {
+        message: aiResponse,
+        supportActive: false,
+        supportLevel: 0,
+        context: session.context,
+      }
+    }
+
+    // Add bot response to session
+    session.messages.push({
+      role: "assistant",
+      content: response.message,
+      timestamp: new Date(),
+    })
+
+    // Update session
+    session.supportActive = response.supportActive
+    session.supportLevel = response.supportLevel
+    session.context = response.context
+
+    // Save session to database
+    try {
+      await sql`
+        INSERT INTO chat_sessions (
+          session_id, messages, context, support_active, support_level, 
+          language, created_at, updated_at
+        ) VALUES (
+          ${sessionId},
+          ${JSON.stringify(session.messages)},
+          ${JSON.stringify(session.context)},
+          ${session.supportActive},
+          ${session.supportLevel},
+          ${language},
+          ${session.createdAt.toISOString()},
+          ${session.updatedAt.toISOString()}
+        )
+        ON CONFLICT (session_id) DO UPDATE SET
+          messages = ${JSON.stringify(session.messages)},
+          context = ${JSON.stringify(session.context)},
+          support_active = ${session.supportActive},
+          support_level = ${session.supportLevel},
+          language = ${language},
+          updated_at = ${session.updatedAt.toISOString()}
+      `
+    } catch (dbError) {
+      console.error("Database error:", dbError)
+      // Continue without failing - session is still in memory
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: response.message,
+      supportActive: response.supportActive,
+      supportLevel: response.supportLevel,
+      context: response.context,
+    })
+  } catch (error) {
+    console.error("Chat API error:", error)
+
+    const errorMessage =
+      language === "it"
+        ? "Mi dispiace, c'è stato un errore. Riprova o contattaci direttamente."
+        : "Sorry, there was an error. Please try again or contact us directly."
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: errorMessage,
+        supportActive: false,
+        supportLevel: 0,
+      },
+      { status: 500 },
+    )
   }
 }

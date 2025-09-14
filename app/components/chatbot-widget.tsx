@@ -670,3 +670,6 @@ I can help you with:
     </div>
   )
 }
+
+// Named export
+export { ChatbotWidget }

@@ -244,3 +244,6 @@ export default function Navbar() {
     </motion.nav>
   )
 }
+
+// Named export
+export { Navbar }

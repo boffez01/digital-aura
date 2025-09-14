@@ -209,3 +209,6 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
     </div>
   )
 }
+
+// Named export
+export { ProjectModal }
