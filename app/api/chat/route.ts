@@ -12,31 +12,30 @@ export async function POST(request: NextRequest) {
     // Get or create session
     let session: ChatSession
     if (sessionId) {
-      session = await getSession(sessionId)
+      session = (await getSession(sessionId)) || (await createSession(`session_${Date.now()}`))
     } else {
-      session = await createSession()
+      session = await createSession(`session_${Date.now()}`)
     }
 
     // Handle support flow first (priority)
     const supportResponse = handleSupportFlow(message, session, language)
     if (supportResponse) {
       // Update session with support state
-      await updateSession(session.id, {
-        ...session.data,
-        supportMode: true,
-        lastActivity: new Date().toISOString(),
+      await updateSession(session.session_id, {
+        support_mode: true,
+        last_activity: new Date().toISOString(),
       })
 
       return NextResponse.json({
         response: supportResponse.message,
-        sessionId: session.id,
+        sessionId: session.session_id,
         supportMode: true,
         escalated: supportResponse.escalated || false,
       })
     }
 
     // Handle booking flow
-    if (session.data.bookingFlow) {
+    if (session.booking_mode) {
       const bookingResponse = await handleBookingFlow(message, session, language)
       if (bookingResponse) {
         return NextResponse.json(bookingResponse)
@@ -54,11 +53,10 @@ export async function POST(request: NextRequest) {
 
     if (hasBookingIntent) {
       // Start booking flow
-      await updateSession(session.id, {
-        ...session.data,
-        bookingFlow: true,
-        bookingStep: "service",
-        lastActivity: new Date().toISOString(),
+      await updateSession(session.session_id, {
+        booking_mode: true,
+        flow_step: "service",
+        last_activity: new Date().toISOString(),
       })
 
       const t = {
@@ -85,10 +83,11 @@ export async function POST(request: NextRequest) {
       }
 
       const currentT = t[language as keyof typeof t] || t.it
+      const servicesText = currentT.services.join("\n")
 
       return NextResponse.json({
-        response: `${currentT.greeting}\n\n${currentT.servicePrompt}\n\n${currentT.services.join("\n")}`,
-        sessionId: session.id,
+        response: `${currentT.greeting}\n\n${currentT.servicePrompt}\n\n${servicesText}`,
+        sessionId: session.session_id,
         bookingFlow: true,
         step: "service",
       })
@@ -139,16 +138,13 @@ Linee guida:
       })
 
       // Update session with conversation
-      await updateSession(session.id, {
-        ...session.data,
-        lastMessage: message,
-        lastResponse: text,
-        lastActivity: new Date().toISOString(),
+      await updateSession(session.session_id, {
+        last_activity: new Date().toISOString(),
       })
 
       return NextResponse.json({
         response: text,
-        sessionId: session.id,
+        sessionId: session.session_id,
       })
     } catch (aiError) {
       console.error("AI Error:", aiError)
@@ -161,7 +157,7 @@ Linee guida:
 
       return NextResponse.json({
         response: fallbackResponse,
-        sessionId: session.id,
+        sessionId: session.session_id,
         fallback: true,
       })
     }
@@ -172,8 +168,8 @@ Linee guida:
 }
 
 async function handleBookingFlow(message: string, session: ChatSession, language: string) {
-  const step = session.data.bookingStep
-  const bookingData = session.data.bookingData || {}
+  const step = session.flow_step
+  const bookingData = session.context || {}
 
   const t = {
     it: {
@@ -226,58 +222,11 @@ async function handleBookingFlow(message: string, session: ChatSession, language
 
   // Handle modification requests
   if (message.toLowerCase().includes("modifica") || message.toLowerCase().includes("modify")) {
-    await updateSession(session.id, {
-      ...session.data,
-      bookingStep: "modify",
-      lastActivity: new Date().toISOString(),
+    await updateSession(session.session_id, {
+      flow_step: "modify",
+      last_activity: new Date().toISOString(),
     })
-    return { response: currentT.modify, sessionId: session.id, bookingFlow: true, step: "modify" }
-  }
-
-  // Handle modification selection
-  if (step === "modify") {
-    const modifyMap = {
-      "1": "service",
-      servizio: "service",
-      service: "service",
-      "2": "date",
-      data: "date",
-      date: "date",
-      "3": "time",
-      orario: "time",
-      time: "time",
-      "4": "name",
-      nome: "name",
-      name: "name",
-      "5": "email",
-      email: "email",
-      "6": "phone",
-      telefono: "phone",
-      phone: "phone",
-    }
-
-    const field = modifyMap[message.toLowerCase() as keyof typeof modifyMap]
-    if (field) {
-      await updateSession(session.id, {
-        ...session.data,
-        bookingStep: field,
-        lastActivity: new Date().toISOString(),
-      })
-
-      const prompts = {
-        service:
-          language === "en"
-            ? "Which service do you want?\n🤖 AI Automation\n💬 Chatbot\n🌐 Web Development\n📈 AI Marketing"
-            : "Quale servizio vuoi?\n🤖 AI Automation\n💬 Chatbot\n🌐 Web Development\n📈 AI Marketing",
-        date: currentT.datePrompt,
-        time: currentT.timePrompt,
-        name: currentT.namePrompt,
-        email: currentT.emailPrompt,
-        phone: currentT.phonePrompt,
-      }
-
-      return { response: prompts[field as keyof typeof prompts], sessionId: session.id, bookingFlow: true, step: field }
-    }
+    return { response: currentT.modify, sessionId: session.session_id, bookingFlow: true, step: "modify" }
   }
 
   // Handle confirmation
@@ -302,26 +251,25 @@ async function handleBookingFlow(message: string, session: ChatSession, language
 
         if (newAppointment) {
           // Clear booking flow
-          await updateSession(session.id, {
-            ...session.data,
-            bookingFlow: false,
-            bookingStep: undefined,
-            bookingData: {},
-            lastActivity: new Date().toISOString(),
+          await updateSession(session.session_id, {
+            booking_mode: false,
+            flow_step: undefined,
+            context: {},
+            last_activity: new Date().toISOString(),
           })
 
           return {
             response: currentT.success,
-            sessionId: session.id,
+            sessionId: session.session_id,
             bookingFlow: false,
             bookingComplete: true,
           }
         } else {
-          return { response: currentT.error, sessionId: session.id, bookingFlow: true, step: "error" }
+          return { response: currentT.error, sessionId: session.session_id, bookingFlow: true, step: "error" }
         }
       } catch (error) {
         console.error("❌ Error saving appointment:", error)
-        return { response: currentT.error, sessionId: session.id, bookingFlow: true, step: "error" }
+        return { response: currentT.error, sessionId: session.session_id, bookingFlow: true, step: "error" }
       }
     }
   }
@@ -346,90 +294,84 @@ async function handleBookingFlow(message: string, session: ChatSession, language
       const service = serviceMap[message.toLowerCase() as keyof typeof serviceMap]
       if (service) {
         const newBookingData = { ...bookingData, service }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "date",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "date",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
         return {
           response: `${currentT.serviceSelected} **${message}**\n\n${currentT.datePrompt}`,
-          sessionId: session.id,
+          sessionId: session.session_id,
           bookingFlow: true,
           step: "date",
         }
       } else {
-        return { response: currentT.invalidService, sessionId: session.id, bookingFlow: true, step: "service" }
+        return { response: currentT.invalidService, sessionId: session.session_id, bookingFlow: true, step: "service" }
       }
 
     case "date":
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/
       if (dateRegex.test(message.trim())) {
         const newBookingData = { ...bookingData, date: message.trim() }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "time",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "time",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
-        return { response: currentT.timePrompt, sessionId: session.id, bookingFlow: true, step: "time" }
+        return { response: currentT.timePrompt, sessionId: session.session_id, bookingFlow: true, step: "time" }
       } else {
-        return { response: currentT.invalidDate, sessionId: session.id, bookingFlow: true, step: "date" }
+        return { response: currentT.invalidDate, sessionId: session.session_id, bookingFlow: true, step: "date" }
       }
 
     case "time":
       const timeRegex = /^\d{1,2}:\d{2}$/
       if (timeRegex.test(message.trim())) {
         const newBookingData = { ...bookingData, time: message.trim() }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "name",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "name",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
-        return { response: currentT.namePrompt, sessionId: session.id, bookingFlow: true, step: "name" }
+        return { response: currentT.namePrompt, sessionId: session.session_id, bookingFlow: true, step: "name" }
       } else {
-        return { response: currentT.invalidTime, sessionId: session.id, bookingFlow: true, step: "time" }
+        return { response: currentT.invalidTime, sessionId: session.session_id, bookingFlow: true, step: "time" }
       }
 
     case "name":
       if (message.trim().length >= 2) {
         const newBookingData = { ...bookingData, name: message.trim() }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "email",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "email",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
-        return { response: currentT.emailPrompt, sessionId: session.id, bookingFlow: true, step: "email" }
+        return { response: currentT.emailPrompt, sessionId: session.session_id, bookingFlow: true, step: "email" }
       } else {
-        return { response: currentT.namePrompt, sessionId: session.id, bookingFlow: true, step: "name" }
+        return { response: currentT.namePrompt, sessionId: session.session_id, bookingFlow: true, step: "name" }
       }
 
     case "email":
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (emailRegex.test(message.trim())) {
         const newBookingData = { ...bookingData, email: message.trim() }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "phone",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "phone",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
-        return { response: currentT.phonePrompt, sessionId: session.id, bookingFlow: true, step: "phone" }
+        return { response: currentT.phonePrompt, sessionId: session.session_id, bookingFlow: true, step: "phone" }
       } else {
-        return { response: currentT.invalidEmail, sessionId: session.id, bookingFlow: true, step: "email" }
+        return { response: currentT.invalidEmail, sessionId: session.session_id, bookingFlow: true, step: "email" }
       }
 
     case "phone":
       const phoneRegex = /^[+]?[0-9\s\-()]{8,}$/
       if (phoneRegex.test(message.trim())) {
         const newBookingData = { ...bookingData, phone: message.trim() }
-        await updateSession(session.id, {
-          ...session.data,
-          bookingStep: "confirm",
-          bookingData: newBookingData,
-          lastActivity: new Date().toISOString(),
+        await updateSession(session.session_id, {
+          flow_step: "confirm",
+          context: newBookingData,
+          last_activity: new Date().toISOString(),
         })
 
         const confirmMessage = currentT.confirmPrompt
@@ -440,9 +382,9 @@ async function handleBookingFlow(message: string, session: ChatSession, language
           .replace("{email}", newBookingData.email || "")
           .replace("{phone}", newBookingData.phone || "")
 
-        return { response: confirmMessage, sessionId: session.id, bookingFlow: true, step: "confirm" }
+        return { response: confirmMessage, sessionId: session.session_id, bookingFlow: true, step: "confirm" }
       } else {
-        return { response: currentT.invalidPhone, sessionId: session.id, bookingFlow: true, step: "phone" }
+        return { response: currentT.invalidPhone, sessionId: session.session_id, bookingFlow: true, step: "phone" }
       }
 
     default:
