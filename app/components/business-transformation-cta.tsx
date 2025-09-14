@@ -1,14 +1,29 @@
 "use client"
 
+import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Calendar, MessageCircle } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ArrowRight, CheckCircle, AlertCircle, Calendar, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function BusinessTransformationCTA() {
   const [language, setLanguage] = useState<"it" | "en">("it")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    service: "",
+    message: "",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState("")
 
-  // Load language from localStorage on mount
+  // Load language from localStorage
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language") as "it" | "en"
     if (savedLanguage) {
@@ -16,10 +31,10 @@ export default function BusinessTransformationCTA() {
     }
   }, [])
 
-  // Listen for language changes from other components
+  // Listen for language changes
   useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent<string>) => {
-      setLanguage(event.detail as "it" | "en")
+    const handleLanguageChange = (event: CustomEvent) => {
+      setLanguage(event.detail)
     }
 
     const handleStorageChange = (event: StorageEvent) => {
@@ -37,114 +52,325 @@ export default function BusinessTransformationCTA() {
     }
   }, [])
 
-  const content = {
+  const translations = {
     it: {
       title: "Trasforma il Tuo Business con l'AI",
-      subtitle: "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda",
-      description:
-        "Ottieni una consulenza gratuita personalizzata per identificare le opportunità di automazione e crescita nel tuo settore.",
-      bookButton: "Prenota Consulenza Gratuita",
-      contactButton: "Contattaci Ora",
-      features: [
-        "Analisi gratuita del tuo business",
-        "Strategia AI personalizzata",
-        "ROI garantito entro 6 mesi",
-        "Supporto completo post-implementazione",
-      ],
+      subtitle:
+        "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda. Prenota una consulenza gratuita e inizia il tuo percorso di trasformazione digitale.",
+      bookConsultation: "Prenota Consulenza",
+      contactNow: "Contattaci Ora",
+      name: "Nome",
+      email: "Email",
+      phone: "Telefono",
+      company: "Azienda",
+      serviceInterest: "Servizio di Interesse",
+      message: "Messaggio",
+      selectService: "Seleziona un servizio",
+      aiAutomation: "AI Automation",
+      smartChatbots: "Smart Chatbots",
+      webDevelopment: "Web Development",
+      aiMarketing: "AI Marketing",
+      consultation: "Consulenza",
+      sendRequest: "Invia Richiesta",
+      sending: "Invio in corso...",
+      successMessage: "Grazie! La tua richiesta è stata inviata con successo. Ti contatteremo presto.",
+      errorMessage: "Si è verificato un errore. Riprova o contattaci direttamente.",
+      requiredFields: "Compila tutti i campi obbligatori",
+      invalidEmail: "Inserisci un indirizzo email valido",
     },
     en: {
       title: "Transform Your Business with AI",
-      subtitle: "Discover how artificial intelligence can revolutionize your company",
-      description:
-        "Get a free personalized consultation to identify automation and growth opportunities in your industry.",
-      bookButton: "Book Free Consultation",
-      contactButton: "Contact Us Now",
-      features: [
-        "Free business analysis",
-        "Personalized AI strategy",
-        "ROI guaranteed within 6 months",
-        "Complete post-implementation support",
-      ],
+      subtitle:
+        "Discover how artificial intelligence can revolutionize your company. Book a free consultation and start your digital transformation journey.",
+      bookConsultation: "Book Consultation",
+      contactNow: "Contact Now",
+      name: "Name",
+      email: "Email",
+      phone: "Phone",
+      company: "Company",
+      serviceInterest: "Service of Interest",
+      message: "Message",
+      selectService: "Select a service",
+      aiAutomation: "AI Automation",
+      smartChatbots: "Smart Chatbots",
+      webDevelopment: "Web Development",
+      aiMarketing: "AI Marketing",
+      consultation: "Consultation",
+      sendRequest: "Send Request",
+      sending: "Sending...",
+      successMessage: "Thank you! Your request has been sent successfully. We'll contact you soon.",
+      errorMessage: "An error occurred. Please try again or contact us directly.",
+      requiredFields: "Please fill in all required fields",
+      invalidEmail: "Please enter a valid email address",
     },
   }
 
-  const currentContent = content[language]
+  const t = translations[language]
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    // Clear error status when user starts typing
+    if (submitStatus === "error") {
+      setSubmitStatus("idle")
+      setErrorMessage("")
+    }
+  }
+
+  const validateForm = () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMessage(t.requiredFields)
+      return false
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setErrorMessage(t.invalidEmail)
+      return false
+    }
+
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    console.log("🚀 Form submission started")
+
+    if (!validateForm()) {
+      setSubmitStatus("error")
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitStatus("idle")
+    setErrorMessage("")
+
+    try {
+      console.log("📤 Sending form data:", formData)
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          company: formData.company.trim() || null,
+          service_type: formData.service || null,
+          message: formData.message.trim(),
+        }),
+      })
+
+      console.log("📡 Response status:", response.status)
+
+      const responseData = await response.json()
+      console.log("📋 Response data:", responseData)
+
+      if (!response.ok) {
+        throw new Error(responseData.error || "Network error")
+      }
+
+      console.log("✅ Form submitted successfully")
+      setSubmitStatus("success")
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        service: "",
+        message: "",
+      })
+
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus("idle")
+      }, 5000)
+    } catch (error) {
+      console.error("❌ Form submission error:", error)
+      setSubmitStatus("error")
+      setErrorMessage(error instanceof Error ? error.message : t.errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const scrollToContact = () => {
+    const contactSection = document.getElementById("contact")
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: "smooth" })
+    }
+  }
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0.6))]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10" />
-
-      {/* Floating Elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-1000" />
-      <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-cyan-500/20 rounded-full blur-lg animate-bounce" />
-
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Main Content */}
-          <div className="mb-12">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              {currentContent.title}
-            </h2>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">{currentContent.subtitle}</p>
-            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-12 leading-relaxed">
-              {currentContent.description}
-            </p>
+    <section id="contact" className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">{t.title}</h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">{t.subtitle}</p>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {currentContent.features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105"
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                  <div className="w-6 h-6 bg-white rounded-sm" />
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left Column - CTA Buttons */}
+            <div className="space-y-8">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700">
+                <h3 className="text-2xl font-bold text-white mb-6">
+                  {language === "it" ? "Inizia Subito" : "Get Started Now"}
+                </h3>
+
+                <div className="space-y-4">
+                  <Link href="/appointments">
+                    <Button
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      <Calendar className="mr-3 h-5 w-5" />
+                      {t.bookConsultation}
+                      <ArrowRight className="ml-3 h-5 w-5" />
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={scrollToContact}
+                    className="w-full border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 bg-transparent"
+                  >
+                    <MessageCircle className="mr-3 h-5 w-5" />
+                    {t.contactNow}
+                  </Button>
                 </div>
-                <p className="text-white font-medium text-sm leading-relaxed">{feature}</p>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Link href="/appointments">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 group min-w-[280px]"
-              >
-                <Calendar className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                {currentContent.bookButton}
-                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+            {/* Right Column - Contact Form */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.name} *</label>
+                    <Input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
+                      placeholder={t.name}
+                      required
+                    />
+                  </div>
 
-            <a href="#contact">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-sm transition-all duration-300 hover:scale-105 group min-w-[280px] bg-transparent"
-              >
-                <MessageCircle className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                {currentContent.contactButton}
-                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </a>
-          </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.email} *</label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
+                      placeholder="info@example.com"
+                      required
+                    />
+                  </div>
+                </div>
 
-          {/* Trust Indicators */}
-          <div className="mt-16 pt-8 border-t border-white/20">
-            <p className="text-slate-400 text-sm mb-4">
-              {language === "it" ? "Aziende che si fidano di noi:" : "Companies that trust us:"}
-            </p>
-            <div className="flex justify-center items-center space-x-8 opacity-60">
-              <div className="w-24 h-8 bg-white/20 rounded" />
-              <div className="w-20 h-8 bg-white/20 rounded" />
-              <div className="w-28 h-8 bg-white/20 rounded" />
-              <div className="w-22 h-8 bg-white/20 rounded" />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.phone}</label>
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
+                      placeholder="+39 123 456 7890"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">{t.company}</label>
+                    <Input
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => handleInputChange("company", e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500"
+                      placeholder={t.company}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">{t.serviceInterest}</label>
+                  <Select value={formData.service} onValueChange={(value) => handleInputChange("service", value)}>
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500">
+                      <SelectValue placeholder={t.selectService} className="text-slate-400" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="ai-automation" className="text-white hover:bg-slate-600 focus:bg-slate-600">
+                        {t.aiAutomation}
+                      </SelectItem>
+                      <SelectItem value="chatbot" className="text-white hover:bg-slate-600 focus:bg-slate-600">
+                        {t.smartChatbots}
+                      </SelectItem>
+                      <SelectItem value="web-development" className="text-white hover:bg-slate-600 focus:bg-slate-600">
+                        {t.webDevelopment}
+                      </SelectItem>
+                      <SelectItem value="ai-marketing" className="text-white hover:bg-slate-600 focus:bg-slate-600">
+                        {t.aiMarketing}
+                      </SelectItem>
+                      <SelectItem value="consultation" className="text-white hover:bg-slate-600 focus:bg-slate-600">
+                        {t.consultation}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">{t.message} *</label>
+                  <Textarea
+                    value={formData.message}
+                    onChange={(e) => handleInputChange("message", e.target.value)}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500 min-h-[120px]"
+                    placeholder={t.message}
+                    required
+                  />
+                </div>
+
+                {/* Status Messages */}
+                {submitStatus === "success" && (
+                  <div className="flex items-center space-x-2 text-green-400 bg-green-400/10 p-4 rounded-lg border border-green-400/20">
+                    <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                    <span>{t.successMessage}</span>
+                  </div>
+                )}
+
+                {submitStatus === "error" && (
+                  <div className="flex items-center space-x-2 text-red-400 bg-red-400/10 p-4 rounded-lg border border-red-400/20">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                    <span>{errorMessage || t.errorMessage}</span>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      {t.sending}
+                    </>
+                  ) : (
+                    <>
+                      {t.sendRequest}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </form>
             </div>
           </div>
         </div>

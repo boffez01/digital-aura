@@ -41,7 +41,6 @@ import Image from "next/image"
 import ProjectModal from "./components/project-modal"
 import ChatbotWidget from "./components/chatbot-widget"
 import FAQSection from "./components/faq-section"
-import BusinessTransformationCTA from "./components/business-transformation-cta"
 import ROICalculatorSection from "./components/roi-calculator"
 import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
@@ -360,23 +359,45 @@ export default function DigitalAuraPortfolio() {
     setIsSubmitting(true)
 
     try {
+      console.log("🚀 Submitting contact form:", formData)
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          company: formData.company.trim() || null,
+          service_type: formData.service || null,
+          message: formData.message.trim(),
+        }),
       })
 
+      console.log("📡 Response status:", response.status)
+
       if (response.ok) {
+        const result = await response.json()
+        console.log("✅ Contact form submitted successfully:", result)
         setSubmitSuccess(true)
         setFormData({ name: "", email: "", phone: "", company: "", service: "", message: "" })
+
+        // Hide success message after 5 seconds
+        setTimeout(() => setSubmitSuccess(false), 5000)
+      } else {
+        const errorData = await response.json()
+        console.error("❌ Contact form error:", errorData)
+        throw new Error(errorData.error || "Network error")
       }
     } catch (error) {
-      console.error("Error submitting form:", error)
+      console.error("❌ Contact form submission error:", error)
+      alert(
+        language === "it" ? "Errore nell'invio del messaggio. Riprova." : "Error sending message. Please try again.",
+      )
     } finally {
       setIsSubmitting(false)
-      setTimeout(() => setSubmitSuccess(false), 5000)
     }
   }
 
@@ -513,10 +534,7 @@ export default function DigitalAuraPortfolio() {
       {/* FAQ Section */}
       <FAQSection />
 
-      {/* Business Transformation CTA */}
-      <BusinessTransformationCTA />
-
-      {/* Contact Section */}
+      {/* Contact Section - UNICO FORM */}
       <ContactSection
         formData={formData}
         isSubmitting={isSubmitting}
@@ -925,7 +943,7 @@ function OurStorySection({ values }: { values: any[] }) {
   )
 }
 
-// Contact Section
+// Contact Section - UNICO FORM FUNZIONANTE
 function ContactSection({
   formData,
   isSubmitting,
