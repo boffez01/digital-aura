@@ -1,64 +1,82 @@
 "use client"
-
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Linkedin, Twitter, Github, Mail } from "lucide-react"
-
-const teamMembers = [
-  {
-    name: "Marco Rossi",
-    role: "CEO & AI Strategist",
-    bio: "Esperto in intelligenza artificiale con 10+ anni di esperienza in automazione aziendale.",
-    image: "/placeholder.svg?height=300&width=300&text=Marco+Rossi",
-    skills: ["AI Strategy", "Machine Learning", "Business Development"],
-    social: {
-      linkedin: "#",
-      twitter: "#",
-      email: "marco@digitalaura.com",
-    },
-  },
-  {
-    name: "Laura Bianchi",
-    role: "CTO & Lead Developer",
-    bio: "Full-stack developer specializzata in React, Node.js e architetture cloud scalabili.",
-    image: "/placeholder.svg?height=300&width=300&text=Laura+Bianchi",
-    skills: ["React", "Node.js", "Cloud Architecture"],
-    social: {
-      linkedin: "#",
-      github: "#",
-      email: "laura@digitalaura.com",
-    },
-  },
-  {
-    name: "Giuseppe Verdi",
-    role: "AI Engineer",
-    bio: "Specialista in NLP e machine learning, con focus su chatbot e automazione intelligente.",
-    image: "/placeholder.svg?height=300&width=300&text=Giuseppe+Verdi",
-    skills: ["NLP", "TensorFlow", "Python"],
-    social: {
-      linkedin: "#",
-      github: "#",
-      email: "giuseppe@digitalaura.com",
-    },
-  },
-  {
-    name: "Sofia Romano",
-    role: "UX/UI Designer",
-    bio: "Designer creativa con passione per esperienze utente intuitive e design systems moderni.",
-    image: "/placeholder.svg?height=300&width=300&text=Sofia+Romano",
-    skills: ["UI/UX Design", "Figma", "Design Systems"],
-    social: {
-      linkedin: "#",
-      twitter: "#",
-      email: "sofia@digitalaura.com",
-    },
-  },
-]
+import { Linkedin, Github, Twitter, Users, Award, Target } from "lucide-react"
+import { useLanguage } from "../contexts/language-context"
+import Image from "next/image"
 
 export default function TeamSection() {
+  const { language } = useLanguage()
+
+  const teamMembers = [
+    {
+      name: "Alessandro Conti",
+      role: language === "it" ? "CEO & AI Strategist" : "CEO & AI Strategist",
+      bio:
+        language === "it"
+          ? "10+ anni in AI e Machine Learning. Ex-Google, specializzato in soluzioni enterprise."
+          : "10+ years in AI and Machine Learning. Ex-Google, specialized in enterprise solutions.",
+      image: "/professional-businessman.png",
+      skills: ["AI Strategy", "Machine Learning", "Business Development"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+    {
+      name: "Sofia Martinelli",
+      role: language === "it" ? "CTO & Lead Developer" : "CTO & Lead Developer",
+      bio:
+        language === "it"
+          ? "Esperta in sviluppo full-stack e architetture AI scalabili. Ex-Microsoft."
+          : "Expert in full-stack development and scalable AI architectures. Ex-Microsoft.",
+      image: "/professional-businesswoman.png",
+      skills: ["Full-Stack Development", "AI Architecture", "DevOps"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+    {
+      name: "Marco Ferretti",
+      role: language === "it" ? "Head of Data Science" : "Head of Data Science",
+      bio:
+        language === "it"
+          ? "PhD in Computer Science, specializzato in NLP e computer vision per applicazioni business."
+          : "PhD in Computer Science, specialized in NLP and computer vision for business applications.",
+      image: "/professional-manager.png",
+      skills: ["Data Science", "NLP", "Computer Vision"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+  ]
+
+  const stats = [
+    {
+      icon: Users,
+      number: "50+",
+      label: language === "it" ? "Progetti Completati" : "Projects Completed",
+    },
+    {
+      icon: Award,
+      number: "98%",
+      label: language === "it" ? "Soddisfazione Cliente" : "Client Satisfaction",
+    },
+    {
+      icon: Target,
+      number: "300%",
+      label: language === "it" ? "ROI Medio" : "Average ROI",
+    },
+  ]
+
   return (
-    <section className="py-20 px-4 bg-gray-50">
+    <section className="py-20 px-4">
       <div className="container mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -67,155 +85,87 @@ export default function TeamSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">Il Nostro Team</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Un team di esperti appassionati di tecnologia e innovazione, pronti a trasformare le tue idee in realtà
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            {language === "it" ? "Il Nostro Team di Esperti" : "Our Expert Team"}
+          </h2>
+          <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
+            {language === "it"
+              ? "Un team di professionisti con esperienza nelle migliori aziende tech al mondo"
+              : "A team of professionals with experience at the world's best tech companies"}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {teamMembers.map((member, index) => (
+        {/* Team Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {stats.map((stat, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              whileHover={{ y: -10 }}
-              className="group"
             >
-              <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="relative">
-                  <motion.img
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-64 object-cover"
-                  />
-
-                  {/* Social Links Overlay */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center pb-4"
-                  >
-                    <div className="flex space-x-3">
-                      {member.social.linkedin && (
-                        <motion.a
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                          href={member.social.linkedin}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all"
-                        >
-                          <Linkedin className="w-4 h-4 text-white" />
-                        </motion.a>
-                      )}
-                      {member.social.twitter && (
-                        <motion.a
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                          href={member.social.twitter}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all"
-                        >
-                          <Twitter className="w-4 h-4 text-white" />
-                        </motion.a>
-                      )}
-                      {member.social.github && (
-                        <motion.a
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                          href={member.social.github}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all"
-                        >
-                          <Github className="w-4 h-4 text-white" />
-                        </motion.a>
-                      )}
-                      <motion.a
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={`mailto:${member.social.email}`}
-                        className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all"
-                      >
-                        <Mail className="w-4 h-4 text-white" />
-                      </motion.a>
-                    </div>
-                  </motion.div>
-                </div>
-
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
-                  <p className="text-cyan-600 font-medium mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">{member.bio}</p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {member.skills.map((skill, skillIndex) => (
-                      <motion.div
-                        key={skillIndex}
-                        initial={{ opacity: 0, scale: 0 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: skillIndex * 0.1 + 0.3 }}
-                        viewport={{ once: true }}
-                      >
-                        <Badge
-                          variant="outline"
-                          className="border-gray-300 text-gray-600 hover:border-cyan-500 hover:text-cyan-600 transition-colors"
-                        >
-                          {skill}
-                        </Badge>
-                      </motion.div>
-                    ))}
-                  </div>
+              <Card className="bg-slate-800/50 border-slate-700 text-center p-6">
+                <CardContent className="pt-6">
+                  <stat.icon className="w-12 h-12 text-cyan-500 mx-auto mb-4" />
+                  <div className="text-3xl font-bold text-white mb-2">{stat.number}</div>
+                  <div className="text-slate-400">{stat.label}</div>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Company Values */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="mt-20 text-center"
-        >
-          <h3 className="text-2xl font-bold text-gray-800 mb-8">I Nostri Valori</h3>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Innovazione",
-                description: "Utilizziamo sempre le tecnologie più avanzate per creare soluzioni all'avanguardia",
-                icon: "🚀",
-              },
-              {
-                title: "Qualità",
-                description:
-                  "Ogni progetto è realizzato con la massima attenzione ai dettagli e agli standard più elevati",
-                icon: "⭐",
-              },
-              {
-                title: "Partnership",
-                description: "Lavoriamo insieme ai nostri clienti come partner strategici per il loro successo",
-                icon: "🤝",
-              },
-            ].map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 + 0.6 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
-              >
-                <div className="text-4xl mb-4">{value.icon}</div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-2">{value.title}</h4>
-                <p className="text-gray-600 text-sm">{value.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* Team Members */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {teamMembers.map((member, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Card className="bg-slate-800/50 border-slate-700 overflow-hidden group hover:border-cyan-500 transition-all duration-300">
+                <div className="relative h-64 overflow-hidden">
+                  <Image
+                    src={member.image || "/placeholder.svg"}
+                    alt={member.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                </div>
+
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{member.name}</h3>
+                  <p className="text-cyan-400 font-medium mb-3">{member.role}</p>
+                  <p className="text-slate-400 text-sm mb-4 leading-relaxed">{member.bio}</p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {member.skills.map((skill, skillIndex) => (
+                      <Badge key={skillIndex} variant="secondary" className="bg-slate-700 text-slate-300">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <a href={member.social.linkedin} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href={member.social.github} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                      <Github className="w-5 h-5" />
+                    </a>
+                    <a href={member.social.twitter} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                      <Twitter className="w-5 h-5" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )

@@ -2,7 +2,7 @@
 import { motion } from "framer-motion"
 import { useRef } from "react"
 import { useInView } from "framer-motion"
-import { ScanSearch, PencilRuler, Bot, Rocket } from "lucide-react"
+import { Search, PenTool, Bot, Rocket } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "../contexts/language-context"
 
@@ -13,7 +13,7 @@ export default function ProcessSection() {
 
   const processSteps = [
     {
-      icon: ScanSearch,
+      icon: Search,
       title: language === "it" ? "1. Analisi & Strategia" : "1. Analysis & Strategy",
       description:
         language === "it"
@@ -21,7 +21,7 @@ export default function ProcessSection() {
           : "We start with an in-depth analysis of your business to define objectives and a tailored AI strategy.",
     },
     {
-      icon: PencilRuler,
+      icon: PenTool,
       title: language === "it" ? "2. Design & Prototipazione" : "2. Design & Prototyping",
       description:
         language === "it"
