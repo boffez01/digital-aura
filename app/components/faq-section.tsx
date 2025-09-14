@@ -139,6 +139,3 @@ export default function FAQSection() {
     </section>
   )
 }
-
-// Named export
-export { FAQSection }

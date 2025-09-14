@@ -204,6 +204,3 @@ export default function TestimonialsCarousel() {
     </div>
   )
 }
-
-// Named export
-export { TestimonialsCarousel }

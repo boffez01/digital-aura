@@ -220,6 +220,3 @@ export default function TeamSection() {
     </section>
   )
 }
-
-// Named export
-export { TeamSection }

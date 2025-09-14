@@ -117,6 +117,3 @@ export default function HeroBackground() {
     />
   )
 }
-
-// Named export
-export { HeroBackground }

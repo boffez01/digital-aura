@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ai-sdk/google": "^0.0.52",
+    "@ai-sdk/google": "latest",
     "@emotion/is-prop-valid": "latest",
     "@google/generative-ai": "latest",
     "@neondatabase/serverless": "latest",
@@ -34,7 +34,7 @@
     "@react-three/fiber": "^8.17.10",
     "@react-three/postprocessing": "^2.16.3",
     "@react-three/rapier": "^1.4.0",
-    "ai": "^3.4.32",
+    "ai": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "latest",
@@ -48,11 +48,11 @@
     "react": "^18",
     "react-dom": "^18",
     "recharts": "latest",
-    "some-module": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.169.0",
-    "twilio": "latest"
+    "twilio": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

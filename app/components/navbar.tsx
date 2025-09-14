@@ -1,249 +1,192 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Calendar } from "lucide-react"
+import { Menu, X, Zap } from "lucide-react"
 import Link from "next/link"
-import LanguageSelector from "./language-selector"
 import { useLanguage } from "../contexts/language-context"
+import LanguageSelector from "./language-selector"
 
 export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { language } = useLanguage()
 
-  // Rimuoviamo "Home" dai link di navigazione - il logo è il link alla home
-  const navigationItems = [
-    { key: "services", label: language === "it" ? "Servizi" : "Services", dropdown: true },
-    { key: "blog", label: "Blog", href: "/blog" },
-    { key: "appointments", label: language === "it" ? "Appuntamenti" : "Appointments", href: "/appointments" },
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const navItems = [
+    {
+      href: "/",
+      label: language === "it" ? "Home" : "Home",
+    },
+    {
+      href: "#services",
+      label: language === "it" ? "Servizi" : "Services",
+    },
+    {
+      href: "/blog",
+      label: language === "it" ? "Blog" : "Blog",
+    },
+    {
+      href: "#contact",
+      label: language === "it" ? "Contatti" : "Contact",
+    },
   ]
 
-  const scrollToSection = (section: string) => {
-    setMobileMenuOpen(false)
-    const element = document.getElementById(section)
-    element?.scrollIntoView({ behavior: "smooth" })
+  const scrollToSection = (href: string) => {
+    if (href.startsWith("#")) {
+      const element = document.getElementById(href.substring(1))
+      element?.scrollIntoView({ behavior: "smooth" })
+    }
+    setIsOpen(false)
   }
 
   return (
     <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700/50 shadow-lg"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg" : "bg-transparent"
+      }`}
     >
-      <div className="container mx-auto px-4 lg:px-6 py-4">
-        {/* Desktop Layout (lg+) */}
-        <div className="hidden lg:flex items-center justify-between">
-          {/* Logo con sfondo per maggiore visibilità */}
-          <Link href="/">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2 group">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center space-x-3 text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.1, rotate: 180 }}
+              transition={{ duration: 0.3 }}
+              className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center shadow-lg"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-sm">⚡</span>
-              </div>
-              <span className="text-2xl font-bold">Digital Aura</span>
+              <Zap className="w-5 h-5 text-white" />
             </motion.div>
+            <span className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+              Digital Aura
+            </span>
           </Link>
 
-          {/* Link di Navigazione Centrali */}
-          <div className="flex items-center space-x-8">
-            {navigationItems.map((item, index) => (
-              <motion.div key={item.key}>
-                {item.href ? (
-                  <Link href={item.href}>
-                    <motion.button
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="text-slate-300 hover:text-white transition-colors font-medium"
-                    >
-                      {item.label}
-                    </motion.button>
-                  </Link>
-                ) : item.dropdown ? (
-                  <motion.button
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => scrollToSection("services")}
-                    className="text-slate-300 hover:text-white transition-colors font-medium flex items-center"
-                  >
-                    {item.label}
-                    <span className="ml-1 text-xs">▼</span>
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => scrollToSection(item.key)}
-                    className="text-slate-300 hover:text-white transition-colors font-medium"
-                  >
-                    {item.label}
-                  </motion.button>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Lato Destro - Un solo selettore lingua e CTA */}
-          <div className="flex items-center space-x-4">
-            <LanguageSelector />
-            <Link href="/appointments">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
-                </Button>
-              </motion.div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Tablet Layout (md to lg) - Ottimizzato per evitare sovrapposizioni */}
-        <div className="hidden md:flex lg:hidden items-center justify-between">
-          {/* Logo Compatto */}
-          <Link href="/">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center space-x-2 text-white p-1 rounded-lg hover:bg-white/10"
-            >
-              <div className="w-7 h-7 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xs">⚡</span>
-              </div>
-              <span className="text-xl font-bold">Digital Aura</span>
-            </motion.div>
-          </Link>
-
-          {/* Navigation Compatta */}
-          <div className="flex items-center space-x-3">
-            {navigationItems.slice(0, 2).map((item, index) => (
-              <div key={item.key}>
-                {item.href ? (
-                  <Link href={item.href}>
-                    <button className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2">
-                      {item.label}
-                    </button>
-                  </Link>
-                ) : item.dropdown ? (
-                  <button
-                    onClick={() => scrollToSection("services")}
-                    className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2 flex items-center"
-                  >
-                    {item.label}
-                    <span className="ml-1 text-xs">▼</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => scrollToSection(item.key)}
-                    className="text-slate-300 hover:text-white transition-colors font-medium text-sm px-2"
-                  >
-                    {item.label}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Right Side Compatto */}
-          <div className="flex items-center space-x-2">
-            <LanguageSelector />
-            <Link href="/appointments">
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-3 py-1 rounded-full text-xs"
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navItems.map((item, index) => (
+              <motion.div
+                key={item.href}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Calendar className="w-3 h-3 mr-1" />
-                {language === "it" ? "Consulenza" : "Consultation"}
-              </Button>
-            </Link>
+                {item.href.startsWith("#") ? (
+                  <button
+                    onClick={() => scrollToSection(item.href)}
+                    className="text-slate-300 hover:text-cyan-400 transition-colors font-medium relative group"
+                  >
+                    {item.label}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="text-slate-300 hover:text-cyan-400 transition-colors font-medium relative group"
+                  >
+                    {item.label}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                )}
+              </motion.div>
+            ))}
           </div>
-        </div>
 
-        {/* Mobile Layout */}
-        <div className="md:hidden flex items-center justify-between">
-          {/* Logo Mobile */}
-          <Link href="/">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center space-x-2 text-white"
-            >
-              <div className="w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xs">⚡</span>
-              </div>
-              <span className="text-lg font-bold">Digital Aura</span>
-            </motion.div>
-          </Link>
-
-          {/* Mobile Right Side */}
-          <div className="flex items-center space-x-2">
+          {/* Right Side - Language Selector & CTA */}
+          <div className="hidden md:flex items-center space-x-4">
             <LanguageSelector />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-white hover:bg-white/10"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+              <Link href="/appointments">
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300">
+                  {language === "it" ? "Prenota Consulenza" : "Book Consultation"}
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-4">
+            <LanguageSelector />
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-white p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-4 pb-4 border-t border-slate-700/50 pt-4"
-          >
-            <div className="flex flex-col space-y-4">
-              {navigationItems.map((item) => (
-                <div key={item.key}>
-                  {item.href ? (
-                    <Link href={item.href}>
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden bg-slate-900/95 backdrop-blur-md border-t border-slate-700/50 overflow-hidden"
+            >
+              <div className="px-4 py-6 space-y-4">
+                {navItems.map((item, index) => (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    {item.href.startsWith("#") ? (
                       <button
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="text-slate-300 hover:text-white transition-colors font-medium text-left w-full"
+                        onClick={() => scrollToSection(item.href)}
+                        className="block w-full text-left text-slate-300 hover:text-cyan-400 transition-colors font-medium py-2 px-4 rounded-lg hover:bg-slate-800/50"
                       >
                         {item.label}
                       </button>
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => scrollToSection(item.key)}
-                      className="text-slate-300 hover:text-white transition-colors font-medium text-left w-full"
-                    >
-                      {item.label}
-                    </button>
-                  )}
-                </div>
-              ))}
-              <Link href="/appointments">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold w-full mt-4">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {language === "it" ? "Consulenza Gratuita" : "Free Consultation"}
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        )}
+                    ) : (
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className="block text-slate-300 hover:text-cyan-400 transition-colors font-medium py-2 px-4 rounded-lg hover:bg-slate-800/50"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </motion.div>
+                ))}
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
+                  className="pt-4 border-t border-slate-700/50"
+                >
+                  <Link href="/appointments" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 rounded-full shadow-lg shadow-cyan-500/20">
+                      {language === "it" ? "Prenota Consulenza" : "Book Consultation"}
+                    </Button>
+                  </Link>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.nav>
   )
 }
-
-// Named export
-export { Navbar }

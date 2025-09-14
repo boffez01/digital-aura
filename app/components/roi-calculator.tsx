@@ -667,6 +667,3 @@ export default function ROICalculator() {
     </div>
   )
 }
-
-// Named export
-export { ROICalculator }

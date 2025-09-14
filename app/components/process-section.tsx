@@ -100,6 +100,3 @@ export default function ProcessSection() {
     </section>
   )
 }
-
-// Named export
-export { ProcessSection }
