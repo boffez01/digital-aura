@@ -1,22 +1,17 @@
 "use client"
+
 import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Linkedin, Github, Twitter, Users, Award, Target } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Linkedin, Github, Twitter } from "lucide-react"
 import { useLanguage } from "../contexts/language-context"
-import Image from "next/image"
 
-export default function TeamSection() {
-  const { language } = useLanguage()
-
-  const teamMembers = [
+const teamMembers = {
+  it: [
     {
       name: "Alessandro Conti",
-      role: language === "it" ? "CEO & AI Strategist" : "CEO & AI Strategist",
-      bio:
-        language === "it"
-          ? "10+ anni in AI e Machine Learning. Ex-Google, specializzato in soluzioni enterprise."
-          : "10+ years in AI and Machine Learning. Ex-Google, specialized in enterprise solutions.",
+      role: "CEO & AI Strategist",
+      bio: "Esperto in intelligenza artificiale con oltre 10 anni di esperienza nello sviluppo di soluzioni innovative per il business.",
       image: "/professional-businessman.png",
       skills: ["AI Strategy", "Machine Learning", "Business Development"],
       social: {
@@ -27,13 +22,10 @@ export default function TeamSection() {
     },
     {
       name: "Sofia Martinelli",
-      role: language === "it" ? "CTO & Lead Developer" : "CTO & Lead Developer",
-      bio:
-        language === "it"
-          ? "Esperta in sviluppo full-stack e architetture AI scalabili. Ex-Microsoft."
-          : "Expert in full-stack development and scalable AI architectures. Ex-Microsoft.",
+      role: "Lead Developer",
+      bio: "Sviluppatrice full-stack specializzata in React, Node.js e tecnologie AI. Appassionata di codice pulito e architetture scalabili.",
       image: "/professional-businesswoman.png",
-      skills: ["Full-Stack Development", "AI Architecture", "DevOps"],
+      skills: ["React", "Node.js", "Python", "AI Integration"],
       social: {
         linkedin: "#",
         github: "#",
@@ -42,83 +34,114 @@ export default function TeamSection() {
     },
     {
       name: "Marco Ferretti",
-      role: language === "it" ? "Head of Data Science" : "Head of Data Science",
-      bio:
-        language === "it"
-          ? "PhD in Computer Science, specializzato in NLP e computer vision per applicazioni business."
-          : "PhD in Computer Science, specialized in NLP and computer vision for business applications.",
+      role: "UX/UI Designer",
+      bio: "Designer con focus sull'esperienza utente per applicazioni AI. Crea interfacce intuitive che rendono la tecnologia accessibile a tutti.",
       image: "/professional-manager.png",
-      skills: ["Data Science", "NLP", "Computer Vision"],
+      skills: ["UI/UX Design", "Figma", "User Research", "Prototyping"],
       social: {
         linkedin: "#",
         github: "#",
         twitter: "#",
       },
     },
-  ]
+  ],
+  en: [
+    {
+      name: "Alessandro Conti",
+      role: "CEO & AI Strategist",
+      bio: "AI expert with over 10 years of experience developing innovative business solutions.",
+      image: "/professional-businessman.png",
+      skills: ["AI Strategy", "Machine Learning", "Business Development"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+    {
+      name: "Sofia Martinelli",
+      role: "Lead Developer",
+      bio: "Full-stack developer specialized in React, Node.js and AI technologies. Passionate about clean code and scalable architectures.",
+      image: "/professional-businesswoman.png",
+      skills: ["React", "Node.js", "Python", "AI Integration"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+    {
+      name: "Marco Ferretti",
+      role: "UX/UI Designer",
+      bio: "Designer focused on user experience for AI applications. Creates intuitive interfaces that make technology accessible to everyone.",
+      image: "/professional-manager.png",
+      skills: ["UI/UX Design", "Figma", "User Research", "Prototyping"],
+      social: {
+        linkedin: "#",
+        github: "#",
+        twitter: "#",
+      },
+    },
+  ],
+}
 
-  const stats = [
-    {
-      icon: Users,
-      number: "50+",
-      label: language === "it" ? "Progetti Completati" : "Projects Completed",
-    },
-    {
-      icon: Award,
-      number: "98%",
-      label: language === "it" ? "Soddisfazione Cliente" : "Client Satisfaction",
-    },
-    {
-      icon: Target,
-      number: "300%",
-      label: language === "it" ? "ROI Medio" : "Average ROI",
-    },
-  ]
+const teamStats = {
+  it: [
+    { number: "50+", label: "Progetti Completati" },
+    { number: "3", label: "Anni di Esperienza" },
+    { number: "100%", label: "Clienti Soddisfatti" },
+    { number: "24/7", label: "Supporto Disponibile" },
+  ],
+  en: [
+    { number: "50+", label: "Completed Projects" },
+    { number: "3", label: "Years of Experience" },
+    { number: "100%", label: "Satisfied Clients" },
+    { number: "24/7", label: "Support Available" },
+  ],
+}
+
+export default function TeamSection() {
+  const { language } = useLanguage()
+  const members = teamMembers[language]
+  const stats = teamStats[language]
 
   return (
-    <section className="py-20 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <section className="py-24 bg-gradient-to-br from-card/30 to-background">
+      <div className="container">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            {language === "it" ? "Il Nostro Team di Esperti" : "Our Expert Team"}
-          </h2>
-          <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
+          <h2 className="text-4xl font-bold mb-4">{language === "it" ? "Il Nostro Team" : "Our Team"}</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {language === "it"
-              ? "Un team di professionisti con esperienza nelle migliori aziende tech al mondo"
-              : "A team of professionals with experience at the world's best tech companies"}
+              ? "Un team di esperti appassionati di tecnologia e innovazione, pronti a trasformare le tue idee in realtà"
+              : "A team of experts passionate about technology and innovation, ready to transform your ideas into reality"}
           </p>
         </motion.div>
 
         {/* Team Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16"
+        >
           {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className="bg-slate-800/50 border-slate-700 text-center p-6">
-                <CardContent className="pt-6">
-                  <stat.icon className="w-12 h-12 text-cyan-500 mx-auto mb-4" />
-                  <div className="text-3xl font-bold text-white mb-2">{stat.number}</div>
-                  <div className="text-slate-400">{stat.label}</div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div key={index} className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>
+              <div className="text-muted-foreground">{stat.label}</div>
+            </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Team Members */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {teamMembers.map((member, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {members.map((member, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 50 }}
@@ -126,38 +149,57 @@ export default function TeamSection() {
               transition={{ duration: 0.5, delay: index * 0.2 }}
               viewport={{ once: true }}
             >
-              <Card className="bg-slate-800/50 border-slate-700 overflow-hidden group hover:border-cyan-500 transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
-                  <Image
-                    src={member.image || "/placeholder.svg"}
-                    alt={member.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                </div>
-
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2">{member.name}</h3>
-                  <p className="text-cyan-400 font-medium mb-3">{member.role}</p>
-                  <p className="text-slate-400 text-sm mb-4 leading-relaxed">{member.bio}</p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {member.skills.map((skill, skillIndex) => (
-                      <Badge key={skillIndex} variant="secondary" className="bg-slate-700 text-slate-300">
-                        {skill}
-                      </Badge>
-                    ))}
+              <Card className="group hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/50 bg-background/80 backdrop-blur-sm">
+                <CardContent className="p-8">
+                  <div className="text-center mb-6">
+                    <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 p-1">
+                      <img
+                        src={member.image || "/placeholder.svg"}
+                        alt={member.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground mb-1">{member.name}</h3>
+                    <p className="text-primary font-medium mb-3">{member.role}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{member.bio}</p>
                   </div>
 
-                  <div className="flex gap-3">
-                    <a href={member.social.linkedin} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  {/* Skills */}
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {member.skills.map((skill, skillIndex) => (
+                        <Badge
+                          key={skillIndex}
+                          variant="secondary"
+                          className="text-xs bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="flex justify-center space-x-4">
+                    <a
+                      href={member.social.linkedin}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      aria-label={`${member.name} LinkedIn`}
+                    >
                       <Linkedin className="w-5 h-5" />
                     </a>
-                    <a href={member.social.github} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                    <a
+                      href={member.social.github}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      aria-label={`${member.name} GitHub`}
+                    >
                       <Github className="w-5 h-5" />
                     </a>
-                    <a href={member.social.twitter} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                    <a
+                      href={member.social.twitter}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      aria-label={`${member.name} Twitter`}
+                    >
                       <Twitter className="w-5 h-5" />
                     </a>
                   </div>

@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useRef } from "react"
 
 export default function HeroBackground() {
@@ -19,40 +20,53 @@ export default function HeroBackground() {
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
 
-    let animationId: number
+    // Fibonacci spiral animation
     let time = 0
-
     const animate = () => {
-      time += 0.01
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Clear canvas
-      ctx.fillStyle = "rgba(10, 10, 10, 0.1)"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      // Draw animated particles
       const centerX = canvas.width / 2
       const centerY = canvas.height / 2
 
-      for (let i = 0; i < 100; i++) {
-        const angle = i * 0.1 + time
-        const radius = i * 2
+      // Draw animated fibonacci spiral
+      ctx.strokeStyle = "rgba(59, 130, 246, 0.3)"
+      ctx.lineWidth = 2
+      ctx.beginPath()
+
+      for (let i = 0; i < 200; i++) {
+        const angle = i * 0.1 + time * 0.01
+        const radius = Math.sqrt(i) * 8
         const x = centerX + Math.cos(angle) * radius
         const y = centerY + Math.sin(angle) * radius
 
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
+        }
+      }
+
+      ctx.stroke()
+
+      // Draw floating particles
+      for (let i = 0; i < 50; i++) {
+        const x = centerX + Math.cos(time * 0.005 + i) * (100 + i * 5)
+        const y = centerY + Math.sin(time * 0.003 + i) * (80 + i * 3)
+
+        ctx.fillStyle = `rgba(59, 130, 246, ${0.1 + Math.sin(time * 0.01 + i) * 0.1})`
         ctx.beginPath()
-        ctx.arc(x, y, 1, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(6, 182, 212, ${0.5 - i / 200})`
+        ctx.arc(x, y, 2, 0, Math.PI * 2)
         ctx.fill()
       }
 
-      animationId = requestAnimationFrame(animate)
+      time++
+      requestAnimationFrame(animate)
     }
 
     animate()
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
-      cancelAnimationFrame(animationId)
     }
   }, [])
 
