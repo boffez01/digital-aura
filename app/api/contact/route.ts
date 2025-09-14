@@ -1,69 +1,126 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { saveContact, createTables } from '@/lib/database'
+import { NextResponse } from "next/server"
+import { neon } from "@neondatabase/serverless"
 
-export async function POST(request: NextRequest) {
+const sql = neon(process.env.DATABASE_URL!)
+
+export async function POST(request: Request) {
   try {
-    // Ensure tables exist
-    await createTables()
+    console.log("📧 CONTACT API - Ricevuta richiesta POST")
 
     const body = await request.json()
+    console.log("📧 CONTACT API - Dati ricevuti:", body)
+
     const { name, email, phone, company, service, message } = body
 
-    // Validation
+    // Validazione campi obbligatori
     if (!name || !email || !message) {
+      console.log("❌ CONTACT API - Campi obbligatori mancanti")
       return NextResponse.json(
-        { success: false, error: 'Name, email, and message are required' },
-        { status: 400 }
+        {
+          success: false,
+          error: "Nome, email e messaggio sono obbligatori",
+        },
+        { status: 400 },
       )
     }
 
-    // Email validation
+    // Validazione formato email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
+      console.log("❌ CONTACT API - Formato email non valido")
       return NextResponse.json(
-        { success: false, error: 'Invalid email format' },
-        { status: 400 }
+        {
+          success: false,
+          error: "Formato email non valido",
+        },
+        { status: 400 },
       )
     }
 
-    // Save to database
-    const result = await saveContact({
-      name,
-      email,
-      phone: phone || null,
-      company: company || null,
-      service: service || null,
-      message,
-    })
+    console.log("✅ CONTACT API - Validazione completata, salvataggio nel database...")
 
-    if (!result.success) {
-      console.error('Database error:', result.error)
-      return NextResponse.json(
-        { success: false, error: 'Failed to save contact' },
-        { status: 500 }
-      )
-    }
+    // Salva nel database
+    const result = await sql`
+      INSERT INTO contacts (
+        name, 
+        email, 
+        phone, 
+        company, 
+        service_type, 
+        message, 
+        created_at
+      ) VALUES (
+        ${name}, 
+        ${email}, 
+        ${phone || null}, 
+        ${company || null}, 
+        ${service || null}, 
+        ${message}, 
+        NOW()
+      ) RETURNING id, created_at
+    `
 
-    // Send notification email (optional - you can implement this later)
-    // await sendNotificationEmail({ name, email, message })
+    console.log("✅ CONTACT API - Contatto salvato con successo:", result[0])
 
     return NextResponse.json({
       success: true,
-      message: 'Contact saved successfully',
-      data: result.data,
+      message: "Messaggio inviato con successo! Ti contatteremo presto.",
+      data: {
+        id: result[0].id,
+        created_at: result[0].created_at,
+      },
     })
   } catch (error) {
-    console.error('Contact API error:', error)
+    console.error("❌ CONTACT API - Errore:", error)
+
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      {
+        success: false,
+        error: "Errore interno del server. Riprova più tardi.",
+        details: error instanceof Error ? error.message : "Errore sconosciuto",
+      },
+      { status: 500 },
     )
   }
 }
 
 export async function GET() {
-  return NextResponse.json(
-    { message: 'Contact API is working' },
-    { status: 200 }
-  )
+  try {
+    console.log("📧 CONTACT API - Ricevuta richiesta GET")
+
+    // Recupera tutti i contatti dal database
+    const contacts = await sql`
+      SELECT 
+        id,
+        name,
+        email,
+        phone,
+        company,
+        service_type,
+        message,
+        created_at
+      FROM contacts 
+      ORDER BY created_at DESC
+      LIMIT 50
+    `
+
+    console.log(`✅ CONTACT API - Trovati ${contacts.length} contatti`)
+
+    return NextResponse.json({
+      success: true,
+      contacts: contacts,
+      count: contacts.length,
+    })
+  } catch (error) {
+    console.error("❌ CONTACT API - Errore GET:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Errore nel recupero dei contatti",
+        details: error instanceof Error ? error.message : "Errore sconosciuto",
+      },
+      { status: 500 },
+    )
+  }
 }

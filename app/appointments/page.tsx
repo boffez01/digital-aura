@@ -19,8 +19,9 @@ import {
   Sparkles,
   Target,
   Zap,
+  Home,
 } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
+import Link from "next/link"
 
 interface FormData {
   name: string
@@ -37,7 +38,8 @@ interface FormErrors {
 }
 
 export default function AppointmentsPage() {
-  const { language } = useLanguage()
+  // Use local state for language instead of context to avoid provider issues
+  const [language, setLanguage] = useState<"it" | "en">("it")
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -55,6 +57,35 @@ export default function AppointmentsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
 
+  // Load language from localStorage on mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("language") as "it" | "en"
+    if (savedLanguage && (savedLanguage === "it" || savedLanguage === "en")) {
+      setLanguage(savedLanguage)
+    }
+  }, [])
+
+  // Listen for language changes from other components
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      setLanguage(event.detail)
+    }
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "language" && event.newValue) {
+        setLanguage(event.newValue as "it" | "en")
+      }
+    }
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener)
+    window.addEventListener("storage", handleStorageChange)
+
+    return () => {
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener)
+      window.removeEventListener("storage", handleStorageChange)
+    }
+  }, [])
+
   const t = {
     it: {
       title: "Prenota la Tua Consulenza Gratuita",
@@ -63,6 +94,8 @@ export default function AppointmentsPage() {
       step2: "Scegli Data e Ora",
       step3: "I Tuoi Dati",
       step4: "Conferma",
+      backToHome: "Torna alla Home",
+      contactUs: "Contattaci Ora",
       services: {
         "ai-automation": "AI Automation",
         chatbot: "Chatbot Intelligenti",
@@ -89,6 +122,7 @@ export default function AppointmentsPage() {
       bookAppointment: "Prenota Consulenza",
       success: "Prenotazione Confermata!",
       successMessage: "La tua consulenza è stata prenotata con successo. Riceverai una email di conferma a breve.",
+      successContact: "Per qualsiasi domanda, contattaci a info@digitalaura.it",
       error: "Errore nella prenotazione",
       errorMessage: "Si è verificato un errore. Riprova o contattaci direttamente.",
       required: "Campo obbligatorio",
@@ -101,6 +135,11 @@ export default function AppointmentsPage() {
       available: "Disponibile",
       unavailable: "Non disponibile",
       closed: "Chiuso",
+      bookingSummary: "Riepilogo Prenotazione",
+      service: "Servizio",
+      date: "Data",
+      time: "Orario",
+      submitting: "Prenotando...",
     },
     en: {
       title: "Book Your Free Consultation",
@@ -109,6 +148,8 @@ export default function AppointmentsPage() {
       step2: "Choose Date & Time",
       step3: "Your Details",
       step4: "Confirm",
+      backToHome: "Back to Home",
+      contactUs: "Contact Us Now",
       services: {
         "ai-automation": "AI Automation",
         chatbot: "Intelligent Chatbots",
@@ -135,6 +176,7 @@ export default function AppointmentsPage() {
       bookAppointment: "Book Consultation",
       success: "Booking Confirmed!",
       successMessage: "Your consultation has been successfully booked. You will receive a confirmation email shortly.",
+      successContact: "For any questions, contact us at info@digitalaura.it",
       error: "Booking Error",
       errorMessage: "An error occurred. Please try again or contact us directly.",
       required: "Required field",
@@ -147,10 +189,15 @@ export default function AppointmentsPage() {
       available: "Available",
       unavailable: "Unavailable",
       closed: "Closed",
+      bookingSummary: "Booking Summary",
+      service: "Service",
+      date: "Date",
+      time: "Time",
+      submitting: "Booking...",
     },
   }
 
-  const currentT = t[language as keyof typeof t] || t.it
+  const currentT = t[language] || t.it
 
   // Generate time slots (every 30 minutes)
   const generateTimeSlots = () => {
@@ -286,7 +333,7 @@ export default function AppointmentsPage() {
         }
         if (!formData.phone.trim()) {
           newErrors.phone = currentT.required
-        } else if (!/^[+]?[0-9\s\-$$$$]{8,}$/.test(formData.phone)) {
+        } else if (!/^[+]?[0-9\s\-()]{8,}$/.test(formData.phone)) {
           newErrors.phone = currentT.invalidPhone
         }
         break
@@ -314,6 +361,8 @@ export default function AppointmentsPage() {
     setSubmitStatus("idle")
 
     try {
+      console.log("Submitting appointment with data:", formData)
+
       const response = await fetch("/api/appointments", {
         method: "POST",
         headers: {
@@ -326,12 +375,16 @@ export default function AppointmentsPage() {
         }),
       })
 
+      console.log("Response status:", response.status)
       const data = await response.json()
+      console.log("Response data:", data)
 
       if (response.ok && data.success) {
+        console.log("Appointment booked successfully!")
         setSubmitStatus("success")
         setCurrentStep(4)
       } else {
+        console.error("Appointment booking failed:", data)
         setSubmitStatus("error")
         if (data.occupied) {
           setErrors({ time: currentT.occupied })
@@ -375,13 +428,27 @@ export default function AppointmentsPage() {
               <CheckCircle className="w-8 h-8 text-green-400" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">{currentT.success}</h2>
-            <p className="text-slate-300 mb-6">{currentT.successMessage}</p>
-            <Button
-              onClick={() => (window.location.href = "/")}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-            >
-              Torna alla Home
-            </Button>
+            <p className="text-slate-300 mb-4">{currentT.successMessage}</p>
+            <p className="text-slate-400 text-sm mb-6">{currentT.successContact}</p>
+
+            <div className="space-y-3">
+              <Link href="/">
+                <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                  <Home className="w-4 h-4 mr-2" />
+                  {currentT.backToHome}
+                </Button>
+              </Link>
+
+              <Link href="/#contact">
+                <Button
+                  variant="outline"
+                  className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {currentT.contactUs}
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -391,7 +458,24 @@ export default function AppointmentsPage() {
   return (
     <div className="min-h-screen bg-slate-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header con tasto Back */}
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/">
+            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {currentT.backToHome}
+            </Button>
+          </Link>
+
+          <Link href="/#contact">
+            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+              <Mail className="w-4 h-4 mr-2" />
+              {currentT.contactUs}
+            </Button>
+          </Link>
+        </div>
+
+        {/* Title */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">{currentT.title}</h1>
           <p className="text-xl text-slate-300">{currentT.subtitle}</p>
@@ -510,7 +594,10 @@ export default function AppointmentsPage() {
 
                   {/* Calendar Grid */}
                   <div className="grid grid-cols-7 gap-2 mb-4">
-                    {["Lu", "Ma", "Me", "Gi", "Ve", "Sa", "Do"].map((day) => (
+                    {(language === "en"
+                      ? ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+                      : ["Lu", "Ma", "Me", "Gi", "Ve", "Sa", "Do"]
+                    ).map((day) => (
                       <div key={day} className="h-10 flex items-center justify-center text-slate-400 font-medium">
                         {day}
                       </div>
@@ -660,20 +747,20 @@ export default function AppointmentsPage() {
 
                 {/* Summary */}
                 <div className="bg-slate-700/30 rounded-xl p-6">
-                  <h4 className="text-lg font-semibold text-white mb-4">Riepilogo Prenotazione</h4>
+                  <h4 className="text-lg font-semibold text-white mb-4">{currentT.bookingSummary}</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Servizio:</span>
+                      <span className="text-slate-400">{currentT.service}:</span>
                       <span className="text-white">
                         {currentT.services[formData.service as keyof typeof currentT.services]}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Data:</span>
+                      <span className="text-slate-400">{currentT.date}:</span>
                       <span className="text-white">{formData.date}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Orario:</span>
+                      <span className="text-slate-400">{currentT.time}:</span>
                       <span className="text-white">{formData.time}</span>
                     </div>
                   </div>
@@ -712,7 +799,7 @@ export default function AppointmentsPage() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Prenotando...
+                        {currentT.submitting}
                       </>
                     ) : (
                       <>
@@ -732,6 +819,18 @@ export default function AppointmentsPage() {
                   <span className="font-medium">{currentT.error}</span>
                 </div>
                 <p className="text-red-300 text-sm mt-1">{currentT.errorMessage}</p>
+                <div className="mt-3">
+                  <Link href="/#contact">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-400 text-red-400 hover:bg-red-500/10 bg-transparent"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      {currentT.contactUs}
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </CardContent>
