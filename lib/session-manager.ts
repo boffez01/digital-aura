@@ -340,3 +340,19 @@ export class SessionManager {
     }
   }
 }
+
+// Export functions for compatibility
+export async function getSession(sessionId: string): Promise<ChatSession | null> {
+  const manager = SessionManager.getInstance()
+  return manager.getSession(sessionId)
+}
+
+export async function createSession(sessionId: string): Promise<ChatSession> {
+  const manager = SessionManager.getInstance()
+  return manager.createSession(sessionId)
+}
+
+export async function updateSession(sessionId: string, updates: Partial<ChatSession>): Promise<void> {
+  const manager = SessionManager.getInstance()
+  return manager.updateSession(sessionId, updates)
+}

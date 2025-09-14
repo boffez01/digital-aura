@@ -478,3 +478,13 @@ Reply "yes" to see available times.`,
     }
   }
 }
+
+// Export functions for compatibility
+export async function handleSupportFlow(sessionId: string, message: string, language = "it"): Promise<SupportResponse> {
+  const supportFlow = new SupportFlow()
+  return supportFlow.handleSupportRequest(sessionId, message, language)
+}
+
+export function isBookingComplete(session: any): boolean {
+  return session?.booking_mode && session?.flow_step === "booking_complete"
+}

@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    console.log("📧 CONTACT API - Ricevuta richiesta POST")
+    console.log("📧 Contact form submission received")
 
     const body = await request.json()
-    console.log("📧 CONTACT API - Dati ricevuti:", body)
+    console.log("📋 Form data:", body)
 
     const { name, email, phone, company, service, message } = body
 
-    // Validazione campi obbligatori
+    // Validation
     if (!name || !email || !message) {
-      console.log("❌ CONTACT API - Campi obbligatori mancanti")
+      console.log("❌ Validation failed: missing required fields")
       return NextResponse.json(
         {
           success: false,
@@ -24,10 +24,10 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validazione formato email
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      console.log("❌ CONTACT API - Formato email non valido")
+      console.log("❌ Validation failed: invalid email format")
       return NextResponse.json(
         {
           success: false,
@@ -37,9 +37,9 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log("✅ CONTACT API - Validazione completata, salvataggio nel database...")
+    console.log("✅ Validation passed, saving to database...")
 
-    // Salva nel database
+    // Save to database
     const result = await sql`
       INSERT INTO contacts (
         name, 
@@ -49,35 +49,36 @@ export async function POST(request: Request) {
         service_type, 
         message, 
         created_at
-      ) VALUES (
-        ${name}, 
-        ${email}, 
-        ${phone || null}, 
-        ${company || null}, 
-        ${service || null}, 
-        ${message}, 
+      )
+      VALUES (
+        ${name},
+        ${email},
+        ${phone || null},
+        ${company || null},
+        ${service || null},
+        ${message},
         NOW()
-      ) RETURNING id, created_at
+      )
+      RETURNING id, created_at
     `
 
-    console.log("✅ CONTACT API - Contatto salvato con successo:", result[0])
+    console.log("✅ Contact saved successfully:", result[0])
 
     return NextResponse.json({
       success: true,
       message: "Messaggio inviato con successo! Ti contatteremo presto.",
       data: {
         id: result[0].id,
-        created_at: result[0].created_at,
+        timestamp: result[0].created_at,
       },
     })
   } catch (error) {
-    console.error("❌ CONTACT API - Errore:", error)
+    console.error("❌ Error saving contact:", error)
 
     return NextResponse.json(
       {
         success: false,
         error: "Errore interno del server. Riprova più tardi.",
-        details: error instanceof Error ? error.message : "Errore sconosciuto",
       },
       { status: 500 },
     )
@@ -86,9 +87,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    console.log("📧 CONTACT API - Ricevuta richiesta GET")
+    console.log("📋 Fetching all contacts...")
 
-    // Recupera tutti i contatti dal database
     const contacts = await sql`
       SELECT 
         id,
@@ -104,21 +104,19 @@ export async function GET() {
       LIMIT 50
     `
 
-    console.log(`✅ CONTACT API - Trovati ${contacts.length} contatti`)
+    console.log(`✅ Found ${contacts.length} contacts`)
 
     return NextResponse.json({
       success: true,
-      contacts: contacts,
-      count: contacts.length,
+      data: contacts,
     })
   } catch (error) {
-    console.error("❌ CONTACT API - Errore GET:", error)
+    console.error("❌ Error fetching contacts:", error)
 
     return NextResponse.json(
       {
         success: false,
         error: "Errore nel recupero dei contatti",
-        details: error instanceof Error ? error.message : "Errore sconosciuto",
       },
       { status: 500 },
     )

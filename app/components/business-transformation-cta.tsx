@@ -1,15 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react"
+import { ArrowRight, Calendar, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function BusinessTransformationCTA() {
   const [language, setLanguage] = useState<"it" | "en">("it")
 
-  // Carica la lingua da localStorage
+  // Load language from localStorage on mount
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language") as "it" | "en"
     if (savedLanguage) {
@@ -17,21 +16,19 @@ export default function BusinessTransformationCTA() {
     }
   }, [])
 
-  // Ascolta i cambi di lingua da altri componenti
+  // Listen for language changes from other components
   useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent<"it" | "en">) => {
-      setLanguage(event.detail)
+    const handleLanguageChange = (event: CustomEvent<string>) => {
+      setLanguage(event.detail as "it" | "en")
     }
 
-    window.addEventListener("languageChange", handleLanguageChange as EventListener)
-
-    // Ascolta anche i cambi da localStorage (per sincronizzazione cross-tab)
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "language" && event.newValue) {
         setLanguage(event.newValue as "it" | "en")
       }
     }
 
+    window.addEventListener("languageChange", handleLanguageChange as EventListener)
     window.addEventListener("storage", handleStorageChange)
 
     return () => {
@@ -45,138 +42,113 @@ export default function BusinessTransformationCTA() {
       title: "Trasforma il Tuo Business con l'AI",
       subtitle: "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda",
       description:
-        "Ottieni una consulenza gratuita personalizzata e scopri le opportunità di crescita per il tuo business attraverso soluzioni AI innovative.",
-      features: ["Analisi gratuita del tuo business", "Strategia AI personalizzata", "ROI garantito entro 6 mesi"],
-      cta: "Prenota Consulenza Gratuita",
-      contact: "Contattaci Ora",
+        "Ottieni una consulenza gratuita personalizzata per identificare le opportunità di automazione e crescita nel tuo settore.",
+      bookButton: "Prenota Consulenza Gratuita",
+      contactButton: "Contattaci Ora",
+      features: [
+        "Analisi gratuita del tuo business",
+        "Strategia AI personalizzata",
+        "ROI garantito entro 6 mesi",
+        "Supporto completo post-implementazione",
+      ],
     },
     en: {
       title: "Transform Your Business with AI",
       subtitle: "Discover how artificial intelligence can revolutionize your company",
       description:
-        "Get a personalized free consultation and discover growth opportunities for your business through innovative AI solutions.",
-      features: ["Free business analysis", "Personalized AI strategy", "Guaranteed ROI within 6 months"],
-      cta: "Book Free Consultation",
-      contact: "Contact Us Now",
+        "Get a free personalized consultation to identify automation and growth opportunities in your industry.",
+      bookButton: "Book Free Consultation",
+      contactButton: "Contact Us Now",
+      features: [
+        "Free business analysis",
+        "Personalized AI strategy",
+        "ROI guaranteed within 6 months",
+        "Complete post-implementation support",
+      ],
     },
   }
 
   const currentContent = content[language]
 
-  const scrollToContact = () => {
-    const contactSection = document.getElementById("contact")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <section className="relative py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0.6))]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10" />
 
-      <div className="container mx-auto px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center"
-        >
-          {/* Header */}
+      {/* Floating Elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-1000" />
+      <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-cyan-500/20 rounded-full blur-lg animate-bounce" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Main Content */}
           <div className="mb-12">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center space-x-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 rounded-full px-6 py-3 mb-6"
-            >
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              <span className="text-purple-300 font-medium">{currentContent.subtitle}</span>
-            </motion.div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
-            >
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               {currentContent.title}
-            </motion.h2>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
-            >
+            </h2>
+            <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">{currentContent.subtitle}</p>
+            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-12 leading-relaxed">
               {currentContent.description}
-            </motion.p>
+            </p>
           </div>
 
-          {/* Features */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-6 mb-12"
-          >
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {currentContent.features.map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/15 transition-all duration-300"
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105"
               >
-                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg mb-4 mx-auto">
-                  {index === 0 && <Target className="w-6 h-6 text-white" />}
-                  {index === 1 && <Sparkles className="w-6 h-6 text-white" />}
-                  {index === 2 && <TrendingUp className="w-6 h-6 text-white" />}
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <div className="w-6 h-6 bg-white rounded-sm" />
                 </div>
-                <p className="text-white font-medium">{feature}</p>
-              </motion.div>
+                <p className="text-white font-medium text-sm leading-relaxed">{feature}</p>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.0 }}
-            viewport={{ once: true }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          >
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link href="/appointments">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 group"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 group min-w-[280px]"
               >
-                {currentContent.cta}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <Calendar className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                {currentContent.bookButton}
+                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
 
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={scrollToContact}
-              className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-xl font-semibold text-lg backdrop-blur-sm transition-all duration-300 bg-transparent"
-            >
-              {currentContent.contact}
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
+            <a href="#contact">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-sm transition-all duration-300 hover:scale-105 group min-w-[280px] bg-transparent"
+              >
+                <MessageCircle className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                {currentContent.contactButton}
+                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </a>
+          </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
+          {/* Trust Indicators */}
+          <div className="mt-16 pt-8 border-t border-white/20">
+            <p className="text-slate-400 text-sm mb-4">
+              {language === "it" ? "Aziende che si fidano di noi:" : "Companies that trust us:"}
+            </p>
+            <div className="flex justify-center items-center space-x-8 opacity-60">
+              <div className="w-24 h-8 bg-white/20 rounded" />
+              <div className="w-20 h-8 bg-white/20 rounded" />
+              <div className="w-28 h-8 bg-white/20 rounded" />
+              <div className="w-22 h-8 bg-white/20 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
