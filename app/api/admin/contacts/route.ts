@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
 
 export async function GET() {
   try {
-    console.log("📧 ADMIN CONTACTS API - Fetching contacts from database...")
+    console.log("Fetching contacts from database...")
 
-    // Recupera tutti i contatti dal database
+    // Query per ottenere tutti i contatti ordinati per data più recente
     const contacts = await sql`
       SELECT 
         id,
@@ -15,115 +15,80 @@ export async function GET() {
         email,
         phone,
         company,
-        service_type as service,
+        service,
         message,
         created_at,
-        'new' as status
+        status,
+        priority
       FROM contacts 
       ORDER BY created_at DESC
     `
 
-    console.log(`✅ Found ${contacts.length} contacts in database`)
+    console.log(`Found ${contacts.length} contacts`)
 
-    // Calcola statistiche
-    const thisMonth = new Date()
-    const thisMonthContacts = contacts.filter((contact) => {
-      const contactDate = new Date(contact.created_at)
-      return contactDate.getMonth() === thisMonth.getMonth() && contactDate.getFullYear() === thisMonth.getFullYear()
-    })
-
-    // Raggruppa per servizio
-    const byService: Record<string, number> = {}
-    contacts.forEach((contact) => {
-      const service = contact.service || "Non specificato"
-      byService[service] = (byService[service] || 0) + 1
-    })
-
-    // Raggruppa per status (tutti sono 'new' per ora)
-    const byStatus = {
-      new: contacts.length,
-      contacted: 0,
-      qualified: 0,
-      converted: 0,
-      closed: 0,
-    }
-
-    const stats = {
-      total: contacts.length,
-      thisMonth: thisMonthContacts.length,
-      byService,
-      byStatus,
-    }
-
-    // Trasforma i contatti per il frontend
-    const transformedContacts = contacts.map((contact) => ({
-      id: contact.id.toString(),
-      name: contact.name || "Nome non fornito",
-      email: contact.email || "",
+    // Trasforma i dati per assicurarsi che siano nel formato corretto
+    const formattedContacts = contacts.map((contact) => ({
+      id: contact.id,
+      name: contact.name || "Nome non disponibile",
+      email: contact.email || "Email non disponibile",
       phone: contact.phone || "",
       company: contact.company || "",
-      service: contact.service || "",
-      message: contact.message || "",
-      status: "new" as const,
-      createdAt: contact.created_at,
-      notes: "",
+      service: contact.service || "Generale",
+      message: contact.message || "Nessun messaggio",
+      created_at: contact.created_at || new Date().toISOString(),
+      status: contact.status || "new",
+      priority: contact.priority || "medium",
     }))
-
-    console.log("✅ ADMIN CONTACTS API - Returning data:", {
-      contactsCount: transformedContacts.length,
-      stats,
-    })
 
     return NextResponse.json({
       success: true,
-      contacts: transformedContacts,
-      stats,
+      contacts: formattedContacts,
+      total: formattedContacts.length,
     })
   } catch (error) {
-    console.error("❌ ADMIN CONTACTS API - Error:", error)
-
-    const fallbackStats = {
-      total: 0,
-      thisMonth: 0,
-      byService: {},
-      byStatus: {
-        new: 0,
-        contacted: 0,
-        qualified: 0,
-        converted: 0,
-        closed: 0,
-      },
-    }
+    console.error("Error fetching contacts:", error)
 
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch contacts",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: "Errore nel caricamento dei contatti",
         contacts: [],
-        stats: fallbackStats,
+        total: 0,
       },
       { status: 500 },
     )
   }
 }
 
-export async function PUT(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { contactId, status, notes } = await request.json()
+    const body = await request.json()
+    const { name, email, phone, company, service, message } = body
 
-    console.log(`🔄 ADMIN CONTACTS API - Updating contact ${contactId} to ${status}`)
+    console.log("Creating new contact:", { name, email, service })
 
-    // Per ora non abbiamo colonne status e notes nella tabella contacts
-    // In futuro potresti aggiungere queste colonne
-    console.log(`✅ ADMIN CONTACTS API - Contact ${contactId} status updated to ${status}`)
+    const result = await sql`
+      INSERT INTO contacts (name, email, phone, company, service, message, created_at, status, priority)
+      VALUES (${name}, ${email}, ${phone || ""}, ${company || ""}, ${service}, ${message}, NOW(), 'new', 'medium')
+      RETURNING id, created_at
+    `
+
+    console.log("Contact created successfully:", result[0])
 
     return NextResponse.json({
       success: true,
-      message: `Contatto aggiornato a ${status}`,
+      message: "Contatto salvato con successo",
+      contact: result[0],
     })
   } catch (error) {
-    console.error("❌ ADMIN CONTACTS API - Update error:", error)
-    return NextResponse.json({ success: false, error: "Errore nell'aggiornamento del contatto" }, { status: 500 })
+    console.error("Error creating contact:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Errore nel salvataggio del contatto",
+      },
+      { status: 500 },
+    )
   }
 }

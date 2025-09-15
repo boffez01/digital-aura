@@ -19,6 +19,7 @@ import {
   Trash2,
   Reply,
   Archive,
+  RefreshCw,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -45,22 +46,37 @@ export default function AdminMessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
   const [replyText, setReplyText] = useState("")
   const [isReplying, setIsReplying] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   const fetchMessages = async () => {
     try {
       setLoading(true)
       setError(null)
+      console.log("Fetching messages from API...")
 
-      const response = await fetch("/api/admin/contacts")
+      const response = await fetch("/api/admin/contacts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store", // Forza il refresh dei dati
+      })
+
+      console.log("Response status:", response.status)
+
       if (!response.ok) {
-        throw new Error("Failed to fetch messages")
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log("Received data:", data)
 
-      // Transform contacts into messages format with safe date handling
-      const transformedMessages: Message[] = (data.contacts || []).map((contact: any, index: number) => ({
-        id: contact.id || index,
+      if (!data.success) {
+        throw new Error(data.error || "Errore nel caricamento dei messaggi")
+      }
+
+      const transformedMessages: Message[] = (data.contacts || []).map((contact: any) => ({
+        id: contact.id || Math.random(),
         name: contact.name || "Nome non disponibile",
         email: contact.email || "Email non disponibile",
         phone: contact.phone || "",
@@ -72,14 +88,21 @@ export default function AdminMessagesPage() {
         priority: contact.priority || "medium",
       }))
 
+      console.log(`Loaded ${transformedMessages.length} messages`)
       setMessages(transformedMessages)
       setFilteredMessages(transformedMessages)
     } catch (error) {
       console.error("Error fetching messages:", error)
-      setError("Errore nel caricamento dei messaggi")
+      setError(error instanceof Error ? error.message : "Errore nel caricamento dei messaggi")
     } finally {
       setLoading(false)
     }
+  }
+
+  const refreshMessages = async () => {
+    setRefreshing(true)
+    await fetchMessages()
+    setRefreshing(false)
   }
 
   useEffect(() => {
@@ -249,9 +272,13 @@ export default function AdminMessagesPage() {
                 <p className="text-red-600">{error}</p>
               </div>
             </div>
-            <Button onClick={fetchMessages} className="mt-4">
-              Riprova
-            </Button>
+            <div className="mt-4 flex gap-2">
+              <Button onClick={fetchMessages}>Riprova</Button>
+              <Button variant="outline" onClick={refreshMessages} disabled={refreshing}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+                Aggiorna
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -262,9 +289,15 @@ export default function AdminMessagesPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestione Messaggi</h1>
-          <p className="text-gray-600">Visualizza e gestisci tutti i messaggi ricevuti</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestione Messaggi</h1>
+            <p className="text-gray-600">Visualizza e gestisci tutti i messaggi ricevuti</p>
+          </div>
+          <Button onClick={refreshMessages} disabled={refreshing} variant="outline">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            Aggiorna
+          </Button>
         </div>
 
         {/* Stats */}
@@ -401,6 +434,10 @@ export default function AdminMessagesPage() {
                     <div className="p-8 text-center text-gray-500">
                       <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>Nessun messaggio trovato</p>
+                      <Button onClick={refreshMessages} className="mt-4 bg-transparent" variant="outline">
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Ricarica Messaggi
+                      </Button>
                     </div>
                   )}
                 </div>
