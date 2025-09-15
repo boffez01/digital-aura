@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
 
 export async function GET() {
   try {
-    console.log("Fetching contacts from database...")
+    console.log("🔄 Fetching contacts from database...")
 
-    // Query per ottenere tutti i contatti ordinati per data più recente
+    // Query per ottenere tutti i contatti
     const contacts = await sql`
       SELECT 
         id,
@@ -15,78 +15,72 @@ export async function GET() {
         email,
         phone,
         company,
-        service,
+        service_type as service,
         message,
         created_at,
         status,
-        priority
+        priority,
+        notes
       FROM contacts 
       ORDER BY created_at DESC
     `
 
-    console.log(`Found ${contacts.length} contacts`)
+    console.log(`📧 Found ${contacts.length} contacts`)
 
-    // Trasforma i dati per assicurarsi che siano nel formato corretto
-    const formattedContacts = contacts.map((contact) => ({
-      id: contact.id,
+    // Calcola statistiche
+    const now = new Date()
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const stats = {
+      total: contacts.length,
+      thisMonth: contacts.filter((c) => new Date(c.created_at) >= thisMonth).length,
+      byService: contacts.reduce((acc: any, contact) => {
+        const service = contact.service || "Generale"
+        acc[service] = (acc[service] || 0) + 1
+        return acc
+      }, {}),
+      byStatus: contacts.reduce((acc: any, contact) => {
+        const status = contact.status || "new"
+        acc[status] = (acc[status] || 0) + 1
+        return acc
+      }, {}),
+    }
+
+    // Trasforma i dati per il frontend
+    const transformedContacts = contacts.map((contact) => ({
+      id: contact.id.toString(),
       name: contact.name || "Nome non disponibile",
       email: contact.email || "Email non disponibile",
       phone: contact.phone || "",
       company: contact.company || "",
       service: contact.service || "Generale",
       message: contact.message || "Nessun messaggio",
-      created_at: contact.created_at || new Date().toISOString(),
+      createdAt: contact.created_at || new Date().toISOString(),
       status: contact.status || "new",
       priority: contact.priority || "medium",
+      notes: contact.notes || "",
     }))
 
+    console.log("✅ Contacts fetched successfully")
+
     return NextResponse.json({
       success: true,
-      contacts: formattedContacts,
-      total: formattedContacts.length,
+      contacts: transformedContacts,
+      stats,
     })
   } catch (error) {
-    console.error("Error fetching contacts:", error)
-
+    console.error("❌ Error fetching contacts:", error)
     return NextResponse.json(
       {
         success: false,
-        error: "Errore nel caricamento dei contatti",
+        error: error instanceof Error ? error.message : "Errore sconosciuto",
         contacts: [],
-        total: 0,
-      },
-      { status: 500 },
-    )
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { name, email, phone, company, service, message } = body
-
-    console.log("Creating new contact:", { name, email, service })
-
-    const result = await sql`
-      INSERT INTO contacts (name, email, phone, company, service, message, created_at, status, priority)
-      VALUES (${name}, ${email}, ${phone || ""}, ${company || ""}, ${service}, ${message}, NOW(), 'new', 'medium')
-      RETURNING id, created_at
-    `
-
-    console.log("Contact created successfully:", result[0])
-
-    return NextResponse.json({
-      success: true,
-      message: "Contatto salvato con successo",
-      contact: result[0],
-    })
-  } catch (error) {
-    console.error("Error creating contact:", error)
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Errore nel salvataggio del contatto",
+        stats: {
+          total: 0,
+          thisMonth: 0,
+          byService: {},
+          byStatus: {},
+        },
       },
       { status: 500 },
     )
