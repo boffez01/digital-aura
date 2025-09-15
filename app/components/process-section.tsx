@@ -57,7 +57,7 @@ export default function ProcessSection() {
   const steps = processSteps[language]
 
   return (
-    <section className="py-24 bg-card/50">
+    <section className="py-24 bg-slate-900">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -66,8 +66,10 @@ export default function ProcessSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold mb-4">{language === "it" ? "Il Nostro Processo" : "Our Process"}</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold mb-4 text-white">
+            {language === "it" ? "Il Nostro Processo" : "Our Process"}
+          </h2>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
             {language === "it"
               ? "Un approccio strutturato per trasformare le tue idee in soluzioni AI innovative"
               : "A structured approach to transform your ideas into innovative AI solutions"}
@@ -84,17 +86,17 @@ export default function ProcessSection() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="bg-background p-8 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
-                <div className="inline-flex p-4 bg-primary/10 text-primary rounded-full mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+              <div className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-slate-700 hover:border-cyan-500 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 group h-full">
+                <div className="inline-flex p-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
                   <step.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-foreground">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                <h3 className="text-xl font-semibold mb-4 text-white">{step.title}</h3>
+                <p className="text-slate-300 leading-relaxed">{step.description}</p>
               </div>
 
               {/* Connection line */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-primary/50 to-transparent transform -translate-y-1/2 z-10" />
+                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-cyan-500/50 to-transparent transform -translate-y-1/2 z-10" />
               )}
             </motion.div>
           ))}

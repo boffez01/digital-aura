@@ -454,7 +454,7 @@ export default function ROICalculator() {
                   <h4 className="font-semibold text-white mb-2">
                     {language === "it" ? "Risparmio Annuale" : "Annual Savings"}
                   </h4>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-200 font-medium">
                     {language === "it" ? "Risparmi stimati nel primo anno" : "Estimated savings in first year"}
                   </p>
                 </CardContent>
@@ -470,7 +470,7 @@ export default function ROICalculator() {
                     {roi.toFixed(1)}%
                   </div>
                   <h4 className="font-semibold text-white mb-2">ROI</h4>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-200 font-medium">
                     {language === "it" ? "Ritorno sull'investimento" : "Return on investment"}
                   </p>
                 </CardContent>
@@ -485,7 +485,7 @@ export default function ROICalculator() {
                   <h4 className="font-semibold text-white mb-2">
                     {language === "it" ? "Mesi Payback" : "Payback Months"}
                   </h4>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-200 font-medium">
                     {language === "it" ? "Tempo per recuperare l'investimento" : "Time to recover investment"}
                   </p>
                 </CardContent>
@@ -498,7 +498,7 @@ export default function ROICalculator() {
                   </div>
                   <div className="text-3xl font-bold text-orange-400 mb-2">€{totalFirstYearCost.toLocaleString()}</div>
                   <h4 className="font-semibold text-white mb-2">{language === "it" ? "Costo Totale" : "Total Cost"}</h4>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-200 font-medium">
                     {language === "it" ? "Investimento primo anno" : "First year investment"}
                   </p>
                 </CardContent>
@@ -580,7 +580,7 @@ export default function ROICalculator() {
                   <div className={`p-4 bg-slate-800 rounded-2xl ${benefit.color} flex-shrink-0`}>{benefit.icon}</div>
                   <div>
                     <h4 className="font-bold text-white mb-3 text-xl">{benefit.title}</h4>
-                    <p className="text-slate-400 leading-relaxed text-lg">{benefit.description}</p>
+                    <p className="text-slate-200 leading-relaxed text-lg">{benefit.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -617,7 +617,7 @@ export default function ROICalculator() {
                       <h4 className="font-bold text-white text-xl">{factor.title}</h4>
                       <Badge className={`${factor.color} bg-opacity-10 border-current`}>{factor.impact}</Badge>
                     </div>
-                    <p className="text-slate-400 leading-relaxed text-lg">{factor.description}</p>
+                    <p className="text-slate-200 leading-relaxed text-lg">{factor.description}</p>
                   </div>
                 </motion.div>
               ))}
