@@ -546,13 +546,13 @@ export default function DigitalAuraPortfolio() {
         onInputChange={handleInputChange}
       />
 
-      {/* Project Modal */}
-      {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
+      {/* Project Modal - CORRETTO CON isOpen */}
+      <ProjectModal project={selectedProject} isOpen={!!selectedProject} onClose={() => setSelectedProject(null)} />
 
       {/* Chatbot Widget */}
       <ChatbotWidget />
 
-      {/* Footer */}
+      {/* Footer - COLORI NEON */}
       <Footer />
     </div>
   )
@@ -1374,42 +1374,44 @@ function ContactSection({
   )
 }
 
-// Footer Component
+// Footer Component - COLORI NEON
 function Footer() {
   const { t, language } = useLanguage()
 
   return (
-    <footer className="bg-slate-900 border-t border-slate-700 text-white py-12 px-4">
+    <footer className="bg-gradient-to-br from-slate-900 via-cyan-900/20 to-green-900/20 border-t border-cyan-400/30 text-white py-12 px-4 shadow-[0_0_50px_rgba(6,182,212,0.3)]">
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-green-400 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.5)]">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-2xl font-bold">Digital Aura</span>
+              <span className="text-2xl font-bold text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                Digital Aura
+              </span>
             </div>
-            <p className="text-slate-400 mb-6 leading-relaxed text-base">
+            <p className="text-slate-300 mb-6 leading-relaxed text-base">
               {language === "it"
                 ? "Trasformiamo le aziende attraverso soluzioni AI innovative e tecnologie all'avanguardia. La tua crescita digitale inizia qui."
                 : "We transform businesses through innovative AI solutions and cutting-edge technologies. Your digital growth starts here."}
             </p>
             <div className="space-y-3">
-              <div className="flex items-center text-slate-400">
-                <Mail className="w-4 h-4 mr-3" />
-                <a href="mailto:info@digitalaura.it" className="hover:text-white transition-colors text-base">
+              <div className="flex items-center text-slate-300">
+                <Mail className="w-4 h-4 mr-3 text-cyan-400" />
+                <a href="mailto:info@digitalaura.it" className="hover:text-cyan-300 transition-colors text-base">
                   info@digitalaura.it
                 </a>
               </div>
-              <div className="flex items-center text-slate-400">
-                <Phone className="w-4 h-4 mr-3" />
-                <a href="tel:+393500216480" className="hover:text-white transition-colors text-base">
+              <div className="flex items-center text-slate-300">
+                <Phone className="w-4 h-4 mr-3 text-cyan-400" />
+                <a href="tel:+393500216480" className="hover:text-cyan-300 transition-colors text-base">
                   +393500216480
                 </a>
               </div>
-              <div className="flex items-center text-slate-400">
-                <MapPin className="w-4 h-4 mr-3" />
+              <div className="flex items-center text-slate-300">
+                <MapPin className="w-4 h-4 mr-3 text-cyan-400" />
                 <span className="text-base">Brescia, Italia - Via dei Mille 5</span>
               </div>
             </div>
@@ -1417,30 +1419,32 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-semibold mb-6">{language === "it" ? "Link Rapidi" : "Quick Links"}</h3>
+            <h3 className="text-xl font-semibold mb-6 text-green-300 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]">
+              {language === "it" ? "Link Rapidi" : "Quick Links"}
+            </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link href="/" className="text-slate-300 hover:text-cyan-300 transition-colors text-base">
                   {language === "it" ? "Home" : "Home"}
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link href="#services" className="text-slate-300 hover:text-cyan-300 transition-colors text-base">
                   {language === "it" ? "Servizi" : "Services"}
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link href="/blog" className="text-slate-300 hover:text-cyan-300 transition-colors text-base">
                   {language === "it" ? "Blog" : "Blog"}
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link href="#contact" className="text-slate-300 hover:text-cyan-300 transition-colors text-base">
                   {language === "it" ? "Contatti" : "Contact"}
                 </Link>
               </li>
               <li>
-                <Link href="/appointments" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link href="/appointments" className="text-slate-300 hover:text-cyan-300 transition-colors text-base">
                   {language === "it" ? "Appuntamenti" : "Appointments"}
                 </Link>
               </li>
@@ -1449,25 +1453,30 @@ function Footer() {
 
           {/* Our Services */}
           <div>
-            <h3 className="text-xl font-semibold mb-6">{language === "it" ? "I Nostri Servizi" : "Our Services"}</h3>
+            <h3 className="text-xl font-semibold mb-6 text-green-300 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]">
+              {language === "it" ? "I Nostri Servizi" : "Our Services"}
+            </h3>
             <ul className="space-y-3">
               <li>
                 <Link
                   href="/services/ai-automation"
-                  className="text-slate-400 hover:text-white transition-colors text-base"
+                  className="text-slate-300 hover:text-cyan-300 transition-colors text-base"
                 >
                   {language === "it" ? "AI Automation" : "AI Automation"}
                 </Link>
               </li>
               <li>
-                <Link href="/services/chatbot" className="text-slate-400 hover:text-white transition-colors text-base">
+                <Link
+                  href="/services/chatbot"
+                  className="text-slate-300 hover:text-cyan-300 transition-colors text-base"
+                >
                   {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
                 </Link>
               </li>
               <li>
                 <Link
                   href="/services/web-development"
-                  className="text-slate-400 hover:text-white transition-colors text-base"
+                  className="text-slate-300 hover:text-cyan-300 transition-colors text-base"
                 >
                   {language === "it" ? "Web Development" : "Web Development"}
                 </Link>
@@ -1475,7 +1484,7 @@ function Footer() {
               <li>
                 <Link
                   href="/services/ai-marketing"
-                  className="text-slate-400 hover:text-white transition-colors text-base"
+                  className="text-slate-300 hover:text-cyan-300 transition-colors text-base"
                 >
                   {language === "it" ? "AI Marketing" : "AI Marketing"}
                 </Link>
@@ -1485,37 +1494,37 @@ function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-slate-700 pt-8">
+        <div className="border-t border-cyan-400/30 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-            <p className="text-slate-500 mb-4 md:mb-0 text-base">
+            <p className="text-slate-400 mb-4 md:mb-0 text-base">
               {language === "it"
                 ? "© 2024 Digital Aura. Tutti i diritti riservati."
                 : "© 2024 Digital Aura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
+              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Privacy Policy" : "Privacy Policy"}
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
+              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Termini di Servizio" : "Terms of Service"}
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors text-base">
+              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Cookie Policy" : "Cookie Policy"}
               </a>
             </div>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-400 hover:text-green-300 transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors">
+              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
             </div>
           </div>
-          <p className="text-slate-600 text-sm text-center">
+          <p className="text-slate-500 text-sm text-center">
             {language === "it"
               ? "Startup innovativa specializzata in soluzioni AI per il business • GDPR Compliant • ISO 27001 Certified"
               : "Innovative startup specialized in AI solutions for business • GDPR Compliant • ISO 27001 Certified"}
