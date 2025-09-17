@@ -1,3 +1,5 @@
+// in app/components/chatbot-widget.tsx
+
 "use client"
 
 import type React from "react"
@@ -30,20 +32,21 @@ interface Message {
   supportLevel?: number
 }
 
+// --- MODIFICA #1: L'interfaccia ora si aspetta 'response' invece di 'message' ---
 interface ChatResponse {
-  success: boolean
-  message: string
-  supportActive?: boolean
-  supportLevel?: number
+  response: string; // <<<< NOME CORRETTO
+  quickActions?: Array<{ text: string; action: string }>;
+  supportActive?: boolean;
+  supportLevel?: number;
   context?: {
-    flow: string
-    step: number | string
-    hasUserInfo: boolean
-    needsHuman: boolean
-    escalationActive?: boolean
-    bookingMode?: boolean
-    completed?: boolean
-  }
+    flow: string;
+    step: number | string;
+    hasUserInfo: boolean;
+    needsHuman: boolean;
+    escalationActive?: boolean;
+    bookingMode?: boolean;
+    completed?: boolean;
+  };
 }
 
 export default function ChatbotWidget() {
@@ -59,13 +62,11 @@ export default function ChatbotWidget() {
   const [currentLanguage, setCurrentLanguage] = useState<"it" | "en">("it")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Generate session ID on mount
   useEffect(() => {
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     setSessionId(newSessionId)
   }, [])
 
-  // Monitor language changes from localStorage
   useEffect(() => {
     const checkLanguage = () => {
       const savedLanguage = localStorage.getItem("language")
@@ -73,17 +74,11 @@ export default function ChatbotWidget() {
         setCurrentLanguage(savedLanguage)
       }
     }
-
-    // Check initial language
     checkLanguage()
-
-    // Set up interval to check for language changes
     const interval = setInterval(checkLanguage, 500)
-
     return () => clearInterval(interval)
   }, [])
 
-  // Traduzioni complete per entrambe le lingue
   const translations = {
     it: {
       title: "Digital Aura AI",
@@ -151,7 +146,6 @@ I can help you with:
     scrollToBottom()
   }, [messages])
 
-  // Show welcome message when opening chatbot or language changes
   useEffect(() => {
     if (isOpen && !isMinimized) {
       const welcomeMessage: Message = {
@@ -212,7 +206,6 @@ I can help you with:
       const data: ChatResponse = await response.json()
       console.log(`✅ Received response:`, data)
 
-      // Update states based on response
       if (data.supportActive !== undefined) {
         setSupportMode({
           active: data.supportActive,
@@ -228,9 +221,10 @@ I can help you with:
         setEscalationActive(data.context.escalationActive)
       }
 
+      // --- MODIFICA #2: Usa la proprietà corretta 'response' per il testo del bot ---
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.message,
+        text: data.response, // <<<< NOME CORRETTO
         isUser: false,
         timestamp: new Date(),
         supportActive: data.supportActive,
@@ -282,9 +276,13 @@ I can help you with:
   }
 
   const formatMessage = (text: string) => {
+    // --- MODIFICA #3: Aggiunto controllo di sicurezza e formattazione grassetto ---
+    if (typeof text !== 'string') {
+        return '';
+    }
     return text.split("\n").map((line, index) => (
       <span key={index}>
-        {line.replace(/\*\*(.*?)\*\*/g, (match, p1) => p1)}
+        {line.replace(/\*\*(.*?)\*\*/g, (match, p1) => <strong>{p1}</strong>)}
         {index < text.split("\n").length - 1 && <br />}
       </span>
     ))
@@ -403,7 +401,6 @@ I can help you with:
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating Button */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
@@ -413,14 +410,12 @@ I can help you with:
         </Button>
       )}
 
-      {/* Chat Widget */}
       {isOpen && (
         <Card
           className={`w-96 bg-slate-800 shadow-2xl border border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 ${
             isMinimized ? "h-16" : "h-[600px]"
           }`}
         >
-          {/* Header */}
           <div className={`p-4 rounded-t-2xl ${getHeaderColor()} text-white`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -458,7 +453,6 @@ I can help you with:
 
           {!isMinimized && (
             <div className="p-0 flex flex-col h-[536px] bg-slate-800">
-              {/* Quick Actions */}
               <div className="p-4 bg-slate-800 border-b border-slate-700">
                 <div className="flex items-center mb-3">
                   <span className="text-sm font-semibold text-slate-300">🚀 {t.quickActions}</span>
@@ -495,9 +489,7 @@ I can help you with:
                 </div>
               </div>
 
-              {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900">
-                {/* Status Header se attivo */}
                 {(supportMode.active || escalationActive || bookingMode) &&
                   getStatusHeader(supportMode.active, supportMode.level)}
 
@@ -566,68 +558,17 @@ I can help you with:
                   </div>
                 ))}
 
-                {/* Typing Indicator */}
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-2">
-                      <div
-                        className={`p-2 rounded-full ${
-                          supportMode.active || escalationActive
-                            ? "bg-red-100"
-                            : bookingMode
-                              ? "bg-green-100"
-                              : "bg-slate-700"
-                        }`}
-                      >
-                        <Bot
-                          className={`w-4 h-4 ${
-                            supportMode.active || escalationActive
-                              ? "text-red-600"
-                              : bookingMode
-                                ? "text-green-600"
-                                : "text-slate-400"
-                          }`}
-                        />
+                      <div className={`p-2 rounded-full ${ supportMode.active || escalationActive ? "bg-red-100" : bookingMode ? "bg-green-100" : "bg-slate-700"}`}>
+                        <Bot className={`w-4 h-4 ${ supportMode.active || escalationActive ? "text-red-600" : bookingMode ? "text-green-600" : "text-slate-400"}`} />
                       </div>
-                      <div
-                        className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
-                          supportMode.active || escalationActive
-                            ? "bg-red-100"
-                            : bookingMode
-                              ? "bg-green-100"
-                              : "bg-slate-700"
-                        }`}
-                      >
+                      <div className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${ supportMode.active || escalationActive ? "bg-red-100" : bookingMode ? "bg-green-100" : "bg-slate-700"}`}>
                         <div className="flex space-x-1">
-                          <div
-                            className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive
-                                ? "bg-red-400"
-                                : bookingMode
-                                  ? "bg-green-400"
-                                  : "bg-slate-400"
-                            }`}
-                          ></div>
-                          <div
-                            className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive
-                                ? "bg-red-400"
-                                : bookingMode
-                                  ? "bg-green-400"
-                                  : "bg-slate-400"
-                            }`}
-                            style={{ animationDelay: "0.1s" }}
-                          ></div>
-                          <div
-                            className={`w-2 h-2 rounded-full animate-bounce ${
-                              supportMode.active || escalationActive
-                                ? "bg-red-400"
-                                : bookingMode
-                                  ? "bg-green-400"
-                                  : "bg-slate-400"
-                            }`}
-                            style={{ animationDelay: "0.2s" }}
-                          ></div>
+                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`}></div>
+                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`} style={{ animationDelay: "0.1s" }}></div>
+                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`} style={{ animationDelay: "0.2s" }}></div>
                         </div>
                       </div>
                     </div>
@@ -637,7 +578,6 @@ I can help you with:
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input Area */}
               <div className="p-4 bg-slate-800 border-t border-slate-700">
                 <div className="flex space-x-2">
                   <Input
