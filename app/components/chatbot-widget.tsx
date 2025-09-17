@@ -32,9 +32,8 @@ interface Message {
   supportLevel?: number
 }
 
-// --- MODIFICA #1: L'interfaccia ora si aspetta 'response' invece di 'message' ---
 interface ChatResponse {
-  response: string; // <<<< NOME CORRETTO
+  response: string; // Si aspetta SEMPRE 'response'
   quickActions?: Array<{ text: string; action: string }>;
   supportActive?: boolean;
   supportLevel?: number;
@@ -191,40 +190,34 @@ I can help you with:
       })
 
       console.log(`📥 Response status: ${response.status}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text()
-        console.error("Non-JSON response:", text)
-        throw new Error("Server returned non-JSON response")
-      }
-
-      const data: ChatResponse = await response.json()
+      
+      const data: ChatResponse = await response.json();
       console.log(`✅ Received response:`, data)
 
+      // --- LOGICA DI GESTIONE ROBUSTA ---
+      // Ora gestiamo sia le risposte di successo che quelle di errore (es. 500),
+      // purché abbiano la proprietà 'response'.
+      if (!data.response) {
+          throw new Error("Risposta del server non valida o malformata.");
+      }
+
+      // Update states based on response context if available
       if (data.supportActive !== undefined) {
         setSupportMode({
           active: data.supportActive,
           level: data.supportLevel || 0,
         })
       }
-
       if (data.context?.bookingMode !== undefined) {
         setBookingMode(data.context.bookingMode)
       }
-
       if (data.context?.escalationActive !== undefined) {
         setEscalationActive(data.context.escalationActive)
       }
 
-      // --- MODIFICA #2: Usa la proprietà corretta 'response' per il testo del bot ---
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.response, // <<<< NOME CORRETTO
+        text: data.response, // Ora siamo sicuri che esista
         isUser: false,
         timestamp: new Date(),
         supportActive: data.supportActive,
@@ -232,16 +225,16 @@ I can help you with:
       }
 
       setMessages((prev) => [...prev, botMessage])
-    } catch (error) {
+
+    } catch (error: any) {
       console.error("Error sending message:", error)
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: t.connectionError,
+        text: error.message || t.connectionError, // Mostra l'errore specifico o uno generico
         isUser: false,
         timestamp: new Date(),
       }
-
       setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
@@ -276,9 +269,8 @@ I can help you with:
   }
 
   const formatMessage = (text: string) => {
-    // --- MODIFICA #3: Aggiunto controllo di sicurezza e formattazione grassetto ---
     if (typeof text !== 'string') {
-        return '';
+        return 'Si è verificato un errore nella visualizzazione del messaggio.';
     }
     return text.split("\n").map((line, index) => (
       <span key={index}>
