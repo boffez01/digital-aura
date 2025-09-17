@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, CheckCircle, ExternalLink, Code, Lightbulb, Target, BarChart3 } from "lucide-react"
+import { Calendar, TrendingUp, CheckCircle, ExternalLink, Code, Lightbulb, Target, BarChart3 } from "lucide-react"
 import Image from "next/image"
 import { useLanguage } from "../contexts/language-context"
 
@@ -24,6 +24,30 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
+          <div className="flex items-center gap-3 mb-4">
+            <Badge
+              className={`${
+                project.category === "AI Automation"
+                  ? "bg-purple-900/50 text-purple-300 border-purple-700"
+                  : project.category === "Chatbot"
+                    ? "bg-blue-900/50 text-blue-300 border-blue-700"
+                    : project.category === "Web Development"
+                      ? "bg-green-900/50 text-green-300 border-green-700"
+                      : "bg-orange-900/50 text-orange-300 border-orange-700"
+              }`}
+            >
+              {project.category}
+            </Badge>
+            <div className="flex items-center text-slate-300 text-sm">
+              <Calendar className="h-4 w-4 mr-1" />
+              {project.timeline}
+            </div>
+            <div className="flex items-center text-slate-300 text-sm">
+              <TrendingUp className="h-4 w-4 mr-1" />
+              ROI: {project.roi}
+            </div>
+          </div>
+
           <DialogTitle className="text-2xl font-bold text-white mb-2">{project.title}</DialogTitle>
 
           <p className="text-slate-300 text-lg leading-relaxed">{project.description}</p>
