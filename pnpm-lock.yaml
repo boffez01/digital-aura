@@ -135,7 +135,7 @@ importers:
         specifier: latest
         version: 3.2.1(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react-is@18.3.1)(react@18.0.0)(redux@5.0.1)
       shadcn:
-        specifier: latest
+        specifier: 3.3.1
         version: 3.3.1(@types/node@22.18.1)(typescript@5.0.2)
       tailwind-merge:
         specifier: ^2.5.5
