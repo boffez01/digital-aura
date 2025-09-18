@@ -1,18 +1,17 @@
 import type { Config } from "tailwindcss"
-import defaultConfig from "shadcn/ui/tailwind.config"
 
-const config: Config = {
-  ...defaultConfig,
+const config = {
+  darkMode: ["class"],
   content: [
-    ...defaultConfig.content,
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    // I tuoi percorsi sono stati mantenuti
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
     "*.{js,ts,jsx,tsx,mdx}",
   ],
+  prefix: "",
   theme: {
-    ...defaultConfig.theme,
     container: {
       center: true,
       padding: "2rem",
@@ -21,12 +20,13 @@ const config: Config = {
       },
     },
     extend: {
-      ...defaultConfig.theme.extend,
+      // Le tue personalizzazioni per il borderRadius sono state mantenute
       borderRadius: {
         lg: "0.5rem",
         md: "calc(0.5rem - 2px)",
         sm: "calc(0.5rem - 4px)",
       },
+      // Le tue animazioni personalizzate sono state mantenute insieme a quelle di default
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -36,7 +36,7 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        blob: {
+        blob: { // La tua animazione blob è qui
           "0%": {
             transform: "translate(0px, 0px) scale(1)",
           },
@@ -54,11 +54,12 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        blob: "blob 7s infinite",
+        blob: "blob 7s infinite", // La tua animazione blob è qui
       },
     },
   },
-  plugins: [...defaultConfig.plugins, require("tailwindcss-animate")],
+  // Il plugin richiesto è incluso qui
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
 export default config
