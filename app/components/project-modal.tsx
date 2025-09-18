@@ -1,202 +1,187 @@
 "use client"
 
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, TrendingUp, CheckCircle, ExternalLink, Code, Lightbulb, Target, BarChart3 } from "lucide-react"
+import { ExternalLink, Github, Calendar, Users, Target, TrendingUp } from "lucide-react"
 import Image from "next/image"
-import { useLanguage } from "../contexts/language-context"
+
+interface Project {
+  id: string
+  title: string
+  description: string
+  image: string
+  tags: string[]
+  category: string
+  client?: string
+  duration?: string
+  team?: string
+  challenge?: string
+  solution?: string
+  results?: string[]
+  technologies?: string[]
+  liveUrl?: string
+  githubUrl?: string
+}
 
 interface ProjectModalProps {
-  project: any
+  project: Project | null
   isOpen: boolean
   onClose: () => void
 }
 
 export default function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
-  const { language } = useLanguage()
+  const [activeTab, setActiveTab] = useState("overview")
 
   if (!project) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700 text-white">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <div className="flex items-center gap-3 mb-4">
-            <Badge
-              className={`${
-                project.category === "AI Automation"
-                  ? "bg-purple-900/50 text-purple-300 border-purple-700"
-                  : project.category === "Chatbot"
-                    ? "bg-blue-900/50 text-blue-300 border-blue-700"
-                    : project.category === "Web Development"
-                      ? "bg-green-900/50 text-green-300 border-green-700"
-                      : "bg-orange-900/50 text-orange-300 border-orange-700"
-              }`}
-            >
-              {project.category}
-            </Badge>
-            <div className="flex items-center text-slate-300 text-sm">
-              <Calendar className="h-4 w-4 mr-1" />
-              {project.timeline}
-            </div>
-            <div className="flex items-center text-slate-300 text-sm">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              ROI: {project.roi}
-            </div>
-          </div>
-
-          <DialogTitle className="text-2xl font-bold text-white mb-2">{project.title}</DialogTitle>
-
-          <p className="text-slate-300 text-lg leading-relaxed">{project.description}</p>
+          <DialogTitle className="text-2xl font-bold text-gray-900">{project.title}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Project Image */}
-          {project.image && (
-            <div className="aspect-video rounded-lg overflow-hidden bg-slate-800">
-              <Image
-                src={project.image || "/placeholder.svg"}
-                alt={project.title}
-                width={800}
-                height={450}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          <div className="relative w-full h-64 rounded-lg overflow-hidden">
+            <Image
+              src={project.image || "/placeholder.svg"}
+              alt={project.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </div>
 
-          {/* Tags */}
+          {/* Project Info */}
           <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag: string, index: number) => (
-              <Badge key={index} variant="outline" className="border-slate-600 text-slate-300 bg-slate-800/50">
+            {project.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="bg-blue-100 text-blue-800">
                 {tag}
               </Badge>
             ))}
           </div>
 
-          {/* Tabs Content */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-slate-800/50">
-              <TabsTrigger value="overview" className="text-slate-300 data-[state=active]:text-white">
-                {language === "it" ? "Panoramica" : "Overview"}
-              </TabsTrigger>
-              <TabsTrigger value="problem" className="text-slate-300 data-[state=active]:text-white">
-                {language === "it" ? "Problema" : "Problem"}
-              </TabsTrigger>
-              <TabsTrigger value="solution" className="text-slate-300 data-[state=active]:text-white">
-                {language === "it" ? "Soluzione" : "Solution"}
-              </TabsTrigger>
-              <TabsTrigger value="results" className="text-slate-300 data-[state=active]:text-white">
-                {language === "it" ? "Risultati" : "Results"}
-              </TabsTrigger>
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="results">Results</TabsTrigger>
+              <TabsTrigger value="tech">Tech Stack</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="h-5 w-5 text-cyan-400" />
-                    <h3 className="text-xl font-semibold text-white">
-                      {language === "it" ? "Dettagli Progetto" : "Project Details"}
-                    </h3>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
+              <div className="prose max-w-none">
+                <p className="text-gray-700 leading-relaxed">{project.description}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {project.client && (
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-5 h-5 text-blue-600" />
                     <div>
-                      <h4 className="font-semibold text-white mb-2">{language === "it" ? "Durata" : "Duration"}</h4>
-                      <p className="text-slate-300">{project.timeline}</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">ROI</h4>
-                      <p className="text-slate-300">{project.roi}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <h4 className="font-semibold text-white mb-2">
-                        {language === "it" ? "Tecnologie Utilizzate" : "Technologies Used"}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {project.technologies?.map((tech: string, index: number) => (
-                          <Badge key={index} className="bg-slate-700/50 text-slate-300 border-slate-600">
-                            <Code className="h-3 w-3 mr-1" />
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
+                      <p className="text-sm font-medium text-gray-900">Client</p>
+                      <p className="text-sm text-gray-600">{project.client}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+
+                {project.duration && (
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Duration</p>
+                      <p className="text-sm text-gray-600">{project.duration}</p>
+                    </div>
+                  </div>
+                )}
+
+                {project.team && (
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-5 h-5 text-purple-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Team Size</p>
+                      <p className="text-sm text-gray-600">{project.team}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
-            <TabsContent value="problem" className="space-y-4">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Lightbulb className="h-5 w-5 text-orange-400" />
-                    <h3 className="text-xl font-semibold text-white">
-                      {language === "it" ? "La Sfida" : "The Challenge"}
-                    </h3>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed text-base">{project.problem}</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            <TabsContent value="details" className="space-y-4">
+              {project.challenge && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Challenge</h3>
+                  <p className="text-gray-700 leading-relaxed">{project.challenge}</p>
+                </div>
+              )}
 
-            <TabsContent value="solution" className="space-y-4">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Target className="h-5 w-5 text-green-400" />
-                    <h3 className="text-xl font-semibold text-white">
-                      {language === "it" ? "La Nostra Soluzione" : "Our Solution"}
-                    </h3>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed text-base">{project.solution}</p>
-                </CardContent>
-              </Card>
+              {project.solution && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Solution</h3>
+                  <p className="text-gray-700 leading-relaxed">{project.solution}</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="results" className="space-y-4">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="h-5 w-5 text-cyan-400" />
-                    <h3 className="text-xl font-semibold text-white">
-                      {language === "it" ? "Risultati Ottenuti" : "Results Achieved"}
-                    </h3>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {project.results?.map((result: string, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
-                        <span className="text-slate-300">{result}</span>
-                      </div>
+              {project.results && project.results.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+                    Key Results
+                  </h3>
+                  <ul className="space-y-2">
+                    {project.results.map((result, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700">{result}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="tech" className="space-y-4">
+              {project.technologies && project.technologies.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Technologies Used</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {project.technologies.map((tech) => (
+                      <Badge key={tech} variant="outline" className="border-gray-300 text-gray-700">
+                        {tech}
+                      </Badge>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
-          {/* CTA Section */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-700">
-            <Button
-              className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
-              onClick={() => {
-                window.open("/appointments", "_blank")
-              }}
-            >
-              {language === "it" ? "Inizia il Tuo Progetto" : "Start Your Project"}
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white bg-transparent"
-              onClick={onClose}
-            >
-              {language === "it" ? "Chiudi" : "Close"}
-            </Button>
+          {/* Action Buttons */}
+          <div className="flex space-x-4 pt-4 border-t">
+            {project.liveUrl && (
+              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View Live
+                </a>
+              </Button>
+            )}
+
+            {project.githubUrl && (
+              <Button variant="outline" asChild>
+                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                  <Github className="w-4 h-4 mr-2" />
+                  View Code
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

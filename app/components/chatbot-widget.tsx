@@ -1,5 +1,3 @@
-// in app/components/chatbot-widget.tsx
-
 "use client"
 
 import type React from "react"
@@ -14,8 +12,6 @@ import {
   User,
   Bot,
   AlertTriangle,
-  CheckCircle,
-  Clock,
   Settings,
   HelpCircle,
   Calendar,
@@ -33,19 +29,12 @@ interface Message {
 }
 
 interface ChatResponse {
-  response: string; // Si aspetta SEMPRE 'response'
-  quickActions?: Array<{ text: string; action: string }>;
-  supportActive?: boolean;
-  supportLevel?: number;
+  response: string
+  supportActive?: boolean
+  supportLevel?: number
   context?: {
-    flow: string;
-    step: number | string;
-    hasUserInfo: boolean;
-    needsHuman: boolean;
-    escalationActive?: boolean;
-    bookingMode?: boolean;
-    completed?: boolean;
-  };
+    bookingMode?: boolean
+  }
 }
 
 export default function ChatbotWidget() {
@@ -56,16 +45,17 @@ export default function ChatbotWidget() {
   const [isLoading, setIsLoading] = useState(false)
   const [supportMode, setSupportMode] = useState({ active: false, level: 0 })
   const [bookingMode, setBookingMode] = useState(false)
-  const [escalationActive, setEscalationActive] = useState(false)
   const [sessionId, setSessionId] = useState("")
   const [currentLanguage, setCurrentLanguage] = useState<"it" | "en">("it")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Genera session ID
   useEffect(() => {
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     setSessionId(newSessionId)
   }, [])
 
+  // Monitora cambio lingua
   useEffect(() => {
     const checkLanguage = () => {
       const savedLanguage = localStorage.getItem("language")
@@ -83,55 +73,29 @@ export default function ChatbotWidget() {
       title: "Digital Aura AI",
       supportTitle: "Supporto Tecnico",
       bookingTitle: "Prenotazione Attiva",
-      onlineNow: "Online ora",
       placeholder: "Scrivi un messaggio...",
       quickActions: "Azioni rapide:",
       services: "Servizi",
       faq: "FAQ",
       book: "Prenota",
       support: "Assistenza",
-      welcome: `👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura.**
-
-Posso aiutarti con:
-
-🤖 **Servizi AI** - Automazione e chatbots intelligenti
-🌐 **Sviluppo Web** - Siti moderni e e-commerce  
-📊 **AI Marketing** - Campagne automatizzate
-📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI
-
-**Come posso aiutarti oggi?** 😊`,
+      welcome:
+        "👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura.**\n\nPosso aiutarti con:\n\n🤖 **Servizi AI** - Automazione e chatbots intelligenti\n🌐 **Sviluppo Web** - Siti moderni e e-commerce\n📊 **AI Marketing** - Campagne automatizzate\n📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI\n\n**Come posso aiutarti oggi?** 😊",
       connectionError: "Mi dispiace, ho problemi di connessione. Riprova tra poco o contattaci direttamente.",
-      supportHeader: "Assistenza Tecnica Attiva",
-      bookingHeader: "Prenotazione in Corso",
-      supportSubtext: "Sto analizzando il tuo problema per trovare la soluzione migliore",
-      bookingSubtext: "Ti sto guidando nella prenotazione della tua consulenza gratuita",
     },
     en: {
       title: "Digital Aura AI",
       supportTitle: "Technical Support",
       bookingTitle: "Booking Active",
-      onlineNow: "Online now",
       placeholder: "Type a message...",
       quickActions: "Quick actions:",
       services: "Services",
       faq: "FAQ",
       book: "Book",
       support: "Support",
-      welcome: `👋 **Hello! I'm AuraBot, Digital Aura's AI assistant.**
-
-I can help you with:
-
-🤖 **AI Services** - Automation and intelligent chatbots
-🌐 **Web Development** - Modern websites and e-commerce
-📊 **AI Marketing** - Automated campaigns  
-📅 **Bookings** - Free consultations DIRECTLY HERE
-
-**How can I help you today?** 😊`,
+      welcome:
+        "👋 **Hello! I'm AuraBot, Digital Aura's AI assistant.**\n\nI can help you with:\n\n🤖 **AI Services** - Automation and intelligent chatbots\n🌐 **Web Development** - Modern websites and e-commerce\n📊 **AI Marketing** - Automated campaigns\n📅 **Bookings** - Free consultations DIRECTLY HERE\n\n**How can I help you today?** 😊",
       connectionError: "Sorry, I'm having connection issues. Please try again or contact us directly.",
-      supportHeader: "Technical Support Active",
-      bookingHeader: "Booking in Progress",
-      supportSubtext: "Analyzing your problem to find the best solution",
-      bookingSubtext: "Guiding you through booking your free consultation",
     },
   }
 
@@ -145,6 +109,7 @@ I can help you with:
     scrollToBottom()
   }, [messages])
 
+  // Mostra messaggio di benvenuto
   useEffect(() => {
     if (isOpen && !isMinimized) {
       const welcomeMessage: Message = {
@@ -152,8 +117,6 @@ I can help you with:
         text: t.welcome,
         isUser: false,
         timestamp: new Date(),
-        supportActive: false,
-        supportLevel: 0,
       }
       setMessages([welcomeMessage])
     }
@@ -175,7 +138,7 @@ I can help you with:
     setIsLoading(true)
 
     try {
-      console.log(`📤 Sending message: "${textToSend}"`)
+      console.log(`📤 Sending: "${textToSend}"`)
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -189,35 +152,35 @@ I can help you with:
         }),
       })
 
-      console.log(`📥 Response status: ${response.status}`)
-      
-      const data: ChatResponse = await response.json();
-      console.log(`✅ Received response:`, data)
+      console.log(`📥 Status: ${response.status}`)
 
-      // --- LOGICA DI GESTIONE ROBUSTA ---
-      // Ora gestiamo sia le risposte di successo che quelle di errore (es. 500),
-      // purché abbiano la proprietà 'response'.
-      if (!data.response) {
-          throw new Error("Risposta del server non valida o malformata.");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
       }
 
-      // Update states based on response context if available
+      const data: ChatResponse = await response.json()
+      console.log("✅ Response:", data)
+
+      // Verifica che la risposta sia valida
+      if (!data || !data.response || typeof data.response !== "string") {
+        throw new Error("Invalid response format")
+      }
+
+      // Aggiorna stati
       if (data.supportActive !== undefined) {
         setSupportMode({
           active: data.supportActive,
           level: data.supportLevel || 0,
         })
       }
+
       if (data.context?.bookingMode !== undefined) {
         setBookingMode(data.context.bookingMode)
-      }
-      if (data.context?.escalationActive !== undefined) {
-        setEscalationActive(data.context.escalationActive)
       }
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.response, // Ora siamo sicuri che esista
+        text: data.response,
         isUser: false,
         timestamp: new Date(),
         supportActive: data.supportActive,
@@ -225,13 +188,12 @@ I can help you with:
       }
 
       setMessages((prev) => [...prev, botMessage])
-
     } catch (error: any) {
-      console.error("Error sending message:", error)
+      console.error("❌ Error:", error)
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: error.message || t.connectionError, // Mostra l'errore specifico o uno generico
+        text: t.connectionError,
         isUser: false,
         timestamp: new Date(),
       }
@@ -265,83 +227,32 @@ I can help you with:
     }
 
     const messages = actionMessages[currentLanguage]
-    sendMessage(messages[action as keyof typeof messages] || action)
+    const messageText = messages[action as keyof typeof messages] || action
+    sendMessage(messageText)
   }
 
+  // FUNZIONE CORRETTA per formattare i messaggi
   const formatMessage = (text: string) => {
-    if (typeof text !== 'string') {
-        return 'Si è verificato un errore nella visualizzazione del messaggio.';
+    if (!text || typeof text !== "string") {
+      return "Messaggio non valido"
     }
-    return text.split("\n").map((line, index) => (
-      <span key={index}>
-        {line.replace(/\*\*(.*?)\*\*/g, (match, p1) => <strong>{p1}</strong>)}
-        {index < text.split("\n").length - 1 && <br />}
-      </span>
-    ))
-  }
 
-  const getSupportIcon = (level?: number) => {
-    switch (level) {
-      case 1:
-        return <AlertTriangle className="w-4 h-4 text-red-500" />
-      case 2:
-        return <Clock className="w-4 h-4 text-orange-500" />
-      case 3:
-        return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 4:
-        return <AlertTriangle className="w-4 h-4 text-red-600" />
-      default:
-        return bookingMode ? <Calendar className="w-4 h-4 text-green-500" /> : <Bot className="w-4 h-4 text-blue-500" />
-    }
-  }
+    return text.split("\n").map((line, index) => {
+      // Gestisce il grassetto **testo**
+      const parts = line.split(/(\*\*.*?\*\*)/)
 
-  const getStatusHeader = (supportActive?: boolean, supportLevel?: number) => {
-    if (bookingMode) {
       return (
-        <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-3 rounded-r-lg">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-green-500" />
-            <span className="font-semibold text-green-700">{t.bookingHeader}</span>
-          </div>
-          <p className="text-sm text-green-600 mt-1">{t.bookingSubtext}</p>
-          <p className="text-xs text-green-500 mt-2">
-            {new Date().toLocaleTimeString(currentLanguage === "en" ? "en-US" : "it-IT", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-        </div>
-      )
-    }
-
-    if (!supportActive && !escalationActive) return null
-
-    const headerText = escalationActive
-      ? currentLanguage === "en"
-        ? "Support Data Collection"
-        : "Raccolta Dati Supporto"
-      : t.supportHeader
-    const subText = escalationActive
-      ? currentLanguage === "en"
-        ? "Collecting your data to organize technical support"
-        : "Sto raccogliendo i tuoi dati per organizzare il supporto tecnico"
-      : t.supportSubtext
-
-    return (
-      <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 rounded-r-lg">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-500" />
-          <span className="font-semibold text-red-700">{headerText}</span>
-        </div>
-        <p className="text-sm text-red-600 mt-1">{subText}</p>
-        <p className="text-xs text-red-500 mt-2">
-          {new Date().toLocaleTimeString(currentLanguage === "en" ? "en-US" : "it-IT", {
-            hour: "2-digit",
-            minute: "2-digit",
+        <span key={index}>
+          {parts.map((part, partIndex) => {
+            if (part.startsWith("**") && part.endsWith("**")) {
+              return <strong key={partIndex}>{part.slice(2, -2)}</strong>
+            }
+            return part
           })}
-        </p>
-      </div>
-    )
+          {index < text.split("\n").length - 1 && <br />}
+        </span>
+      )
+    })
   }
 
   const formatTime = (date: Date) => {
@@ -355,7 +266,7 @@ I can help you with:
     if (bookingMode) {
       return "bg-gradient-to-r from-green-500 via-green-600 to-green-700"
     }
-    if (supportMode.active || escalationActive) {
+    if (supportMode.active) {
       return "bg-gradient-to-r from-red-500 via-red-600 to-red-700 animate-pulse"
     }
     return "bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700"
@@ -365,7 +276,7 @@ I can help you with:
     if (bookingMode) {
       return "bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800"
     }
-    if (supportMode.active || escalationActive) {
+    if (supportMode.active) {
       return "bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 animate-pulse"
     }
     return "bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 hover:from-cyan-600 hover:via-blue-700 hover:to-indigo-800 animate-pulse hover:animate-none"
@@ -375,7 +286,7 @@ I can help you with:
     if (bookingMode) {
       return <Calendar className="w-8 h-8" />
     }
-    if (supportMode.active || escalationActive) {
+    if (supportMode.active) {
       return <AlertTriangle className="w-8 h-8" />
     }
     return <MessageCircle className="w-8 h-8" />
@@ -385,7 +296,7 @@ I can help you with:
     if (bookingMode) {
       return t.bookingTitle
     }
-    if (supportMode.active || escalationActive) {
+    if (supportMode.active) {
       return t.supportTitle
     }
     return t.title
@@ -393,6 +304,7 @@ I can help you with:
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
+      {/* Pulsante fluttuante */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
@@ -402,19 +314,21 @@ I can help you with:
         </Button>
       )}
 
+      {/* Widget chat */}
       {isOpen && (
         <Card
-          className={`w-96 bg-slate-800 shadow-2xl border border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 ${
+          className={`w-96 bg-slate-800 shadow-2xl border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 ${
             isMinimized ? "h-16" : "h-[600px]"
           }`}
         >
+          {/* Header */}
           <div className={`p-4 rounded-t-2xl ${getHeaderColor()} text-white`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-1 bg-white/20 rounded-full">
                   {bookingMode ? (
                     <Calendar className="w-4 h-4" />
-                  ) : supportMode.active || escalationActive ? (
+                  ) : supportMode.active ? (
                     <AlertTriangle className="w-4 h-4" />
                   ) : (
                     <Bot className="w-4 h-4" />
@@ -445,6 +359,7 @@ I can help you with:
 
           {!isMinimized && (
             <div className="p-0 flex flex-col h-[536px] bg-slate-800">
+              {/* Azioni rapide */}
               <div className="p-4 bg-slate-800 border-b border-slate-700">
                 <div className="flex items-center mb-3">
                   <span className="text-sm font-semibold text-slate-300">🚀 {t.quickActions}</span>
@@ -481,57 +396,19 @@ I can help you with:
                 </div>
               </div>
 
+              {/* Area messaggi */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900">
-                {(supportMode.active || escalationActive || bookingMode) &&
-                  getStatusHeader(supportMode.active, supportMode.level)}
-
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[85%]">
                       {!message.isUser && (
                         <div className="flex items-start space-x-2">
-                          <div
-                            className={`p-2 rounded-full mt-1 flex-shrink-0 ${
-                              message.supportActive || escalationActive
-                                ? "bg-red-100"
-                                : bookingMode
-                                  ? "bg-green-100"
-                                  : "bg-slate-700"
-                            }`}
-                          >
-                            {getSupportIcon(message.supportLevel)}
+                          <div className="p-2 bg-slate-700 rounded-full mt-1 flex-shrink-0">
+                            <Bot className="w-4 h-4 text-blue-500" />
                           </div>
-                          <div
-                            className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${
-                              message.supportActive || escalationActive
-                                ? "bg-red-50 border border-red-200"
-                                : bookingMode
-                                  ? "bg-green-50 border border-green-200"
-                                  : "bg-slate-700"
-                            }`}
-                          >
-                            <div
-                              className={`text-sm leading-relaxed ${
-                                message.supportActive || escalationActive
-                                  ? "text-red-900"
-                                  : bookingMode
-                                    ? "text-green-900"
-                                    : "text-slate-200"
-                              }`}
-                            >
-                              {formatMessage(message.text)}
-                            </div>
-                            <div
-                              className={`text-xs mt-2 ${
-                                message.supportActive || escalationActive
-                                  ? "text-red-500"
-                                  : bookingMode
-                                    ? "text-green-500"
-                                    : "text-slate-500"
-                              }`}
-                            >
-                              {formatTime(message.timestamp)}
-                            </div>
+                          <div className="bg-slate-700 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
+                            <div className="text-sm leading-relaxed text-slate-200">{formatMessage(message.text)}</div>
+                            <div className="text-xs text-slate-500 mt-2">{formatTime(message.timestamp)}</div>
                           </div>
                         </div>
                       )}
@@ -550,17 +427,24 @@ I can help you with:
                   </div>
                 ))}
 
+                {/* Indicatore di digitazione */}
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-2">
-                      <div className={`p-2 rounded-full ${ supportMode.active || escalationActive ? "bg-red-100" : bookingMode ? "bg-green-100" : "bg-slate-700"}`}>
-                        <Bot className={`w-4 h-4 ${ supportMode.active || escalationActive ? "text-red-600" : bookingMode ? "text-green-600" : "text-slate-400"}`} />
+                      <div className="p-2 bg-slate-700 rounded-full">
+                        <Bot className="w-4 h-4 text-slate-400" />
                       </div>
-                      <div className={`rounded-2xl rounded-tl-md px-4 py-3 shadow-sm ${ supportMode.active || escalationActive ? "bg-red-100" : bookingMode ? "bg-green-100" : "bg-slate-700"}`}>
+                      <div className="bg-slate-700 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
                         <div className="flex space-x-1">
-                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`}></div>
-                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`} style={{ animationDelay: "0.1s" }}></div>
-                          <div className={`w-2 h-2 rounded-full animate-bounce ${ supportMode.active || escalationActive ? "bg-red-400" : bookingMode ? "bg-green-400" : "bg-slate-400"}`} style={{ animationDelay: "0.2s" }}></div>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                          <div
+                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.1s" }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.2s" }}
+                          ></div>
                         </div>
                       </div>
                     </div>
@@ -570,6 +454,7 @@ I can help you with:
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Area input */}
               <div className="p-4 bg-slate-800 border-t border-slate-700">
                 <div className="flex space-x-2">
                   <Input
@@ -583,13 +468,7 @@ I can help you with:
                   <Button
                     onClick={() => sendMessage()}
                     disabled={!inputValue.trim() || isLoading}
-                    className={`rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200 ${
-                      supportMode.active || escalationActive
-                        ? "bg-red-600 hover:bg-red-700"
-                        : bookingMode
-                          ? "bg-green-600 hover:bg-green-700"
-                          : "bg-cyan-600 hover:bg-cyan-700"
-                    } text-white`}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
