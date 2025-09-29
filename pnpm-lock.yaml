@@ -89,6 +89,9 @@ importers:
       '@react-three/rapier':
         specifier: ^1.4.0
         version: 1.4.0(@react-three/fiber@8.17.10(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)(three@0.169.0))(react@18.0.0)(three@0.169.0)
+      '@vercel/analytics':
+        specifier: 1.5.0
+        version: 1.5.0(next@14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react@18.0.0)
       ai:
         specifier: latest
         version: 5.0.57(zod@4.1.8)
@@ -104,6 +107,9 @@ importers:
       framer-motion:
         specifier: latest
         version: 12.23.22(@emotion/is-prop-valid@1.4.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+      geist:
+        specifier: 1.5.1
+        version: 1.5.1(next@14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))
       googleapis:
         specifier: ^144.0.0
         version: 144.0.0
@@ -1732,6 +1738,32 @@ packages:
     peerDependencies:
       react: '>= 16.8.0'
 
+  '@vercel/analytics@1.5.0':
+    resolution: {integrity: sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+
   '@webgpu/types@0.1.64':
     resolution: {integrity: sha512-84kRIAGV46LJTlJZWxShiOrNL30A+9KokD7RB3dRCIqODFjodS5tCD5yyiZ8kIReGVZSDfA3XkkwyyOIF6K62A==}
 
@@ -2634,6 +2666,11 @@ packages:
   gcp-metadata@6.1.1:
     resolution: {integrity: sha512-a4tiq7E0/5fTjxPAaH4jpjkSv/uCaU2p5KC6HVGrvl0cDjA8iBZv4vv1gyzlmK0ZUKqwpOyQMKzZQe3lTit77A==}
     engines: {node: '>=14'}
+
+  geist@1.5.1:
+    resolution: {integrity: sha512-mAHZxIsL2o3ZITFaBVFBnwyDOw+zNLYum6A6nIjpzCGIO8QtC3V76XF2RnZTyLx1wlDTmMDy8jg3Ib52MIjGvQ==}
+    peerDependencies:
+      next: '>=13.2.0'
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -6094,6 +6131,11 @@ snapshots:
       '@use-gesture/core': 10.3.1
       react: 18.0.0
 
+  '@vercel/analytics@1.5.0(next@14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react@18.0.0)':
+    optionalDependencies:
+      next: 14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+      react: 18.0.0
+
   '@webgpu/types@0.1.64': {}
 
   accepts@2.0.0:
@@ -7168,6 +7210,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  geist@1.5.1(next@14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)):
+    dependencies:
+      next: 14.2.16(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
 
   gensync@1.0.0-beta.2: {}
 

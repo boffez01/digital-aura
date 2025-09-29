@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useLanguage } from "../contexts/language-context"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Cookie, Settings, X, Shield, BarChart3, Target, Eye } from "lucide-react"
-import Link from "next/link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { useLanguage } from "../contexts/language-context"
+import { Cookie, Shield, BarChart3, Target } from "lucide-react"
 
 interface CookiePreferences {
   necessary: boolean
@@ -19,7 +20,7 @@ export default function CookieConsentBanner() {
   const [showBanner, setShowBanner] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true, // Always true, cannot be disabled
+    necessary: true,
     analytics: false,
     marketing: false,
     preferences: false,
@@ -27,324 +28,265 @@ export default function CookieConsentBanner() {
 
   useEffect(() => {
     // Check if user has already made a choice
-    const cookieConsent = localStorage.getItem("cookie-consent")
-    if (!cookieConsent) {
-      // Show banner after a short delay for better UX
-      const timer = setTimeout(() => {
-        setShowBanner(true)
-      }, 1000)
+    const hasConsent = localStorage.getItem("cookie-consent")
+    if (!hasConsent) {
+      // Show banner after a short delay
+      const timer = setTimeout(() => setShowBanner(true), 1000)
       return () => clearTimeout(timer)
     }
   }, [])
 
-  const content = {
-    it: {
-      title: "La tua privacy è la nostra priorità",
-      description:
-        "Questo sito utilizza cookie per migliorare la tua esperienza di navigazione. I cookie necessari sono sempre attivi, mentre puoi scegliere se accettare cookie analitici e di marketing per contenuti personalizzati.",
-      learnMore: "Scopri di più nella nostra",
-      cookiePolicy: "Cookie Policy",
-      acceptAll: "Accetta Tutti",
-      acceptSelected: "Accetto I Selezionati",
-      manageOptions: "Gestisci Opzioni",
-      continueWithout: "Continua senza accettare",
-      close: "Chiudi",
-      categories: {
-        necessary: {
-          title: "Cookie Necessari",
-          description: "Essenziali per il funzionamento del sito. Non possono essere disabilitati.",
-          always: "Sempre attivi",
-        },
-        analytics: {
-          title: "Cookie Analitici",
-          description: "Ci aiutano a capire come utilizzi il sito per migliorare l'esperienza utente.",
-        },
-        marketing: {
-          title: "Cookie di Marketing",
-          description: "Utilizzati per mostrarti contenuti e pubblicità personalizzati.",
-        },
-        preferences: {
-          title: "Cookie di Preferenze",
-          description: "Memorizzano le tue scelte per personalizzare l'esperienza di navigazione.",
-        },
-      },
-      detailsTitle: "Gestisci i tuoi consensi",
-      detailsDescription:
-        "Puoi scegliere quali categorie di cookie accettare. I cookie necessari sono sempre attivi per garantire il funzionamento del sito.",
-    },
-    en: {
-      title: "Your privacy is our priority",
-      description:
-        "This site uses cookies to improve your browsing experience. Necessary cookies are always active, while you can choose whether to accept analytics and marketing cookies for personalized content.",
-      learnMore: "Learn more in our",
-      cookiePolicy: "Cookie Policy",
-      acceptAll: "Accept All",
-      acceptSelected: "Accept Selected",
-      manageOptions: "Manage Options",
-      continueWithout: "Continue without accepting",
-      close: "Close",
-      categories: {
-        necessary: {
-          title: "Necessary Cookies",
-          description: "Essential for site functionality. Cannot be disabled.",
-          always: "Always active",
-        },
-        analytics: {
-          title: "Analytics Cookies",
-          description: "Help us understand how you use the site to improve user experience.",
-        },
-        marketing: {
-          title: "Marketing Cookies",
-          description: "Used to show you personalized content and advertising.",
-        },
-        preferences: {
-          title: "Preference Cookies",
-          description: "Store your choices to personalize the browsing experience.",
-        },
-      },
-      detailsTitle: "Manage your consents",
-      detailsDescription:
-        "You can choose which categories of cookies to accept. Necessary cookies are always active to ensure site functionality.",
-    },
-  }
-
-  const t = content[language as keyof typeof content]
-
   const handleAcceptAll = () => {
-    const allPreferences = {
+    const allAccepted = {
       necessary: true,
       analytics: true,
       marketing: true,
       preferences: true,
     }
-    savePreferences(allPreferences)
-  }
-
-  const handleAcceptSelected = () => {
-    savePreferences(preferences)
+    setPreferences(allAccepted)
+    localStorage.setItem("cookie-consent", JSON.stringify(allAccepted))
+    localStorage.setItem("cookie-consent-date", new Date().toISOString())
+    setShowBanner(false)
+    setShowDetails(false)
   }
 
   const handleRejectAll = () => {
-    const minimalPreferences = {
+    const onlyNecessary = {
       necessary: true,
       analytics: false,
       marketing: false,
       preferences: false,
     }
-    savePreferences(minimalPreferences)
-  }
-
-  const savePreferences = (prefs: CookiePreferences) => {
-    localStorage.setItem("cookie-consent", JSON.stringify(prefs))
+    setPreferences(onlyNecessary)
+    localStorage.setItem("cookie-consent", JSON.stringify(onlyNecessary))
     localStorage.setItem("cookie-consent-date", new Date().toISOString())
-
-    // Set actual cookies based on preferences
-    if (prefs.analytics) {
-      // Enable Google Analytics
-      document.cookie = "analytics-enabled=true; path=/; max-age=31536000; SameSite=Lax"
-    }
-    if (prefs.marketing) {
-      // Enable marketing cookies
-      document.cookie = "marketing-enabled=true; path=/; max-age=31536000; SameSite=Lax"
-    }
-    if (prefs.preferences) {
-      // Enable preference cookies
-      document.cookie = "preferences-enabled=true; path=/; max-age=31536000; SameSite=Lax"
-    }
-
     setShowBanner(false)
     setShowDetails(false)
   }
 
-  const togglePreference = (key: keyof CookiePreferences) => {
-    if (key === "necessary") return // Cannot disable necessary cookies
+  const handleSavePreferences = () => {
+    localStorage.setItem("cookie-consent", JSON.stringify(preferences))
+    localStorage.setItem("cookie-consent-date", new Date().toISOString())
+    setShowBanner(false)
+    setShowDetails(false)
+  }
+
+  const updatePreference = (key: keyof CookiePreferences, value: boolean) => {
     setPreferences((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: value,
     }))
   }
 
-  if (!showBanner) return null
+  const content = {
+    it: {
+      title: "Utilizziamo i Cookie",
+      description:
+        "Utilizziamo cookie e tecnologie simili per migliorare la tua esperienza, analizzare il traffico e personalizzare i contenuti.",
+      acceptAll: "Accetta Tutti",
+      rejectAll: "Rifiuta Tutti",
+      manageOptions: "Gestisci Opzioni",
+      detailsTitle: "Preferenze Cookie",
+      detailsDescription: "Scegli quali cookie accettare. Puoi modificare queste impostazioni in qualsiasi momento.",
+      save: "Salva Preferenze",
+      categories: {
+        necessary: {
+          title: "Cookie Necessari",
+          description: "Essenziali per il funzionamento del sito web. Non possono essere disabilitati.",
+        },
+        analytics: {
+          title: "Cookie Analitici",
+          description: "Ci aiutano a capire come i visitatori interagiscono con il sito web.",
+        },
+        marketing: {
+          title: "Cookie Marketing",
+          description: "Utilizzati per tracciare i visitatori sui siti web per mostrare annunci pertinenti.",
+        },
+        preferences: {
+          title: "Cookie Preferenze",
+          description: "Permettono al sito web di ricordare le tue scelte e preferenze.",
+        },
+      },
+      links: {
+        privacy: "Informativa Privacy",
+        cookies: "Policy Cookie",
+      },
+    },
+    en: {
+      title: "We Use Cookies",
+      description:
+        "We use cookies and similar technologies to improve your experience, analyze traffic, and personalize content.",
+      acceptAll: "Accept All",
+      rejectAll: "Reject All",
+      manageOptions: "Manage Options",
+      detailsTitle: "Cookie Preferences",
+      detailsDescription: "Choose which cookies to accept. You can change these settings at any time.",
+      save: "Save Preferences",
+      categories: {
+        necessary: {
+          title: "Necessary Cookies",
+          description: "Essential for the website to function. Cannot be disabled.",
+        },
+        analytics: {
+          title: "Analytics Cookies",
+          description: "Help us understand how visitors interact with the website.",
+        },
+        marketing: {
+          title: "Marketing Cookies",
+          description: "Used to track visitors across websites to display relevant ads.",
+        },
+        preferences: {
+          title: "Preference Cookies",
+          description: "Allow the website to remember your choices and preferences.",
+        },
+      },
+      links: {
+        privacy: "Privacy Policy",
+        cookies: "Cookie Policy",
+      },
+    },
+  }
+
+  const t = content[language as keyof typeof content] || content.it
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
-
-      {/* Banner */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl bg-white text-slate-900 shadow-2xl">
-          <CardContent className="p-6">
-            {!showDetails ? (
-              // Main Banner
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                      <Cookie className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">{t.title}</h2>
-                      <p className="text-sm text-slate-600">Digital Aura</p>
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg"
+          >
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <Cookie className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{t.description}</p>
+                    <div className="flex gap-4 mt-2">
+                      <a href="/privacy" className="text-xs text-blue-600 hover:underline">
+                        {t.links.privacy}
+                      </a>
+                      <a href="/cookies" className="text-xs text-blue-600 hover:underline">
+                        {t.links.cookies}
+                      </a>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRejectAll}
-                    className="text-slate-500 hover:text-slate-700"
-                  >
-                    {t.continueWithout}
-                  </Button>
                 </div>
-
-                {/* Description */}
-                <div className="space-y-3">
-                  <p className="text-slate-700 leading-relaxed">{t.description}</p>
-                  <p className="text-sm text-slate-600">
-                    {t.learnMore}{" "}
-                    <Link href="/cookies" className="text-blue-600 hover:text-blue-800 underline">
-                      {t.cookiePolicy}
-                    </Link>
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={() => setShowDetails(true)}
-                    variant="outline"
-                    className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button variant="outline" size="sm" onClick={() => setShowDetails(true)} className="w-full sm:w-auto">
                     {t.manageOptions}
                   </Button>
                   <Button
-                    onClick={handleAcceptAll}
-                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-                  >
-                    {t.acceptAll}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // Detailed Settings
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-900">{t.detailsTitle}</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowDetails(false)}
-                    className="text-slate-500 hover:text-slate-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Description */}
-                <p className="text-slate-700 text-sm">{t.detailsDescription}</p>
-
-                {/* Cookie Categories */}
-                <div className="space-y-4 max-h-80 overflow-y-auto">
-                  {/* Necessary Cookies */}
-                  <div className="border border-slate-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Shield className="w-5 h-5 text-green-600" />
-                        <h3 className="font-semibold text-slate-900">{t.categories.necessary.title}</h3>
-                      </div>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                        {t.categories.necessary.always}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600">{t.categories.necessary.description}</p>
-                  </div>
-
-                  {/* Analytics Cookies */}
-                  <div className="border border-slate-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <BarChart3 className="w-5 h-5 text-purple-600" />
-                        <h3 className="font-semibold text-slate-900">{t.categories.analytics.title}</h3>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preferences.analytics}
-                          onChange={() => togglePreference("analytics")}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <p className="text-sm text-slate-600">{t.categories.analytics.description}</p>
-                  </div>
-
-                  {/* Marketing Cookies */}
-                  <div className="border border-slate-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Target className="w-5 h-5 text-orange-600" />
-                        <h3 className="font-semibold text-slate-900">{t.categories.marketing.title}</h3>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preferences.marketing}
-                          onChange={() => togglePreference("marketing")}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <p className="text-sm text-slate-600">{t.categories.marketing.description}</p>
-                  </div>
-
-                  {/* Preference Cookies */}
-                  <div className="border border-slate-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Eye className="w-5 h-5 text-blue-600" />
-                        <h3 className="font-semibold text-slate-900">{t.categories.preferences.title}</h3>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preferences.preferences}
-                          onChange={() => togglePreference("preferences")}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <p className="text-sm text-slate-600">{t.categories.preferences.description}</p>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200">
-                  <Button
-                    onClick={handleAcceptSelected}
                     variant="outline"
-                    className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+                    size="sm"
+                    onClick={handleRejectAll}
+                    className="w-full sm:w-auto bg-transparent"
                   >
-                    {t.acceptSelected}
+                    {t.rejectAll}
                   </Button>
-                  <Button
-                    onClick={handleAcceptAll}
-                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-                  >
+                  <Button size="sm" onClick={handleAcceptAll} className="w-full sm:w-auto">
                     {t.acceptAll}
                   </Button>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-blue-600" />
+              {t.detailsTitle}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <p className="text-sm text-gray-600">{t.detailsDescription}</p>
+
+            <div className="space-y-4">
+              {/* Necessary Cookies */}
+              <div className="flex items-start justify-between p-4 border rounded-lg bg-gray-50">
+                <div className="flex items-start gap-3 flex-1">
+                  <Shield className="h-5 w-5 text-green-600 mt-1" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">{t.categories.necessary.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{t.categories.necessary.description}</p>
+                  </div>
+                </div>
+                <Switch checked={preferences.necessary} disabled className="mt-1" />
+              </div>
+
+              {/* Analytics Cookies */}
+              <div className="flex items-start justify-between p-4 border rounded-lg">
+                <div className="flex items-start gap-3 flex-1">
+                  <BarChart3 className="h-5 w-5 text-blue-600 mt-1" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">{t.categories.analytics.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{t.categories.analytics.description}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={preferences.analytics}
+                  onCheckedChange={(checked) => updatePreference("analytics", checked)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Marketing Cookies */}
+              <div className="flex items-start justify-between p-4 border rounded-lg">
+                <div className="flex items-start gap-3 flex-1">
+                  <Target className="h-5 w-5 text-purple-600 mt-1" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">{t.categories.marketing.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{t.categories.marketing.description}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={preferences.marketing}
+                  onCheckedChange={(checked) => updatePreference("marketing", checked)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Preference Cookies */}
+              <div className="flex items-start justify-between p-4 border rounded-lg">
+                <div className="flex items-start gap-3 flex-1">
+                  <Cookie className="h-5 w-5 text-orange-600 mt-1" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">{t.categories.preferences.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{t.categories.preferences.description}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={preferences.preferences}
+                  onCheckedChange={(checked) => updatePreference("preferences", checked)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={handleRejectAll} className="flex-1 bg-transparent">
+                {t.rejectAll}
+              </Button>
+              <Button onClick={handleSavePreferences} className="flex-1">
+                {t.save}
+              </Button>
+              <Button onClick={handleAcceptAll} className="flex-1">
+                {t.acceptAll}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
