@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
+import CookieConsentBanner from "./components/cookie-consent-banner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -44,7 +45,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          {children}
+          <CookieConsentBanner />
+        </LanguageProvider>
       </body>
     </html>
   )

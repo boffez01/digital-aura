@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
-import { format, parseISO, isSameDay, startOfMonth, endOfMonth } from "date-fns"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { CalendarDays, Clock, User, Mail, Phone, MessageSquare, AlertCircle, CheckCircle, XCircle } from "lucide-react"
+import { format, parseISO, isToday, isTomorrow, isYesterday } from "date-fns"
 import { it } from "date-fns/locale"
-import { CalendarIcon, Clock, User, Mail, Phone, RefreshCw, CheckCircle, AlertCircle, Plus } from "lucide-react"
 
 interface Appointment {
   id: number
@@ -18,24 +18,17 @@ interface Appointment {
   date: string
   time: string
   message: string
-  status: string
+  status: "pending" | "confirmed" | "cancelled"
   priority: boolean
-  google_event_id?: string
-  google_event_link?: string
   created_at: string
-  updated_at: string
 }
 
-export default function AdminCalendarPage() {
-  const [appointments, setAppointments] = useState<Appointment[]>([])
+export default function AdminCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filterStatus, setFilterStatus] = useState<string>("all")
-
-  useEffect(() => {
-    fetchAppointments()
-  }, [])
+  const [debugInfo, setDebugInfo] = useState<any>(null)
 
   const fetchAppointments = async () => {
     try {
@@ -44,124 +37,132 @@ export default function AdminCalendarPage() {
 
       console.log("🔄 Fetching appointments...")
 
-      const response = await fetch("/api/appointments")
+      const response = await fetch("/api/admin/appointments", {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text()
-        console.error("❌ Non-JSON response:", text)
-        throw new Error("Server returned non-JSON response")
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data = await response.json()
-      console.log("📋 Appointments data:", data)
+      console.log("📊 Raw API response:", data)
 
-      if (data.success) {
-        setAppointments(data.appointments || [])
-        console.log(`✅ Loaded ${data.appointments?.length || 0} appointments`)
+      if (data.success && Array.isArray(data.appointments)) {
+        setAppointments(data.appointments)
+        setDebugInfo({
+          totalAppointments: data.appointments.length,
+          apiResponse: data,
+          fetchTime: new Date().toISOString(),
+        })
+        console.log(`✅ Loaded ${data.appointments.length} appointments`)
       } else {
-        throw new Error(data.message || "Failed to fetch appointments")
+        console.error("❌ Invalid API response format:", data)
+        setError("Formato risposta API non valido")
       }
     } catch (error) {
       console.error("❌ Error fetching appointments:", error)
-      setError(error instanceof Error ? error.message : "Unknown error occurred")
-      setAppointments([])
+      setError(error instanceof Error ? error.message : "Errore sconosciuto")
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchAppointments()
+  }, [])
+
   // Get appointments for selected date
-  const getAppointmentsForDate = (date: Date) => {
-    return appointments.filter((appointment) => {
+  const selectedDateAppointments = appointments.filter((apt) => {
+    try {
+      const aptDate = parseISO(apt.date)
+      return format(aptDate, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
+    } catch (error) {
+      console.error("Error parsing appointment date:", apt.date, error)
+      return false
+    }
+  })
+
+  // Get dates with appointments for calendar highlighting
+  const datesWithAppointments = appointments
+    .map((apt) => {
       try {
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const appointmentDate = appointment.date.includes("T")
-          ? parseISO(appointment.date)
-          : parseISO(appointment.date + "T00:00:00")
-        return isSameDay(appointmentDate, date)
+        return parseISO(apt.date)
       } catch (error) {
-        console.error("Error parsing date:", appointment.date, error)
-        return false
+        console.error("Error parsing date for highlighting:", apt.date, error)
+        return null
       }
     })
-  }
+    .filter(Boolean) as Date[]
 
-  // Get appointments for selected month
-  const getAppointmentsForMonth = (date: Date) => {
-    const monthStart = startOfMonth(date)
-    const monthEnd = endOfMonth(date)
-
-    return appointments.filter((appointment) => {
-      try {
-        const appointmentDate = appointment.date.includes("T")
-          ? parseISO(appointment.date)
-          : parseISO(appointment.date + "T00:00:00")
-        return appointmentDate >= monthStart && appointmentDate <= monthEnd
-      } catch (error) {
-        console.error("Error parsing date:", appointment.date, error)
-        return false
-      }
-    })
-  }
-
-  // Get days with appointments for calendar highlighting
-  const getDaysWithAppointments = () => {
-    const monthAppointments = getAppointmentsForMonth(selectedDate)
-    const daysWithAppointments = new Set()
-
-    monthAppointments.forEach((appointment) => {
-      try {
-        const appointmentDate = appointment.date.includes("T")
-          ? parseISO(appointment.date)
-          : parseISO(appointment.date + "T00:00:00")
-        daysWithAppointments.add(format(appointmentDate, "yyyy-MM-dd"))
-      } catch (error) {
-        console.error("Error parsing date for calendar:", appointment.date, error)
-      }
-    })
-
-    return daysWithAppointments
-  }
-
-  const selectedDateAppointments = getAppointmentsForDate(selectedDate)
-  const filteredAppointments =
-    filterStatus === "all"
-      ? selectedDateAppointments
-      : selectedDateAppointments.filter((apt) => apt.status === filterStatus)
-
-  const daysWithAppointments = getDaysWithAppointments()
-
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "confirmed":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return <CheckCircle className="h-4 w-4 text-green-500" />
       case "cancelled":
-        return "bg-red-100 text-red-800 border-red-200"
+        return <XCircle className="h-4 w-4 text-red-500" />
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />
     }
   }
 
-  const getServiceColor = (service: string) => {
-    switch (service.toLowerCase()) {
-      case "ai-automation":
-        return "bg-blue-100 text-blue-800"
-      case "chatbots":
-      case "chatbot":
-        return "bg-purple-100 text-purple-800"
-      case "web-development":
-        return "bg-green-100 text-green-800"
-      case "ai-marketing":
-        return "bg-orange-100 text-orange-800"
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmed":
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            Confermato
+          </Badge>
+        )
+      case "cancelled":
+        return <Badge variant="destructive">Annullato</Badge>
       default:
-        return "bg-gray-100 text-gray-800"
+        return <Badge variant="secondary">In Attesa</Badge>
+    }
+  }
+
+  const formatTime = (timeString: string) => {
+    try {
+      // Handle different time formats
+      if (timeString.includes(":")) {
+        const [hours, minutes] = timeString.split(":")
+        return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`
+      }
+      return timeString
+    } catch (error) {
+      console.error("Error formatting time:", timeString, error)
+      return timeString
+    }
+  }
+
+  const getDateDescription = (date: Date) => {
+    if (isToday(date)) return "Oggi"
+    if (isTomorrow(date)) return "Domani"
+    if (isYesterday(date)) return "Ieri"
+    return format(date, "EEEE d MMMM yyyy", { locale: it })
+  }
+
+  const updateAppointmentStatus = async (id: number, newStatus: "confirmed" | "cancelled") => {
+    try {
+      const response = await fetch(`/api/admin/appointments`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, status: newStatus }),
+      })
+
+      if (response.ok) {
+        await fetchAppointments() // Refresh the list
+      } else {
+        console.error("Failed to update appointment status")
+      }
+    } catch (error) {
+      console.error("Error updating appointment:", error)
     }
   }
 
@@ -169,31 +170,11 @@ export default function AdminCalendarPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Caricamento calendario...</span>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Caricamento calendario...</p>
+          </div>
         </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Errore nel caricamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-red-700 mb-4">{error}</p>
-            <Button onClick={fetchAppointments} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Riprova
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     )
   }
@@ -202,73 +183,55 @@ export default function AdminCalendarPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Calendario Appuntamenti</h1>
-          <p className="text-muted-foreground">Gestisci e visualizza tutti i tuoi appuntamenti</p>
+          <h1 className="text-3xl font-bold text-gray-900">Calendario Appuntamenti</h1>
+          <p className="text-gray-600 mt-1">Gestisci tutti gli appuntamenti dei clienti</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={fetchAppointments} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Aggiorna
-          </Button>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuovo Appuntamento
-          </Button>
-        </div>
+        <Button onClick={fetchAppointments} disabled={loading}>
+          {loading ? "Aggiornamento..." : "Aggiorna"}
+        </Button>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totale Appuntamenti</CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{appointments.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Confermati</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {appointments.filter((apt) => apt.status === "confirmed").length}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-red-800">
+              <AlertCircle className="h-5 w-5" />
+              <span className="font-medium">Errore: {error}</span>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Attesa</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
+      {/* Debug Info */}
+      {debugInfo && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-sm text-blue-800">Debug Info</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {appointments.filter((apt) => apt.status === "pending").length}
+          <CardContent className="text-sm text-blue-700">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <strong>Totale Appuntamenti:</strong> {debugInfo.totalAppointments}
+              </div>
+              <div>
+                <strong>Ultimo Aggiornamento:</strong> {new Date(debugInfo.fetchTime).toLocaleString("it-IT")}
+              </div>
+              <div className="col-span-2">
+                <strong>Appuntamenti per Data Selezionata:</strong> {selectedDateAppointments.length}
+              </div>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Oggi</CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{getAppointmentsForDate(new Date()).length}</div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Calendario</CardTitle>
+            <CardTitle className="flex items-center space-x-2">
+              <CalendarDays className="h-5 w-5" />
+              <span>Calendario</span>
+            </CardTitle>
             <CardDescription>Seleziona una data per vedere gli appuntamenti</CardDescription>
           </CardHeader>
           <CardContent>
@@ -276,35 +239,22 @@ export default function AdminCalendarPage() {
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              locale={it}
-              className="rounded-md border"
               modifiers={{
-                hasAppointments: (date) => {
-                  const dateStr = format(date, "yyyy-MM-dd")
-                  return daysWithAppointments.has(dateStr)
-                },
+                hasAppointments: datesWithAppointments,
               }}
               modifiersStyles={{
                 hasAppointments: {
-                  backgroundColor: "#10b981",
-                  color: "white",
+                  backgroundColor: "#dbeafe",
+                  color: "#1e40af",
                   fontWeight: "bold",
-                  borderRadius: "50%",
                 },
               }}
+              className="rounded-md border"
             />
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center text-sm">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <div className="mt-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
                 <span>Giorni con appuntamenti</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                <span>Oggi</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <div className="w-3 h-3 bg-gray-200 rounded-full mr-2"></div>
-                <span>Data selezionata</span>
               </div>
             </div>
           </CardContent>
@@ -313,100 +263,164 @@ export default function AdminCalendarPage() {
         {/* Appointments List */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Appuntamenti per {format(selectedDate, "dd MMMM yyyy", { locale: it })}</CardTitle>
-                <CardDescription>{filteredAppointments.length} appuntamenti trovati</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={filterStatus === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterStatus("all")}
-                >
-                  Tutti
-                </Button>
-                <Button
-                  variant={filterStatus === "confirmed" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterStatus("confirmed")}
-                >
-                  Confermati
-                </Button>
-                <Button
-                  variant={filterStatus === "pending" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterStatus("pending")}
-                >
-                  In Attesa
-                </Button>
-              </div>
-            </div>
+            <CardTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5" />
+              <span>Appuntamenti - {getDateDescription(selectedDate)}</span>
+            </CardTitle>
+            <CardDescription>
+              {selectedDateAppointments.length === 0
+                ? "Nessun appuntamento per questa data"
+                : `${selectedDateAppointments.length} appuntamento${selectedDateAppointments.length > 1 ? "i" : ""} programmato${selectedDateAppointments.length > 1 ? "i" : ""}`}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {filteredAppointments.length === 0 ? (
-              <div className="text-center py-8">
-                <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Nessun appuntamento per questa data</p>
+          <CardContent>
+            {selectedDateAppointments.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nessun appuntamento per {format(selectedDate, "d MMMM yyyy", { locale: it })}</p>
               </div>
             ) : (
-              filteredAppointments
-                .sort((a, b) => a.time.localeCompare(b.time))
-                .map((appointment) => (
-                  <div
-                    key={appointment.id}
-                    className="border rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <Clock className="h-4 w-4 text-blue-600" />
+              <div className="space-y-4">
+                {selectedDateAppointments
+                  .sort((a, b) => a.time.localeCompare(b.time))
+                  .map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className={`p-4 rounded-lg border ${
+                        appointment.priority ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"
+                      } hover:shadow-md transition-shadow`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            {getStatusIcon(appointment.status)}
+                            <h3 className="font-semibold text-gray-900">{appointment.name}</h3>
+                            {getStatusBadge(appointment.status)}
+                            {appointment.priority && (
+                              <Badge variant="destructive" className="text-xs">
+                                PRIORITÀ
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4" />
+                              <span>{formatTime(appointment.time)}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <User className="h-4 w-4" />
+                              <span>{appointment.service}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Mail className="h-4 w-4" />
+                              <span>{appointment.email}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Phone className="h-4 w-4" />
+                              <span>{appointment.phone}</span>
+                            </div>
+                          </div>
+
+                          {appointment.message && appointment.message !== "Nessun messaggio aggiuntivo" && (
+                            <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                              <div className="flex items-start space-x-2">
+                                <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5" />
+                                <p className="text-sm text-gray-700">{appointment.message}</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-lg">{appointment.time}</h4>
-                          <p className="text-sm text-gray-600">{appointment.service}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
-                        <Badge className={getServiceColor(appointment.service)}>{appointment.service}</Badge>
-                        {appointment.priority && <Badge variant="destructive">Priorità</Badge>}
+
+                        {appointment.status === "pending" && (
+                          <div className="flex space-x-2 ml-4">
+                            <Button
+                              size="sm"
+                              onClick={() => updateAppointmentStatus(appointment.id, "confirmed")}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Conferma
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateAppointmentStatus(appointment.id, "cancelled")}
+                              className="border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              Annulla
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span>{appointment.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-gray-400" />
-                        <span>{appointment.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-gray-400" />
-                        <span>{appointment.phone}</span>
-                      </div>
-                    </div>
-
-                    {appointment.message && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-sm text-gray-700">{appointment.message}</p>
-                      </div>
-                    )}
-
-                    {appointment.google_event_link && (
-                      <div className="flex justify-end">
-                        <Button size="sm" variant="outline" asChild>
-                          <a href={appointment.google_event_link} target="_blank" rel="noopener noreferrer">
-                            Apri in Google Calendar
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))
+                  ))}
+              </div>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Totale Appuntamenti</p>
+                <p className="text-2xl font-bold text-gray-900">{appointments.length}</p>
+              </div>
+              <CalendarDays className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">In Attesa</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {appointments.filter((apt) => apt.status === "pending").length}
+                </p>
+              </div>
+              <AlertCircle className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Confermati</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {appointments.filter((apt) => apt.status === "confirmed").length}
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Oggi</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {
+                    appointments.filter((apt) => {
+                      try {
+                        return isToday(parseISO(apt.date))
+                      } catch {
+                        return false
+                      }
+                    }).length
+                  }
+                </p>
+              </div>
+              <Clock className="h-8 w-8 text-blue-600" />
+            </div>
           </CardContent>
         </Card>
       </div>

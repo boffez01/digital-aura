@@ -1,16 +1,8 @@
-// Booking Flow - Complete appointment booking system
-// Version 246 - Full booking with database check and 30-minute slots
+import { neon } from "@neondatabase/serverless"
 
-import { SessionManager } from "./session-manager"
+const sql = neon(process.env.DATABASE_URL!)
 
-export interface BookingResponse {
-  message: string
-  nextStep?: string
-  completed?: boolean
-  needsInput?: boolean
-}
-
-export interface BookingData {
+interface BookingData {
   service?: string
   date?: string
   time?: string
@@ -18,117 +10,160 @@ export interface BookingData {
   email?: string
   phone?: string
   message?: string
+  availableSlots?: string[]
+}
+
+interface BookingResponse {
+  message: string
+  nextStep?: string
+  completed?: boolean
 }
 
 export class BookingFlow {
-  private sessionManager: SessionManager
+  private async getSessionData(sessionId: string): Promise<BookingData> {
+    try {
+      const result = await sql`
+        SELECT booking_data 
+        FROM chat_sessions 
+        WHERE session_id = ${sessionId}
+      `
 
-  constructor() {
-    this.sessionManager = SessionManager.getInstance()
-  }
+      if (result.length > 0 && result[0].booking_data) {
+        const bookingData = result[0].booking_data
 
-  // Business hours validation - Orari negozio: 9:00-12:00 e 14:00-18:00
-  private isBusinessHours(time: string): boolean {
-    const [hourStr, minuteStr] = time.split(":")
-    const hour = Number.parseInt(hourStr)
-    const minute = Number.parseInt(minuteStr)
-    const totalMinutes = hour * 60 + minute
-
-    // Orari mattina: 9:00 - 12:00
-    const morningStart = 9 * 60 // 9:00
-    const morningEnd = 12 * 60 // 12:00
-
-    // Orari pomeriggio: 14:00 - 18:00
-    const afternoonStart = 14 * 60 // 14:00
-    const afternoonEnd = 18 * 60 // 18:00
-
-    // Check se è negli orari di apertura
-    const isMorning = totalMinutes >= morningStart && totalMinutes < morningEnd
-    const isAfternoon = totalMinutes >= afternoonStart && totalMinutes < afternoonEnd
-
-    return isMorning || isAfternoon
-  }
-
-  // Generate available time slots (every 30 minutes)
-  private getAvailableTimeSlots(): string[] {
-    const slots: string[] = []
-
-    // Mattina: 9:00 - 12:00 (ogni 30 minuti)
-    for (let hour = 9; hour < 12; hour++) {
-      slots.push(`${hour.toString().padStart(2, "0")}:00`)
-      slots.push(`${hour.toString().padStart(2, "0")}:30`)
+        // Handle different data types
+        if (typeof bookingData === "string") {
+          try {
+            return JSON.parse(bookingData)
+          } catch (parseError) {
+            console.error("Error parsing booking_data JSON:", parseError)
+            return {}
+          }
+        } else if (typeof bookingData === "object" && bookingData !== null) {
+          return bookingData as BookingData
+        }
+      }
+      return {}
+    } catch (error) {
+      console.error("Error getting session data:", error)
+      return {}
     }
-
-    // Pomeriggio: 14:00 - 18:00 (ogni 30 minuti)
-    for (let hour = 14; hour < 18; hour++) {
-      slots.push(`${hour.toString().padStart(2, "0")}:00`)
-      slots.push(`${hour.toString().padStart(2, "0")}:30`)
-    }
-
-    return slots
   }
 
-  // Check availability in database
-  private async checkSlotAvailability(date: string, time: string): Promise<boolean> {
+  private async updateSessionData(sessionId: string, data: BookingData, step: string): Promise<void> {
+    try {
+      // Ensure we're storing as JSONB
+      const jsonData = JSON.stringify(data)
+
+      await sql`
+        INSERT INTO chat_sessions (session_id, booking_data, flow_step, booking_mode, created_at, updated_at)
+        VALUES (${sessionId}, ${jsonData}::jsonb, ${step}, true, NOW(), NOW())
+        ON CONFLICT (session_id) 
+        DO UPDATE SET 
+          booking_data = ${jsonData}::jsonb,
+          flow_step = ${step},
+          booking_mode = true,
+          updated_at = NOW()
+      `
+
+      console.log(`✅ Session updated: ${sessionId}, Step: ${step}`)
+    } catch (error) {
+      console.error("Error updating session data:", error)
+    }
+  }
+
+  private async clearSession(sessionId: string): Promise<void> {
+    try {
+      await sql`
+        UPDATE chat_sessions 
+        SET booking_mode = false, flow_step = null, booking_data = null
+        WHERE session_id = ${sessionId}
+      `
+      console.log(`🧹 Session cleared: ${sessionId}`)
+    } catch (error) {
+      console.error("Error clearing session:", error)
+    }
+  }
+
+  private async checkTimeSlotAvailability(date: string, time: string): Promise<boolean> {
     try {
       console.log(`🔍 Checking availability for ${date} at ${time}`)
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/appointments/availability`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date, time }),
-        },
-      )
+      const existingAppointments = await sql`
+        SELECT id, name, time, status 
+        FROM appointments 
+        WHERE date = ${date} 
+        AND time = ${time}
+        AND status IN ('pending', 'confirmed')
+      `
 
-      if (!response.ok) {
-        console.error("❌ Error checking availability")
-        return true // Default to available if check fails
+      const isAvailable = existingAppointments.length === 0
+
+      console.log(`📊 Slot ${date} ${time}: ${isAvailable ? "AVAILABLE" : "OCCUPIED"}`)
+      if (!isAvailable) {
+        console.log(`❌ Occupied by: ${existingAppointments[0].name}`)
       }
 
-      const data = await response.json()
-      return data.available
+      return isAvailable
     } catch (error) {
       console.error("❌ Error checking slot availability:", error)
       return true // Default to available if check fails
     }
   }
 
-  private getBusinessHoursMessage(language: string): string {
-    const messages = {
-      it: `🏪 **NEGOZIO CHIUSO**
+  private async getAvailableTimeSlots(date: string): Promise<string[]> {
+    try {
+      console.log(`🔍 Getting available slots for ${date}`)
 
-⏰ **ORARI DI APERTURA:**
+      // All possible time slots
+      const allSlots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"]
 
-🌅 **Mattina**: 09:00 - 12:00
-🌆 **Pomeriggio**: 14:00 - 18:00
+      // Get occupied slots
+      const occupiedSlots = await sql`
+        SELECT DISTINCT time 
+        FROM appointments 
+        WHERE date = ${date} 
+        AND status IN ('pending', 'confirmed')
+      `
 
-❌ **Chiuso**: 12:00 - 14:00 (pausa pranzo)
-❌ **Chiuso**: Prima delle 09:00 e dopo le 18:00
+      const occupiedTimes = occupiedSlots.map((slot: any) => {
+        // Normalize time format (remove seconds if present)
+        let timeStr = slot.time.toString()
+        if (timeStr.length > 5) {
+          timeStr = timeStr.substring(0, 5)
+        }
+        return timeStr
+      })
 
-📅 **Appuntamenti ogni 30 minuti**
-(es: 9:00, 9:30, 10:00, 10:30, etc.)
+      console.log(`📊 Occupied slots for ${date}:`, occupiedTimes)
 
-Per favore scegli un orario durante l'apertura del negozio.`,
+      // Filter available slots
+      const availableSlots = allSlots.filter((slot) => !occupiedTimes.includes(slot))
 
-      en: `🏪 **SHOP CLOSED**
+      console.log(`✅ Available slots for ${date}:`, availableSlots)
+      return availableSlots
+    } catch (error) {
+      console.error("❌ Error getting available slots:", error)
+      return ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"]
+    }
+  }
 
-⏰ **OPENING HOURS:**
+  private formatTimeSlot(startTime: string): string {
+    const [hours, minutes] = startTime.split(":").map(Number)
 
-🌅 **Morning**: 09:00 - 12:00
-🌆 **Afternoon**: 14:00 - 18:00
+    // Calculate end time (30 minutes later)
+    let endHours = hours
+    let endMinutes = minutes + 30
 
-❌ **Closed**: 12:00 - 14:00 (lunch break)
-❌ **Closed**: Before 09:00 and after 18:00
-
-📅 **Appointments every 30 minutes**
-(e.g: 9:00, 9:30, 10:00, 10:30, etc.)
-
-Please choose a time during shop opening hours.`,
+    // Handle minute overflow
+    if (endMinutes >= 60) {
+      endMinutes -= 60
+      endHours += 1
     }
 
-    return messages[language as keyof typeof messages] || messages.it
+    const endTime = `${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`
+
+    return `${startTime} - ${endTime}`
   }
 
   async handleBookingStep(
@@ -137,794 +172,329 @@ Please choose a time during shop opening hours.`,
     currentStep: string,
     language = "it",
   ): Promise<BookingResponse> {
-    try {
-      console.log(`📅 Processing booking step: ${currentStep} for session ${sessionId}`)
-
-      const session = await this.sessionManager.getSession(sessionId)
-      if (!session) {
-        throw new Error("Session not found")
-      }
-
-      // Activate booking mode if not already active
-      if (!session.booking_mode) {
-        await this.sessionManager.activateBookingMode(sessionId)
-      }
-
-      // Get existing booking data from context
-      const bookingData: BookingData = session.context.booking_data || {}
-
-      // Process based on current step
-      switch (currentStep) {
-        case "booking_start":
-          return await this.startBooking(sessionId, language)
-
-        case "service_selection":
-          return await this.handleServiceSelection(sessionId, message, language)
-
-        case "date_selection":
-          return await this.handleDateSelection(sessionId, message, bookingData, language)
-
-        case "time_selection":
-          return await this.handleTimeSelection(sessionId, message, bookingData, language)
-
-        case "contact_info":
-          return await this.handleContactInfo(sessionId, message, bookingData, language)
-
-        case "confirmation":
-          return await this.handleConfirmation(sessionId, message, bookingData, language)
-
-        default:
-          return await this.startBooking(sessionId, language)
-      }
-    } catch (error) {
-      console.error("❌ Error in booking flow:", error)
-
-      const errorMessages = {
-        it: "📅 Si è verificato un errore durante la prenotazione. Riprova o contattaci: +39 02 1234567",
-        en: "📅 An error occurred during booking. Please try again or contact us: +39 02 1234567",
-      }
-
-      return {
-        message: errorMessages[language as keyof typeof errorMessages] || errorMessages.it,
-        completed: false,
-      }
-    }
-  }
-
-  private async startBooking(sessionId: string, language: string): Promise<BookingResponse> {
-    const messages = {
-      it: `📅 **PRENOTAZIONE CONSULENZA GRATUITA**
-
-Perfetto! Ti aiuto a prenotare una consulenza gratuita.
-
-**🎯 SERVIZI DISPONIBILI:**
-
-1️⃣ **AI Automation** - Automazione processi aziendali
-2️⃣ **Chatbot Intelligenti** - Assistenti virtuali 24/7  
-3️⃣ **Web Development** - Siti web e e-commerce
-4️⃣ **AI Marketing** - Campagne automatizzate
-
-**Per quale servizio vuoi prenotare?**
-Scrivi il numero (1, 2, 3, 4) o il nome del servizio.`,
-
-      en: `📅 **FREE CONSULTATION BOOKING**
-
-Perfect! I'll help you book a free consultation.
-
-**🎯 AVAILABLE SERVICES:**
-
-1️⃣ **AI Automation** - Business process automation
-2️⃣ **Intelligent Chatbots** - 24/7 virtual assistants
-3️⃣ **Web Development** - Websites and e-commerce
-4️⃣ **AI Marketing** - Automated campaigns
-
-**Which service do you want to book for?**
-Write the number (1, 2, 3, 4) or service name.`,
-    }
-
-    await this.sessionManager.updateSession(sessionId, {
-      flow_step: "service_selection",
-    })
-
-    return {
-      message: messages[language as keyof typeof messages] || messages.it,
-      nextStep: "service_selection",
-      needsInput: true,
-    }
-  }
-
-  private async handleServiceSelection(sessionId: string, message: string, language: string): Promise<BookingResponse> {
-    const lowerMessage = message.toLowerCase()
-    let selectedService = ""
-
-    // Parse service selection
-    if (lowerMessage.includes("1") || lowerMessage.includes("automation") || lowerMessage.includes("automazione")) {
-      selectedService = "AI Automation"
-    } else if (lowerMessage.includes("2") || lowerMessage.includes("chatbot") || lowerMessage.includes("bot")) {
-      selectedService = "Chatbot Intelligenti"
-    } else if (lowerMessage.includes("3") || lowerMessage.includes("web") || lowerMessage.includes("sito")) {
-      selectedService = "Web Development"
-    } else if (lowerMessage.includes("4") || lowerMessage.includes("marketing")) {
-      selectedService = "AI Marketing"
-    }
-
-    if (!selectedService) {
-      const retryMessages = {
-        it: `❌ **Servizio non riconosciuto**
-
-Per favore scegli uno dei servizi disponibili:
-
-1️⃣ **AI Automation**
-2️⃣ **Chatbot Intelligenti** 
-3️⃣ **Web Development**
-4️⃣ **AI Marketing**
-
-Scrivi il numero o il nome del servizio.`,
-
-        en: `❌ **Service not recognized**
-
-Please choose one of the available services:
-
-1️⃣ **AI Automation**
-2️⃣ **Intelligent Chatbots**
-3️⃣ **Web Development** 
-4️⃣ **AI Marketing**
-
-Write the number or service name.`,
-      }
-
-      return {
-        message: retryMessages[language as keyof typeof retryMessages] || retryMessages.it,
-        nextStep: "service_selection",
-        needsInput: true,
-      }
-    }
-
-    // Save service selection
-    const session = await this.sessionManager.getSession(sessionId)
-    const bookingData = { ...session?.context.booking_data, service: selectedService }
-
-    await this.sessionManager.updateSession(sessionId, {
-      context: { ...session?.context, booking_data: bookingData },
-      flow_step: "date_selection",
-    })
-
-    const confirmMessages = {
-      it: `✅ **Servizio selezionato: ${selectedService}**
-
-📅 **SELEZIONE DATA**
-
-Quando preferisci la consulenza?
-
-**📋 Scrivi la data che preferisci:**
-- **Oggi** (se disponibile)
-- **Domani** 
-- **Data specifica** (es: "15 settembre", "20/09/2024")
-- **Giorno della settimana** (es: "giovedì prossimo")
-
-**Esempio:** "domani", "15 settembre", "giovedì"
-
-**Quando vuoi prenotare?**`,
-
-      en: `✅ **Selected service: ${selectedService}**
-
-📅 **DATE SELECTION**
-
-When do you prefer the consultation?
-
-**📋 Write your preferred date:**
-- **Today** (if available)
-- **Tomorrow**
-- **Specific date** (e.g: "September 15", "20/09/2024")
-- **Day of week** (e.g: "next Thursday")
-
-**Example:** "tomorrow", "September 15", "Thursday"
-
-**When do you want to book?**`,
-    }
-
-    return {
-      message: confirmMessages[language as keyof typeof confirmMessages] || confirmMessages.it,
-      nextStep: "date_selection",
-      needsInput: true,
-    }
-  }
-
-  private async handleDateSelection(
-    sessionId: string,
-    message: string,
-    bookingData: BookingData,
-    language: string,
-  ): Promise<BookingResponse> {
-    // Parse date from message
-    const lowerMessage = message.toLowerCase()
-    let selectedDate = ""
-
-    if (lowerMessage.includes("oggi") || lowerMessage.includes("today")) {
-      selectedDate = new Date().toLocaleDateString("it-IT")
-    } else if (lowerMessage.includes("domani") || lowerMessage.includes("tomorrow")) {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      selectedDate = tomorrow.toLocaleDateString("it-IT")
-    } else {
-      // Default to tomorrow if can't parse
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      selectedDate = tomorrow.toLocaleDateString("it-IT")
-    }
-
-    // Save date selection
-    const session = await this.sessionManager.getSession(sessionId)
-    const updatedBookingData = { ...bookingData, date: selectedDate }
-
-    await this.sessionManager.updateSession(sessionId, {
-      context: { ...session?.context, booking_data: updatedBookingData },
-      flow_step: "time_selection",
-    })
-
-    // Get available time slots
-    const timeSlots = this.getAvailableTimeSlots()
-
-    const timeMessages = {
-      it: `📅 **Data selezionata: ${selectedDate}**
-
-🕐 **SELEZIONE ORARIO**
-
-⏰ **ORARI DISPONIBILI** (ogni 30 minuti):
-
-**🌅 MATTINA (9:00 - 12:00):**
-${timeSlots
-  .filter((time) => Number.parseInt(time.split(":")[0]) < 12)
-  .map((time, index) => `${index + 1}️⃣ **${time}**`)
-  .join("\n")}
-
-**🌆 POMERIGGIO (14:00 - 18:00):**
-${timeSlots
-  .filter((time) => Number.parseInt(time.split(":")[0]) >= 14)
-  .map((time, index) => `${index + 7}️⃣ **${time}**`)
-  .join("\n")}
-
-**Quale orario preferisci?**
-Scrivi il numero o l'orario esatto (es: "3" oppure "10:30")
-
-💡 **Nota**: Controllerò la disponibilità nel database`,
-
-      en: `📅 **Selected date: ${selectedDate}**
-
-🕐 **TIME SELECTION**
-
-⏰ **AVAILABLE TIMES** (every 30 minutes):
-
-**🌅 MORNING (9:00 - 12:00):**
-${timeSlots
-  .filter((time) => Number.parseInt(time.split(":")[0]) < 12)
-  .map((time, index) => `${index + 1}️⃣ **${time}**`)
-  .join("\n")}
-
-**🌆 AFTERNOON (14:00 - 18:00):**
-${timeSlots
-  .filter((time) => Number.parseInt(time.split(":")[0]) >= 14)
-  .map((time, index) => `${index + 7}️⃣ **${time}**`)
-  .join("\n")}
-
-**Which time do you prefer?**
-Write the number or exact time (e.g: "3" or "10:30")
-
-💡 **Note**: I'll check availability in the database`,
-    }
-
-    return {
-      message: timeMessages[language as keyof typeof timeMessages] || timeMessages.it,
-      nextStep: "time_selection",
-      needsInput: true,
-    }
-  }
-
-  private async handleTimeSelection(
-    sessionId: string,
-    message: string,
-    bookingData: BookingData,
-    language: string,
-  ): Promise<BookingResponse> {
-    const lowerMessage = message.toLowerCase()
-    const timeSlots = this.getAvailableTimeSlots()
-    let selectedTime = ""
-
-    // Parse time selection by number or direct time
-    if (
-      lowerMessage.includes("1") &&
-      !lowerMessage.includes("10") &&
-      !lowerMessage.includes("11") &&
-      !lowerMessage.includes("12")
-    ) {
-      selectedTime = "09:00"
-    } else if (lowerMessage.includes("2") && !lowerMessage.includes("12")) {
-      selectedTime = "09:30"
-    } else if (lowerMessage.includes("3") && !lowerMessage.includes("13")) {
-      selectedTime = "10:00"
-    } else if (lowerMessage.includes("4") && !lowerMessage.includes("14")) {
-      selectedTime = "10:30"
-    } else if (lowerMessage.includes("5") && !lowerMessage.includes("15")) {
-      selectedTime = "11:00"
-    } else if (lowerMessage.includes("6") && !lowerMessage.includes("16")) {
-      selectedTime = "11:30"
-    } else if (lowerMessage.includes("7") && !lowerMessage.includes("17")) {
-      selectedTime = "14:00"
-    } else if (lowerMessage.includes("8") && !lowerMessage.includes("18")) {
-      selectedTime = "14:30"
-    } else if (lowerMessage.includes("9") && !lowerMessage.includes("19")) {
-      selectedTime = "15:00"
-    } else if (lowerMessage.includes("10")) {
-      selectedTime = "15:30"
-    } else if (lowerMessage.includes("11")) {
-      selectedTime = "16:00"
-    } else if (lowerMessage.includes("12")) {
-      selectedTime = "16:30"
-    } else if (lowerMessage.includes("13")) {
-      selectedTime = "17:00"
-    } else if (lowerMessage.includes("14")) {
-      selectedTime = "17:30"
-    } else {
-      // Try to extract time directly from message
-      const timeMatch = message.match(/(\d{1,2}):(\d{2})/)
-      if (timeMatch) {
-        const hour = timeMatch[1].padStart(2, "0")
-        const minute = timeMatch[2]
-        selectedTime = `${hour}:${minute}`
-      } else {
-        selectedTime = "10:00" // Default
-      }
-    }
-
-    // Validate business hours
-    if (!this.isBusinessHours(selectedTime)) {
-      return {
-        message: this.getBusinessHoursMessage(language),
-        nextStep: "time_selection",
-        needsInput: true,
-      }
-    }
-
-    // Check availability in database
-    const isAvailable = await this.checkSlotAvailability(bookingData.date!, selectedTime)
-
-    if (!isAvailable) {
-      const occupiedMessages = {
-        it: `❌ **ORARIO GIÀ OCCUPATO**
-
-L'orario **${selectedTime}** del **${bookingData.date}** è già prenotato da un altro cliente.
-
-**🔄 SCEGLI UN ALTRO ORARIO:**
-
-Per favore seleziona un orario diverso dalla lista precedente.
-
-**Quale altro orario preferisci?**`,
-
-        en: `❌ **TIME SLOT OCCUPIED**
-
-The time **${selectedTime}** on **${bookingData.date}** is already booked by another client.
-
-**🔄 CHOOSE ANOTHER TIME:**
-
-Please select a different time from the previous list.
-
-**Which other time do you prefer?**`,
-      }
-
-      return {
-        message: occupiedMessages[language as keyof typeof occupiedMessages] || occupiedMessages.it,
-        nextStep: "time_selection",
-        needsInput: true,
-      }
-    }
-
-    // Save time selection
-    const session = await this.sessionManager.getSession(sessionId)
-    const updatedBookingData = { ...bookingData, time: selectedTime }
-
-    await this.sessionManager.updateSession(sessionId, {
-      context: { ...session?.context, booking_data: updatedBookingData },
-      flow_step: "contact_info",
-    })
-
-    const contactMessages = {
-      it: `🕐 **Orario confermato: ${selectedTime}** ✅
-
-📋 **INFORMAZIONI DI CONTATTO**
-
-Per completare la prenotazione, ho bisogno dei tuoi dati:
-
-**📝 Inserisci le seguenti informazioni (una per riga):**
-
-1️⃣ **Nome e Cognome**
-2️⃣ **Email** 
-3️⃣ **Numero di telefono**
-4️⃣ **Messaggio opzionale** (descrivi le tue esigenze)
-
-**Esempio:**
-Mario Rossi
-mario.rossi@email.com  
-+39 333 1234567
-Vorrei automatizzare il customer service
-
-**Scrivi tutti i dati:**`,
-
-      en: `🕐 **Time confirmed: ${selectedTime}** ✅
-
-📋 **CONTACT INFORMATION**
-
-To complete the booking, I need your details:
-
-**📝 Enter the following information (one per line):**
-
-1️⃣ **Full Name**
-2️⃣ **Email**
-3️⃣ **Phone Number** 
-4️⃣ **Optional Message** (describe your needs)
-
-**Example:**
-Mario Rossi
-mario.rossi@email.com
-+39 333 1234567
-I want to automate customer service
-
-**Write all details:**`,
-    }
-
-    return {
-      message: contactMessages[language as keyof typeof contactMessages] || contactMessages.it,
-      nextStep: "contact_info",
-      needsInput: true,
-    }
-  }
-
-  private async handleContactInfo(
-    sessionId: string,
-    message: string,
-    bookingData: BookingData,
-    language: string,
-  ): Promise<BookingResponse> {
-    // Parse contact information
-    const lines = message.split("\n").filter((line) => line.trim().length > 0)
-
-    // Extract information from the message
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
-    const phoneRegex = /[+]?[0-9\s\-()]{8,}/
-
-    const email = message.match(emailRegex)?.[0] || ""
-    const phone = message.match(phoneRegex)?.[0] || ""
-
-    // Extract name (assume first line is name)
-    const name = lines[0] || ""
-
-    // Extract message (everything after phone/email)
-    const userMessage = lines.slice(3).join(" ") || ""
-
-    if (!name || !email || !phone) {
-      const retryMessages = {
-        it: `❌ **Informazioni incomplete**
-
-Per favore fornisci tutti i dati richiesti:
-
-**📝 Formato richiesto (una per riga):**
-Nome e Cognome
-email@esempio.com
-+39 333 1234567
-Messaggio opzionale
-
-**Riprova con tutti i dati:**`,
-
-        en: `❌ **Incomplete information**
-
-Please provide all required details:
-
-**📝 Required format (one per line):**
-Full Name
-email@example.com
-+39 333 1234567
-Optional message
-
-**Try again with all details:**`,
-      }
-
-      return {
-        message: retryMessages[language as keyof typeof retryMessages] || retryMessages.it,
-        nextStep: "contact_info",
-        needsInput: true,
-      }
-    }
-
-    // Save contact information
-    const session = await this.sessionManager.getSession(sessionId)
-    const updatedBookingData = {
-      ...bookingData,
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      message: userMessage.trim(),
-    }
-
-    await this.sessionManager.updateSession(sessionId, {
-      context: { ...session?.context, booking_data: updatedBookingData },
-      flow_step: "confirmation",
-    })
-
-    const confirmationMessages = {
-      it: `✅ **RIEPILOGO PRENOTAZIONE**
-
-📋 **Dettagli della tua consulenza:**
-
-🎯 **Servizio:** ${bookingData.service}
-📅 **Data:** ${bookingData.date}
-🕐 **Orario:** ${bookingData.time}
-👤 **Nome:** ${updatedBookingData.name}
-📧 **Email:** ${updatedBookingData.email}
-📱 **Telefono:** ${updatedBookingData.phone}
-${updatedBookingData.message ? `💬 **Messaggio:** ${updatedBookingData.message}` : ""}
-
-**🔄 CONFERMA PRENOTAZIONE**
-
-Tutto corretto? 
-
-✅ **Scrivi "CONFERMA"** per completare la prenotazione
-❌ **Scrivi "MODIFICA"** per cambiare qualcosa`,
-
-      en: `✅ **BOOKING SUMMARY**
-
-📋 **Your consultation details:**
-
-🎯 **Service:** ${bookingData.service}
-📅 **Date:** ${bookingData.date}
-🕐 **Time:** ${bookingData.time}
-👤 **Name:** ${updatedBookingData.name}
-📧 **Email:** ${updatedBookingData.email}
-📱 **Phone:** ${updatedBookingData.phone}
-${updatedBookingData.message ? `💬 **Message:** ${updatedBookingData.message}` : ""}
-
-**🔄 BOOKING CONFIRMATION**
-
-Everything correct?
-
-✅ **Write "CONFIRM"** to complete booking
-❌ **Write "MODIFY"** to change something`,
-    }
-
-    return {
-      message: confirmationMessages[language as keyof typeof confirmationMessages] || confirmationMessages.it,
-      nextStep: "confirmation",
-      needsInput: true,
-    }
-  }
-
-  private async handleConfirmation(
-    sessionId: string,
-    message: string,
-    bookingData: BookingData,
-    language: string,
-  ): Promise<BookingResponse> {
-    const lowerMessage = message.toLowerCase()
-
-    if (
-      lowerMessage.includes("conferma") ||
-      lowerMessage.includes("confirm") ||
-      lowerMessage.includes("sì") ||
-      lowerMessage.includes("yes")
-    ) {
-      // Final availability check before saving
-      const isStillAvailable = await this.checkSlotAvailability(bookingData.date!, bookingData.time!)
-
-      if (!isStillAvailable) {
-        const conflictMessages = {
-          it: `❌ **CONFLITTO DI PRENOTAZIONE**
-
-Mi dispiace, ma l'orario **${bookingData.time}** del **${bookingData.date}** è stato appena prenotato da un altro cliente.
-
-**🔄 RIPROVA CON ALTRO ORARIO:**
-
-Vuoi scegliere un altro orario? Scrivi "ALTRO ORARIO" per vedere gli slot disponibili.`,
-
-          en: `❌ **BOOKING CONFLICT**
-
-Sorry, but the time **${bookingData.time}** on **${bookingData.date}** was just booked by another client.
-
-**🔄 TRY ANOTHER TIME:**
-
-Do you want to choose another time? Write "ANOTHER TIME" to see available slots.`,
+    console.log(`📅 Booking Step: ${currentStep}, Message: "${message}", Session: ${sessionId}`)
+
+    const bookingData = await this.getSessionData(sessionId)
+    const lowerMessage = message.toLowerCase().trim()
+
+    switch (currentStep) {
+      case "booking_start":
+        await this.updateSessionData(sessionId, {}, "booking_service")
+        return {
+          message:
+            "🎯 **PERFETTO! INIZIAMO LA PRENOTAZIONE**\n\n**Quale servizio ti interessa?**\n\n1️⃣ **AI Automation** - Automatizza i processi aziendali\n2️⃣ **Chatbot Intelligenti** - Assistenti virtuali 24/7\n3️⃣ **Web Development** - Siti web e e-commerce moderni\n4️⃣ **AI Marketing** - Campagne automatizzate\n\n💬 **Scrivi il numero (1-4) o il nome del servizio**",
+          nextStep: "booking_service",
         }
+
+      case "booking_service":
+        let selectedService = ""
+
+        if (
+          lowerMessage.includes("1") ||
+          lowerMessage.includes("ai automation") ||
+          lowerMessage.includes("automazione")
+        ) {
+          selectedService = "AI Automation"
+        } else if (lowerMessage.includes("2") || lowerMessage.includes("chatbot")) {
+          selectedService = "Chatbot Intelligenti"
+        } else if (lowerMessage.includes("3") || lowerMessage.includes("web") || lowerMessage.includes("sviluppo")) {
+          selectedService = "Web Development"
+        } else if (lowerMessage.includes("4") || lowerMessage.includes("marketing")) {
+          selectedService = "AI Marketing"
+        } else {
+          return {
+            message:
+              "❌ **Selezione non valida**\n\nPer favore scegli:\n1️⃣ AI Automation\n2️⃣ Chatbot Intelligenti\n3️⃣ Web Development\n4️⃣ AI Marketing\n\n💬 **Scrivi il numero (1-4)**",
+            nextStep: "booking_service",
+          }
+        }
+
+        const updatedData1 = { ...bookingData, service: selectedService }
+        await this.updateSessionData(sessionId, updatedData1, "booking_date")
 
         return {
-          message: conflictMessages[language as keyof typeof conflictMessages] || conflictMessages.it,
-          nextStep: "time_selection",
-          needsInput: true,
-        }
-      }
-
-      // Save appointment to database
-      try {
-        const appointmentData = {
-          service: bookingData.service,
-          date: bookingData.date,
-          time: bookingData.time,
-          name: bookingData.name,
-          email: bookingData.email,
-          phone: bookingData.phone,
-          message: bookingData.message,
-          status: "confirmed",
-          priority: false,
+          message: `✅ **Perfetto! Hai scelto: ${selectedService}**\n\n📅 **Quando preferisci la consulenza?**\n\n1️⃣ **Oggi** - Disponibilità immediata\n2️⃣ **Domani** - Prossimo giorno lavorativo\n3️⃣ **Data specifica** - Scegli tu la data\n\n💬 **Scrivi il numero (1-3) o una data (es: 20/12/2024)**`,
+          nextStep: "booking_date",
         }
 
-        // Call appointments API
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/appointments`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(appointmentData),
-          },
-        )
+      case "booking_date":
+        let selectedDate = ""
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
 
-        if (response.ok) {
-          // Mark booking as completed
-          await this.sessionManager.updateSession(sessionId, {
-            flow_step: "completed",
-            context: {
-              ...(await this.sessionManager.getSession(sessionId).then((s) => s?.context)),
-              booking_completed: true,
-              booking_data: appointmentData,
-            },
-          })
-
-          const successMessages = {
-            it: `🎉 **PRENOTAZIONE CONFERMATA!**
-
-✅ **La tua consulenza è stata prenotata con successo!**
-
-📋 **Dettagli confermati:**
-🎯 **Servizio:** ${bookingData.service}
-📅 **Data:** ${bookingData.date}
-🕐 **Orario:** ${bookingData.time}
-👤 **Nome:** ${bookingData.name}
-
-📧 **Email di conferma inviata a:** ${bookingData.email}
-
-**📞 COSA SUCCEDE ORA:**
-1. Riceverai un'email di conferma entro 5 minuti
-2. Ti contatteremo 24h prima per confermare
-3. Riceverai il link per la videocall il giorno stesso
-
-**🚀 PREPARATI PER LA CONSULENZA:**
-- Pensa alle tue esigenze specifiche
-- Prepara domande sui nostri servizi
-- Porta esempi del tuo business
-
-**Grazie per aver scelto Digital Aura!** 🌟
-
-Hai altre domande?`,
-
-            en: `🎉 **BOOKING CONFIRMED!**
-
-✅ **Your consultation has been successfully booked!**
-
-📋 **Confirmed details:**
-🎯 **Service:** ${bookingData.service}
-📅 **Date:** ${bookingData.date}
-🕐 **Time:** ${bookingData.time}
-👤 **Name:** ${bookingData.name}
-
-📧 **Confirmation email sent to:** ${bookingData.email}
-
-**📞 WHAT HAPPENS NOW:**
-1. You'll receive a confirmation email within 5 minutes
-2. We'll contact you 24h before to confirm
-3. You'll receive the videocall link on the same day
-
-**🚀 PREPARE FOR THE CONSULTATION:**
-- Think about your specific needs
-- Prepare questions about our services
-- Bring examples of your business
-
-**Thank you for choosing Digital Aura!** 🌟
-
-Do you have other questions?`,
-          }
-
-          return {
-            message: successMessages[language as keyof typeof successMessages] || successMessages.it,
-            completed: true,
-            needsInput: false,
+        if (lowerMessage.includes("1") || lowerMessage.includes("oggi")) {
+          selectedDate = today.toISOString().split("T")[0]
+        } else if (lowerMessage.includes("2") || lowerMessage.includes("domani")) {
+          selectedDate = tomorrow.toISOString().split("T")[0]
+        } else if (lowerMessage.includes("3") || lowerMessage.includes("/")) {
+          // Try to parse date
+          const dateMatch = message.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+          if (dateMatch) {
+            const [, day, month, year] = dateMatch
+            const parsedDate = new Date(Number.parseInt(year), Number.parseInt(month) - 1, Number.parseInt(day))
+            if (parsedDate > today) {
+              selectedDate = parsedDate.toISOString().split("T")[0]
+            } else {
+              return {
+                message:
+                  "❌ **Data non valida**\n\nLa data deve essere futura. Riprova con:\n1️⃣ Oggi\n2️⃣ Domani\n3️⃣ Data specifica (es: 25/12/2024)",
+                nextStep: "booking_date",
+              }
+            }
+          } else {
+            return {
+              message:
+                "❌ **Formato data non valido**\n\nUsa il formato GG/MM/AAAA (es: 25/12/2024) o scegli:\n1️⃣ Oggi\n2️⃣ Domani",
+              nextStep: "booking_date",
+            }
           }
         } else {
-          throw new Error("Failed to save appointment")
+          return {
+            message: "❌ **Selezione non valida**\n\nScegli:\n1️⃣ Oggi\n2️⃣ Domani\n3️⃣ Data specifica (es: 25/12/2024)",
+            nextStep: "booking_date",
+          }
         }
-      } catch (error) {
-        console.error("❌ Error saving appointment:", error)
 
-        const errorMessages = {
-          it: `❌ **Errore durante il salvataggio**
+        // Get available time slots for the selected date
+        const availableSlots = await this.getAvailableTimeSlots(selectedDate)
 
-Si è verificato un problema tecnico. 
-
-**📞 PRENOTAZIONE MANUALE:**
-Contattaci direttamente per completare la prenotazione:
-
-📧 **Email:** info@digitalaura.it
-📱 **Telefono:** +39 02 1234567
-
-**Menziona questi dettagli:**
-- Servizio: ${bookingData.service}
-- Data: ${bookingData.date}
-- Orario: ${bookingData.time}
-- Nome: ${bookingData.name}
-
-Ci scusiamo per l'inconveniente!`,
-
-          en: `❌ **Error during saving**
-
-A technical problem occurred.
-
-**📞 MANUAL BOOKING:**
-Contact us directly to complete the booking:
-
-📧 **Email:** info@digitalaura.it
-📱 **Phone:** +39 02 1234567
-
-**Mention these details:**
-- Service: ${bookingData.service}
-- Date: ${bookingData.date}
-- Time: ${bookingData.time}
-- Name: ${bookingData.name}
-
-We apologize for the inconvenience!`,
+        if (availableSlots.length === 0) {
+          return {
+            message: `❌ **Nessun orario disponibile per ${new Date(selectedDate).toLocaleDateString("it-IT")}**\n\nTutti gli slot sono già occupati. Per favore scegli un'altra data:\n\n1️⃣ Oggi\n2️⃣ Domani\n3️⃣ Data specifica (es: 25/12/2024)`,
+            nextStep: "booking_date",
+          }
         }
+
+        const updatedData2 = { ...bookingData, date: selectedDate }
+        await this.updateSessionData(sessionId, updatedData2, "booking_time")
+
+        const formattedDate = new Date(selectedDate).toLocaleDateString("it-IT")
+
+        // Build time slots message with only available slots and correct time calculation
+        let timeMessage = `✅ **Data selezionata: ${formattedDate}**\n\n🕐 **Orari disponibili:**\n\n`
+
+        const morningSlots = availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) < 12)
+        const afternoonSlots = availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14)
+
+        if (morningSlots.length > 0) {
+          timeMessage += "**MATTINA:**\n"
+          morningSlots.forEach((slot, index) => {
+            timeMessage += `${index + 1}️⃣ ${this.formatTimeSlot(slot)}\n`
+          })
+          timeMessage += "\n"
+        }
+
+        if (afternoonSlots.length > 0) {
+          timeMessage += "**POMERIGGIO:**\n"
+          afternoonSlots.forEach((slot, index) => {
+            const slotNumber = morningSlots.length + index + 1
+            timeMessage += `${slotNumber}️⃣ ${this.formatTimeSlot(slot)}\n`
+          })
+        }
+
+        timeMessage += `\n💬 **Scrivi il numero (1-${availableSlots.length})**`
+
+        // Store available slots for validation
+        const updatedData2WithSlots = { ...updatedData2, availableSlots }
+        await this.updateSessionData(sessionId, updatedData2WithSlots, "booking_time")
 
         return {
-          message: errorMessages[language as keyof typeof errorMessages] || errorMessages.it,
-          completed: false,
-          needsInput: false,
+          message: timeMessage,
+          nextStep: "booking_time",
         }
-      }
-    } else if (
-      lowerMessage.includes("modifica") ||
-      lowerMessage.includes("modify") ||
-      lowerMessage.includes("cambia") ||
-      lowerMessage.includes("change")
-    ) {
-      // Restart booking process
-      await this.sessionManager.updateSession(sessionId, {
-        flow_step: "booking_start",
-        context: {
-          ...(await this.sessionManager.getSession(sessionId).then((s) => s?.context)),
-          booking_data: {},
-        },
-      })
 
-      return await this.startBooking(sessionId, language)
-    } else {
-      const clarificationMessages = {
-        it: `❓ **Conferma richiesta**
+      case "booking_time":
+        const availableSlotsFromData = bookingData.availableSlots || []
 
-Per completare la prenotazione:
+        if (availableSlotsFromData.length === 0) {
+          return {
+            message:
+              "❌ **Errore nel recupero degli orari disponibili**\n\nRicominciamo dalla selezione della data. Scrivi 'prenota' per riiniziare.",
+            completed: true,
+          }
+        }
 
-✅ **Scrivi "CONFERMA"** se i dati sono corretti
-❌ **Scrivi "MODIFICA"** se vuoi cambiare qualcosa
+        let selectedTimeIndex = -1
 
-Cosa vuoi fare?`,
+        // Parse the selected slot number
+        for (let i = 1; i <= availableSlotsFromData.length; i++) {
+          if (lowerMessage.includes(i.toString()) && !lowerMessage.includes((i + 10).toString())) {
+            selectedTimeIndex = i - 1
+            break
+          }
+        }
 
-        en: `❓ **Confirmation required**
+        if (selectedTimeIndex === -1 || selectedTimeIndex >= availableSlotsFromData.length) {
+          return {
+            message: `❌ **Orario non valido**\n\nScegli un numero da 1 a ${availableSlotsFromData.length} per selezionare l'orario desiderato.`,
+            nextStep: "booking_time",
+          }
+        }
 
-To complete the booking:
+        const selectedTime = availableSlotsFromData[selectedTimeIndex]
 
-✅ **Write "CONFIRM"** if the details are correct
-❌ **Write "MODIFY"** if you want to change something
+        // Double-check availability before proceeding
+        const isStillAvailable = await this.checkTimeSlotAvailability(bookingData.date!, selectedTime)
 
-What do you want to do?`,
-      }
+        if (!isStillAvailable) {
+          return {
+            message: `❌ **Orario appena occupato**\n\nMi dispiace, l'orario ${selectedTime} è stato appena prenotato da qualcun altro.\n\n🔄 **Scegli un altro orario dalla lista precedente**`,
+            nextStep: "booking_time",
+          }
+        }
 
-      return {
-        message: clarificationMessages[language as keyof typeof clarificationMessages] || clarificationMessages.it,
-        nextStep: "confirmation",
-        needsInput: true,
-      }
+        const updatedData3 = { ...bookingData, time: selectedTime }
+        // Remove availableSlots from stored data as it's no longer needed
+        delete updatedData3.availableSlots
+        await this.updateSessionData(sessionId, updatedData3, "booking_name")
+
+        return {
+          message: `✅ **Orario selezionato: ${this.formatTimeSlot(selectedTime)}**\n\n👤 **Perfetto! Ora ho bisogno dei tuoi dati di contatto.**\n\n**Come ti chiami?**\n\n💬 **Scrivi il tuo nome completo**`,
+          nextStep: "booking_name",
+        }
+
+      case "booking_name":
+        const name = message.trim()
+
+        if (name.length < 2) {
+          return {
+            message: "❌ **Nome troppo corto**\n\nPer favore inserisci il tuo nome completo.",
+            nextStep: "booking_name",
+          }
+        }
+
+        const updatedData4 = { ...bookingData, name }
+        await this.updateSessionData(sessionId, updatedData4, "booking_email")
+
+        return {
+          message: `✅ **Ciao ${name}! Piacere di conoscerti!**\n\n📧 **Qual è il tuo indirizzo email?**\n\n💬 **Scrivi la tua email (es: nome@email.com)**`,
+          nextStep: "booking_email",
+        }
+
+      case "booking_email":
+        const email = message.trim().toLowerCase()
+
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email)) {
+          return {
+            message: "❌ **Email non valida**\n\nInserisci un indirizzo email valido (es: nome@email.com)",
+            nextStep: "booking_email",
+          }
+        }
+
+        const updatedData5 = { ...bookingData, email }
+        await this.updateSessionData(sessionId, updatedData5, "booking_phone")
+
+        return {
+          message: `✅ **Email salvata: ${email}**\n\n📱 **Qual è il tuo numero di telefono?**\n\n💬 **Scrivi il tuo numero (es: +39 333 1234567)**`,
+          nextStep: "booking_phone",
+        }
+
+      case "booking_phone":
+        const phone = message.trim()
+
+        if (phone.length < 8) {
+          return {
+            message:
+              "❌ **Numero di telefono troppo corto**\n\nInserisci un numero di telefono valido (es: +39 333 1234567)",
+            nextStep: "booking_phone",
+          }
+        }
+
+        const updatedData6 = { ...bookingData, phone }
+        await this.updateSessionData(sessionId, updatedData6, "booking_message")
+
+        return {
+          message: `✅ **Numero salvato: ${phone}**\n\n💬 **Hai qualche richiesta specifica o messaggio per noi?**\n\n📝 **Scrivi eventuali note, domande o dettagli sul progetto**\n\n⏭️ **Oppure scrivi 'nessun messaggio' per continuare**`,
+          nextStep: "booking_message",
+        }
+
+      case "booking_message":
+        let userMessage = message.trim()
+
+        if (
+          lowerMessage.includes("nessun messaggio") ||
+          lowerMessage.includes("no") ||
+          lowerMessage.includes("niente")
+        ) {
+          userMessage = "Nessun messaggio aggiuntivo"
+        }
+
+        const updatedData7 = { ...bookingData, message: userMessage }
+        await this.updateSessionData(sessionId, updatedData7, "booking_confirm")
+
+        const confirmDate = new Date(updatedData7.date!).toLocaleDateString("it-IT")
+        return {
+          message: `📋 **RIEPILOGO PRENOTAZIONE**\n\n✅ **Servizio:** ${updatedData7.service}\n📅 **Data:** ${confirmDate}\n🕐 **Orario:** ${this.formatTimeSlot(updatedData7.time!)}\n👤 **Nome:** ${updatedData7.name}\n📧 **Email:** ${updatedData7.email}\n📱 **Telefono:** ${updatedData7.phone}\n💬 **Messaggio:** ${updatedData7.message}\n\n**Confermi la prenotazione?**\n\n✅ **Scrivi 'CONFERMA' per completare**\n❌ **Scrivi 'ANNULLA' per ricominciare**`,
+          nextStep: "booking_confirm",
+        }
+
+      case "booking_confirm":
+        if (lowerMessage.includes("conferma") || lowerMessage.includes("si") || lowerMessage.includes("sì")) {
+          // Final availability check before saving
+          const finalCheck = await this.checkTimeSlotAvailability(bookingData.date!, bookingData.time!)
+
+          if (!finalCheck) {
+            return {
+              message: `❌ **Orario appena occupato**\n\nMi dispiace, l'orario ${this.formatTimeSlot(bookingData.time!)} del ${new Date(bookingData.date!).toLocaleDateString("it-IT")} è stato appena prenotato.\n\n🔄 **Vuoi scegliere un altro orario?**\nScrivi 'prenota' per ricominciare.`,
+              completed: true,
+            }
+          }
+
+          try {
+            // Save to database
+            const result = await sql`
+              INSERT INTO appointments (
+                name, email, phone, service, date, time, message, status, priority
+              ) VALUES (
+                ${bookingData.name}, ${bookingData.email}, ${bookingData.phone}, 
+                ${bookingData.service}, ${bookingData.date}, ${bookingData.time}, 
+                ${bookingData.message || "Nessun messaggio"}, 'pending', false
+              )
+              RETURNING id
+            `
+
+            await this.clearSession(sessionId)
+
+            const appointmentId = result[0].id
+            const confirmDate = new Date(bookingData.date!).toLocaleDateString("it-IT")
+
+            return {
+              message: `🎉 **PRENOTAZIONE CONFERMATA!**\n\n✅ **ID Prenotazione:** #${appointmentId}\n📅 **Data:** ${confirmDate}\n🕐 **Orario:** ${this.formatTimeSlot(bookingData.time!)}\n🎯 **Servizio:** ${bookingData.service}\n\n📧 **Riceverai una email di conferma a:** ${bookingData.email}\n\n📞 **Ti contatteremo entro 24 ore per:**\n• Confermare l'appuntamento\n• Inviarti il link per la videochiamata\n• Prepararci al meglio per la consulenza\n\n🚀 **Grazie per aver scelto Digital Aura!**\n\n💬 **Hai altre domande? Sono sempre qui per aiutarti!**`,
+              completed: true,
+            }
+          } catch (error) {
+            console.error("Error saving appointment:", error)
+            return {
+              message:
+                "❌ **Errore nel salvare la prenotazione**\n\nSi è verificato un problema tecnico. Per favore:\n\n📞 **Contattaci direttamente:**\n📧 Email: info@digitalaura.it\n📱 WhatsApp: +39 333 1234567\n\n**Oppure riprova la prenotazione scrivendo 'prenota'**",
+              completed: true,
+            }
+          }
+        } else if (lowerMessage.includes("annulla") || lowerMessage.includes("no")) {
+          await this.clearSession(sessionId)
+          return {
+            message:
+              "❌ **Prenotazione annullata**\n\n🔄 **Vuoi riprovare?**\nScrivi 'prenota' per iniziare una nuova prenotazione\n\n💬 **Oppure dimmi come posso aiutarti!**",
+            completed: true,
+          }
+        } else {
+          return {
+            message:
+              "❓ **Conferma richiesta**\n\n✅ **Scrivi 'CONFERMA' per completare la prenotazione**\n❌ **Scrivi 'ANNULLA' per annullare**",
+            nextStep: "booking_confirm",
+          }
+        }
+
+      default:
+        await this.clearSession(sessionId)
+        return {
+          message:
+            "❌ **Errore nel processo di prenotazione**\n\nRicominciamo da capo. Scrivi 'prenota' per iniziare una nuova prenotazione.",
+          completed: true,
+        }
     }
   }
 }

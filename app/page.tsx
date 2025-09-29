@@ -45,6 +45,8 @@ import ROICalculatorSection from "./components/roi-calculator"
 import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
+// The import for BusinessTransformationCTA was already correct and the component is defined below.
+// No changes needed here.
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -1502,15 +1504,15 @@ function Footer() {
                 : "© 2024 Digital Aura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
+              <Link href="/privacy" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Privacy Policy" : "Privacy Policy"}
-              </a>
-              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
+              </Link>
+              <Link href="/terms" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Termini di Servizio" : "Terms of Service"}
-              </a>
-              <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
+              </Link>
+              <Link href="/cookies" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
                 {language === "it" ? "Cookie Policy" : "Cookie Policy"}
-              </a>
+              </Link>
             </div>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <a href="#" className="text-slate-400 hover:text-cyan-300 transition-colors">

@@ -100,14 +100,46 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    console.log("📋 Fetching all appointments from database...")
+
     const appointments = await sql`
-      SELECT * FROM appointments 
-      ORDER BY date DESC, time DESC
+      SELECT 
+        id,
+        name,
+        email,
+        phone,
+        service,
+        date,
+        time,
+        message,
+        status,
+        priority,
+        google_event_id,
+        google_event_link,
+        created_at,
+        updated_at
+      FROM appointments 
+      ORDER BY created_at DESC, date DESC, time DESC
     `
+
+    console.log(`✅ Found ${appointments.length} appointments in database`)
+
+    // Log sample data for debugging
+    if (appointments.length > 0) {
+      console.log("📊 Sample appointment:", {
+        id: appointments[0].id,
+        name: appointments[0].name,
+        date: appointments[0].date,
+        time: appointments[0].time,
+        service: appointments[0].service,
+        status: appointments[0].status,
+      })
+    }
 
     return NextResponse.json({
       success: true,
       appointments,
+      count: appointments.length,
     })
   } catch (error) {
     console.error("❌ Error fetching appointments:", error)
@@ -117,6 +149,8 @@ export async function GET() {
         success: false,
         error: "Database error",
         message: error instanceof Error ? error.message : "Failed to fetch appointments",
+        appointments: [],
+        count: 0,
       },
       { status: 500 },
     )

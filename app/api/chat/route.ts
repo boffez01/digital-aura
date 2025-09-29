@@ -1,30 +1,81 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
 import { google } from "@ai-sdk/google"
+import { SessionManager } from "@/lib/session-manager"
+import { BookingFlow } from "@/lib/booking-flow"
 
-// Configurazione del modello AI
+// Inizializzazione
+const sessionManager = SessionManager.getInstance()
+const bookingFlow = new BookingFlow()
 const model = google("gemini-1.5-flash")
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { message, sessionId, language = "it" } = body
+    const { message, sessionId, language = "it" } = await request.json()
 
-    console.log("📨 Received:", { message, sessionId, language })
+    if (!message || typeof message !== "string" || !sessionId) {
+      return NextResponse.json({ response: "Richiesta non valida" }, { status: 400 })
+    }
 
-    // Validazione input
-    if (!message || typeof message !== "string") {
-      return NextResponse.json(
-        {
-          response: "Messaggio non valido",
-        },
-        { status: 400 },
-      )
+    console.log(`📨 Message: "${message}" (Session: ${sessionId})`)
+
+    // Get or create session
+    let session = await sessionManager.getSession(sessionId)
+    if (!session) {
+      session = await sessionManager.createSession(sessionId)
     }
 
     const lowerMessage = message.toLowerCase()
 
-    // Risposte per parole chiave di supporto
+    // Check if we're in booking mode
+    if (session.booking_mode || session.flow_step?.startsWith("booking_")) {
+      console.log(`📅 Booking mode active - Step: ${session.flow_step}`)
+
+      const bookingResponse = await bookingFlow.handleBookingStep(
+        sessionId,
+        message,
+        session.flow_step || "booking_start",
+        language,
+      )
+
+      return NextResponse.json({
+        response: bookingResponse.message,
+        context: {
+          bookingMode: !bookingResponse.completed,
+          step: bookingResponse.nextStep,
+          completed: bookingResponse.completed,
+        },
+      })
+    }
+
+    // Check for booking keywords
+    const bookingKeywords = [
+      "prenota",
+      "prenotare",
+      "prenotazione",
+      "appuntamento",
+      "consulenza",
+      "book",
+      "booking",
+      "appointment",
+      "consultation",
+    ]
+
+    if (bookingKeywords.some((keyword) => lowerMessage.includes(keyword))) {
+      console.log(`📅 Starting booking flow`)
+
+      const bookingResponse = await bookingFlow.handleBookingStep(sessionId, message, "booking_start", language)
+
+      return NextResponse.json({
+        response: bookingResponse.message,
+        context: {
+          bookingMode: true,
+          step: bookingResponse.nextStep,
+        },
+      })
+    }
+
+    // Support keywords
     const supportKeywords = [
       "problema",
       "errore",
@@ -37,6 +88,7 @@ export async function POST(request: NextRequest) {
       "help",
       "support",
     ]
+
     if (supportKeywords.some((keyword) => lowerMessage.includes(keyword))) {
       return NextResponse.json({
         response:
@@ -46,52 +98,31 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Risposte per parole chiave di prenotazione
-    const bookingKeywords = [
-      "prenota",
-      "prenotare",
-      "appuntamento",
-      "consulenza",
-      "book",
-      "booking",
-      "appointment",
-      "consultation",
-    ]
-    if (bookingKeywords.some((keyword) => lowerMessage.includes(keyword))) {
-      return NextResponse.json({
-        response:
-          "🎯 **PERFETTO! PRENOTIAMO LA TUA CONSULENZA GRATUITA**\n\nQuale servizio ti interessa?\n\n🤖 **AI Automation** - Automatizza i processi aziendali\n💬 **Chatbot Intelligenti** - Assistenti virtuali 24/7\n🌐 **Web Development** - Siti web e e-commerce moderni\n📈 **AI Marketing** - Campagne automatizzate e personalizzate\n\n📞 **Contattaci direttamente:**\n📧 Email: info@digitalaura.it\n📱 WhatsApp: +39 333 1234567",
-        context: {
-          bookingMode: true,
-        },
-      })
-    }
-
-    // Risposte per parole chiave servizi
+    // Service keywords
     const serviceKeywords = ["servizi", "services", "cosa fate", "what do you do"]
     if (serviceKeywords.some((keyword) => lowerMessage.includes(keyword))) {
       return NextResponse.json({
         response:
-          "🔧 **I NOSTRI SERVIZI DIGITALI**\n\n🤖 **AI Automation**\n• Automazione processi aziendali\n• Integrazione sistemi intelligenti\n• Ottimizzazione workflow\n\n💬 **Chatbot Intelligenti**\n• Assistenti virtuali 24/7\n• Supporto clienti automatizzato\n• Lead generation automatica\n\n🌐 **Web Development**\n• Siti web moderni e responsive\n• E-commerce avanzati\n• Applicazioni web personalizzate\n\n📈 **AI Marketing**\n• Campagne automatizzate\n• Analisi predittiva\n• Personalizzazione contenuti\n\n📅 **Vuoi saperne di più? Prenota una consulenza gratuita!**",
+          "🔧 **I NOSTRI SERVIZI DIGITALI**\n\n🤖 **AI Automation**\n• Automazione processi aziendali\n• Integrazione sistemi intelligenti\n• Ottimizzazione workflow\n\n💬 **Chatbot Intelligenti**\n• Assistenti virtuali 24/7\n• Supporto clienti automatizzato\n• Lead generation automatica\n\n🌐 **Web Development**\n• Siti web moderni e responsive\n• E-commerce avanzati\n• Applicazioni web personalizzate\n\n📈 **AI Marketing**\n• Campagne automatizzate\n• Analisi predittiva\n• Personalizzazione contenuti\n\n📅 **Vuoi saperne di più? Scrivi 'prenota' per una consulenza gratuita!**",
       })
     }
 
-    // Saluti
+    // Greetings
     const greetingKeywords = ["ciao", "salve", "buongiorno", "buonasera", "hello", "hi"]
     if (greetingKeywords.some((keyword) => lowerMessage.includes(keyword))) {
       return NextResponse.json({
         response:
-          "👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura!**\n\nSono qui per aiutarti con:\n\n🤖 **Servizi AI** - Automazione e chatbot intelligenti\n🌐 **Sviluppo Web** - Siti moderni e e-commerce\n📊 **AI Marketing** - Campagne automatizzate\n📅 **Prenotazioni** - Consulenze gratuite\n\n**Come posso aiutarti oggi?** 😊",
+          "👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura!**\n\nSono qui per aiutarti con:\n\n🤖 **Servizi AI** - Automazione e chatbot intelligenti\n🌐 **Sviluppo Web** - Siti moderni e e-commerce\n📊 **AI Marketing** - Campagne automatizzate\n📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI\n\n**Come posso aiutarti oggi?** 😊\n\n💡 **Scrivi 'prenota' per iniziare subito una prenotazione!**",
       })
     }
 
-    // Prova con AI Gemini
+    // Try AI response
     try {
       const systemPrompt =
         language === "en"
           ? `You are AuraBot, Digital Aura's helpful AI assistant. Digital Aura is an Italian company specializing in AI automation, intelligent chatbots, web development, and AI marketing.
 
-Keep responses concise, helpful, and professional. Always respond in English since the user is using English.
+Keep responses concise, helpful, and professional. Always respond in English.
 
 Our services:
 - AI Automation: Business process automation
@@ -99,7 +130,7 @@ Our services:
 - Web Development: Modern websites and e-commerce
 - AI Marketing: Automated campaigns
 
-If users ask about services, briefly explain and suggest booking a free consultation.`
+If users ask about services, briefly explain and suggest they write 'book' to start booking a consultation.`
           : `Sei AuraBot, l'assistente AI di Digital Aura. Digital Aura è un'azienda italiana specializzata in automazione AI, chatbot intelligenti, sviluppo web e marketing AI.
 
 Mantieni le risposte concise, utili e professionali. Rispondi sempre in italiano.
@@ -110,7 +141,7 @@ I nostri servizi:
 - Sviluppo Web: Siti web moderni e e-commerce  
 - Marketing AI: Campagne automatizzate
 
-Se gli utenti chiedono dei servizi, spiega brevemente e suggerisci di prenotare una consulenza gratuita.`
+Se gli utenti chiedono dei servizi, spiega brevemente e suggerisci di scrivere 'prenota' per iniziare una prenotazione.`
 
       const { text } = await generateText({
         model,
@@ -125,21 +156,18 @@ Se gli utenti chiedono dei servizi, spiega brevemente e suggerisci di prenotare 
     } catch (aiError) {
       console.error("AI Error:", aiError)
 
-      // Risposta di fallback
       return NextResponse.json({
         response:
           language === "en"
-            ? "I'm here to help! I can assist you with AI automation, chatbots, web development, and AI marketing. What would you like to know?"
-            : "Sono qui per aiutarti! Posso assisterti con automazione AI, chatbot, sviluppo web e marketing AI. Cosa vorresti sapere?",
+            ? "I'm here to help! I can assist you with AI automation, chatbots, web development, and AI marketing. Write 'book' to start booking a consultation!"
+            : "Sono qui per aiutarti! Posso assisterti con automazione AI, chatbot, sviluppo web e marketing AI. Scrivi 'prenota' per iniziare una prenotazione!",
       })
     }
   } catch (error) {
     console.error("❌ Chat API Error:", error)
 
     return NextResponse.json(
-      {
-        response: "Mi dispiace, si è verificato un errore tecnico. Riprova tra poco.",
-      },
+      { response: "Mi dispiace, si è verificato un errore tecnico. Riprova tra poco." },
       { status: 500 },
     )
   }
