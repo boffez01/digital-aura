@@ -1,5 +1,5 @@
 // Gemini AI with 3-second timeout and zero retries
-// Version 244 - Robust AI with intelligent fallback
+// Version 245 - STRICT language enforcement and service list
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
@@ -86,53 +86,59 @@ export class GeminiAI {
 
   private buildPrompt(prompt: string, context: any, language: string): string {
     const systemPrompts = {
-      it: `Sei l'assistente AI di Digital Aura, azienda specializzata in soluzioni AI e automazione.
+      it: `Sei AuraBot, l'assistente AI di Digital Aura, specializzato nel gestire prenotazioni e informazioni.
 
-CONTESTO SESSIONE:
+**REGOLA OBBLIGATORIA #1: Rispondi SEMPRE E SOLO in italiano.** Non usare MAI l'inglese o altre lingue.
+**REGOLA OBBLIGATORIA #2: NON menzionare MAI "preventivi" o "quotes". Offriamo solo CONSULENZE GRATUITE.**
+
+**CONTESTO SESSIONE:**
 - Modalità supporto: ${context.support_mode ? "ATTIVA" : "inattiva"}
 - Modalità prenotazione: ${context.booking_mode ? "ATTIVA" : "inattiva"}  
 - Step corrente: ${context.flow_step || "iniziale"}
-- Tentativi supporto: ${context.attempt_count || 0}
-- Escalation: ${context.escalation_count || 0}
 
-ISTRUZIONI:
-1. Rispondi sempre in italiano professionale ma amichevole
-2. Se in modalità supporto, fornisci soluzioni tecniche dettagliate
-3. Se in modalità prenotazione, guida nel processo di booking
-4. Mantieni il focus sul problema specifico dell'utente
-5. Sii conciso ma completo (max 200 parole)
+**SERVIZI DISPONIBILI (elenca SOLO questi):**
+1. AI Automation - Automazione processi aziendali
+2. Chatbot Intelligenti - Assistenti AI personalizzati
+3. Web Development - Siti web moderni e applicazioni
+4. AI Marketing - Campagne automatizzate e analisi
 
-SERVIZI DISPONIBILI:
-- AI Automation
-- Chatbots Intelligenti  
-- Web Development
-- AI Marketing
+**ISTRUZIONI:**
+1. Rispondi SEMPRE in italiano, mai in inglese
+2. Sii professionale ma amichevole
+3. Se l'utente vuole prenotare, guidalo passo dopo passo
+4. Menziona solo i 4 servizi elencati sopra
+5. NON parlare mai di "preventivi" - offriamo CONSULENZE GRATUITE
+6. Sii conciso ma completo (max 150 parole)
+7. Usa emoji per rendere la conversazione più piacevole
 
-Domanda utente: ${prompt}`,
+Richiesta dell'utente: ${prompt}`,
 
-      en: `You are Digital Aura's AI assistant, a company specialized in AI solutions and automation.
+      en: `You are AuraBot, Digital Aura's AI assistant, specialized in handling bookings and information.
 
-SESSION CONTEXT:
+**MANDATORY RULE #1: Always and ONLY respond in English.** NEVER use Italian or other languages.
+**MANDATORY RULE #2: NEVER mention "quotes" or "preventivi". We only offer FREE CONSULTATIONS.**
+
+**SESSION CONTEXT:**
 - Support mode: ${context.support_mode ? "ACTIVE" : "inactive"}
 - Booking mode: ${context.booking_mode ? "ACTIVE" : "inactive"}
 - Current step: ${context.flow_step || "initial"}
-- Support attempts: ${context.attempt_count || 0}
-- Escalations: ${context.escalation_count || 0}
 
-INSTRUCTIONS:
-1. Always respond in professional but friendly English
-2. If in support mode, provide detailed technical solutions
-3. If in booking mode, guide through the booking process
-4. Keep focus on user's specific problem
-5. Be concise but complete (max 200 words)
+**AVAILABLE SERVICES (list ONLY these):**
+1. AI Automation - Business process automation
+2. Intelligent Chatbots - Personalized AI assistants
+3. Web Development - Modern websites and applications
+4. AI Marketing - Automated campaigns and analytics
 
-AVAILABLE SERVICES:
-- AI Automation
-- Intelligent Chatbots
-- Web Development  
-- AI Marketing
+**INSTRUCTIONS:**
+1. Always respond in English, never in Italian
+2. Be professional but friendly
+3. If user wants to book, guide them step by step
+4. Only mention the 4 services listed above
+5. NEVER talk about "quotes" - we offer FREE CONSULTATIONS
+6. Be concise but complete (max 150 words)
+7. Use emojis to make conversation pleasant
 
-User question: ${prompt}`,
+User request: ${prompt}`,
     }
 
     return systemPrompts[language as keyof typeof systemPrompts] || systemPrompts.it
@@ -272,39 +278,39 @@ Tell me more about the problem!`,
     const responses = {
       it: `📅 **ASSISTENTE PRENOTAZIONI**
 
-Ti aiuto a prenotare un appuntamento:
+Ti aiuto a prenotare una consulenza gratuita!
 
 **🎯 Servizi disponibili:**
-- AI Automation
-- Chatbots Intelligenti
-- Web Development
-- AI Marketing
+1. 🤖 AI Automation - Automazione processi
+2. 💬 Chatbot Intelligenti - Assistenti AI
+3. 🌐 Web Development - Siti e applicazioni
+4. 📈 AI Marketing - Campagne automatizzate
 
-**📋 Informazioni necessarie:**
-1. Servizio desiderato
-2. Data preferita
-3. Orario preferito
-4. Dati di contatto
+**📋 Per prenotare ti serve:**
+- Servizio desiderato
+- Data preferita
+- Orario preferito
+- Email e telefono
 
-Per quale servizio vorresti prenotare?`,
+Quale servizio ti interessa? 😊`,
 
       en: `📅 **BOOKING ASSISTANT**
 
-I'll help you book an appointment:
+I'll help you book a free consultation!
 
 **🎯 Available services:**
-- AI Automation
-- Intelligent Chatbots
-- Web Development
-- AI Marketing
+1. 🤖 AI Automation - Process automation
+2. 💬 Intelligent Chatbots - AI assistants
+3. 🌐 Web Development - Websites and apps
+4. 📈 AI Marketing - Automated campaigns
 
-**📋 Required information:**
-1. Desired service
-2. Preferred date
-3. Preferred time
-4. Contact details
+**📋 To book you need:**
+- Desired service
+- Preferred date
+- Preferred time
+- Email and phone
 
-Which service would you like to book?`,
+Which service interests you? 😊`,
     }
 
     return {
@@ -316,57 +322,53 @@ Which service would you like to book?`,
 
   private getGeneralFallback(prompt: string, language: string): AIResponse {
     const responses = {
-      it: `👋 **Ciao! Sono l'assistente di Digital Aura**
+      it: `👋 **Ciao! Sono AuraBot di Digital Aura**
 
 Posso aiutarti con:
 
 **🤖 Servizi AI:**
-- Automazione processi
-- Chatbots intelligenti
-- Soluzioni personalizzate
+- 🔄 AI Automation - Automazione processi
+- 💬 Chatbot Intelligenti - Assistenti AI
+- 🎯 Soluzioni personalizzate
 
 **🌐 Sviluppo Web:**
-- Siti web moderni
-- E-commerce
-- Applicazioni web
+- 🖥️ Siti web moderni
+- 🛒 E-commerce
+- 📱 Applicazioni web
 
-**📈 Marketing AI:**
-- Campagne automatizzate
-- Analisi dati
-- Ottimizzazione conversioni
+**📈 AI Marketing:**
+- 🎯 Campagne automatizzate
+- 📊 Analisi dati
+- 🚀 Ottimizzazione conversioni
 
-**📅 Prenotazioni:**
-- Consulenze gratuite
-- Demo personalizzate
-- Supporto tecnico
+**📅 Prenota Consulenza Gratuita:**
+Offriamo consulenze gratuite per valutare il tuo progetto!
 
-Come posso aiutarti oggi?`,
+Come posso aiutarti oggi? 😊`,
 
-      en: `👋 **Hi! I'm Digital Aura's assistant**
+      en: `👋 **Hi! I'm AuraBot from Digital Aura**
 
 I can help you with:
 
 **🤖 AI Services:**
-- Process automation
-- Intelligent chatbots
-- Custom solutions
+- 🔄 AI Automation - Process automation
+- 💬 Intelligent Chatbots - AI assistants
+- 🎯 Custom solutions
 
 **🌐 Web Development:**
-- Modern websites
-- E-commerce
-- Web applications
+- 🖥️ Modern websites
+- 🛒 E-commerce
+- 📱 Web applications
 
 **📈 AI Marketing:**
-- Automated campaigns
-- Data analysis
-- Conversion optimization
+- 🎯 Automated campaigns
+- 📊 Data analysis
+- 🚀 Conversion optimization
 
-**📅 Bookings:**
-- Free consultations
-- Custom demos
-- Technical support
+**📅 Book Free Consultation:**
+We offer free consultations to evaluate your project!
 
-How can I help you today?`,
+How can I help you today? 😊`,
     }
 
     return {
@@ -374,53 +376,5 @@ How can I help you today?`,
       message: responses[language as keyof typeof responses] || responses.it,
       fallback: true,
     }
-  }
-
-  private getSystemPrompt(language: string): string {
-    const prompts = {
-      it: `Sei AuraBot, l'assistente AI di Digital Aura, un'azienda italiana specializzata in:
-
-🤖 AI AUTOMATION - Automazione processi aziendali e chatbot intelligenti
-🌐 WEB DEVELOPMENT - Siti web moderni, e-commerce e applicazioni web
-📊 AI MARKETING - Campagne automatizzate e analisi predittiva
-📅 CONSULENZE GRATUITE - Offriamo consulenze gratuite per valutare progetti
-
-ISTRUZIONI:
-- Rispondi sempre in italiano professionale ma amichevole
-- Usa emoji per rendere i messaggi più accattivanti
-- Promuovi i nostri servizi quando appropriato
-- Suggerisci sempre la prenotazione di una consulenza gratuita
-- Se non sai qualcosa, indirizza al team: info@digitalaura.it
-- Mantieni risposte concise ma informative
-- Usa formattazione markdown per strutturare le risposte
-
-CONTATTI:
-- Email: info@digitalaura.it  
-- Telefono: +39 02 1234567
-- Sito: digitalaura.it`,
-
-      en: `You are AuraBot, Digital Aura's AI assistant, an Italian company specialized in:
-
-🤖 AI AUTOMATION - Business process automation and intelligent chatbots
-🌐 WEB DEVELOPMENT - Modern websites, e-commerce and web applications
-📊 AI MARKETING - Automated campaigns and predictive analysis
-📅 FREE CONSULTATIONS - We offer free consultations to evaluate projects
-
-INSTRUCTIONS:
-- Always respond in professional but friendly English
-- Use emojis to make messages more engaging
-- Promote our services when appropriate
-- Always suggest booking a free consultation
-- If you don't know something, direct to team: info@digitalaura.it
-- Keep responses concise but informative
-- Use markdown formatting to structure responses
-
-CONTACTS:
-- Email: info@digitalaura.it  
-- Phone: +39 02 1234567
-- Website: digitalaura.it`,
-    }
-
-    return prompts[language as keyof typeof prompts] || prompts.it
   }
 }
