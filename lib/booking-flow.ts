@@ -2,25 +2,35 @@ import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
 
-export interface BookingResponse {
+interface BookingData {
+  service?: string
+  date?: string
+  time?: string
+  name?: string
+  email?: string
+  phone?: string
+  message?: string
+}
+
+interface BookingResponse {
   message: string
+  nextStep: string | null
   completed: boolean
-  nextStep?: string
 }
 
 export class BookingFlow {
   private services = {
     it: [
-      { id: "ai-automation", name: "AI Automation" },
-      { id: "chatbot", name: "Chatbot Intelligenti" },
-      { id: "web-development", name: "Web Development" },
-      { id: "ai-marketing", name: "AI Marketing" },
+      "🤖 AI Automation - Automazione processi aziendali",
+      "💬 Chatbot Intelligenti - Assistenti AI personalizzati",
+      "🌐 Web Development - Siti web moderni e applicazioni",
+      "📈 AI Marketing - Campagne di marketing automatizzate",
     ],
     en: [
-      { id: "ai-automation", name: "AI Automation" },
-      { id: "chatbot", name: "Intelligent Chatbots" },
-      { id: "web-development", name: "Web Development" },
-      { id: "ai-marketing", name: "AI Marketing" },
+      "🤖 AI Automation - Business process automation",
+      "💬 Intelligent Chatbots - Personalized AI assistants",
+      "🌐 Web Development - Modern websites and applications",
+      "📈 AI Marketing - Automated marketing campaigns",
     ],
   }
 
@@ -43,649 +53,618 @@ export class BookingFlow {
 
   async handleBookingStep(
     sessionId: string,
-    userMessage: string,
+    message: string,
     currentStep: string,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    console.log(`📝 Booking step: ${currentStep}, Message: ${userMessage}`)
+    console.log(`📋 Booking step: ${currentStep} for session: ${sessionId}`)
+
+    // Get current booking data
+    const sessionData = await sql`
+      SELECT booking_data FROM chat_sessions WHERE session_id = ${sessionId}
+    `
+
+    let bookingData: BookingData = {}
+    if (sessionData.length > 0 && sessionData[0].booking_data) {
+      bookingData = sessionData[0].booking_data
+    }
 
     switch (currentStep) {
       case "booking_start":
         return this.startBooking(sessionId, language)
 
       case "awaiting_service":
-        return this.handleServiceSelection(sessionId, userMessage, language)
+        return this.handleServiceSelection(sessionId, message, language)
 
       case "awaiting_date":
-        return this.handleDateSelection(sessionId, userMessage, language)
+        return this.handleDateSelection(sessionId, message, bookingData, language)
 
       case "awaiting_time":
-        return this.handleTimeSelection(sessionId, userMessage, language)
+        return this.handleTimeSelection(sessionId, message, bookingData, language)
 
       case "awaiting_name":
-        return this.handleNameInput(sessionId, userMessage, language)
+        return this.handleNameInput(sessionId, message, bookingData, language)
 
       case "awaiting_email":
-        return this.handleEmailInput(sessionId, userMessage, language)
+        return this.handleEmailInput(sessionId, message, bookingData, language)
 
       case "awaiting_phone":
-        return this.handlePhoneInput(sessionId, userMessage, language)
+        return this.handlePhoneInput(sessionId, message, bookingData, language)
 
       case "awaiting_message":
-        return this.handleMessageInput(sessionId, userMessage, language)
+        return this.handleMessageInput(sessionId, message, bookingData, language)
 
       case "awaiting_confirmation":
-        return this.handleConfirmation(sessionId, userMessage, language)
+        return this.handleConfirmation(sessionId, message, bookingData, language)
 
       default:
-        return this.startBooking(sessionId, language)
+        return {
+          message:
+            language === "it"
+              ? "Mi dispiace, qualcosa è andato storto. Ricominciamo! 🔄"
+              : "Sorry, something went wrong. Let's start over! 🔄",
+          nextStep: null,
+          completed: true,
+        }
     }
   }
 
   private async startBooking(sessionId: string, language: "it" | "en"): Promise<BookingResponse> {
     const services = this.services[language]
 
-    const message =
-      language === "it"
-        ? `🎯 **Perfetto! Prenotiamo la tua consulenza gratuita!**
-
-Per quale servizio vuoi la consulenza?
-
-1️⃣ ${services[0].name}
-2️⃣ ${services[1].name}
-3️⃣ ${services[2].name}
-4️⃣ ${services[3].name}
-
-Scrivi il numero (1-4) o il nome del servizio. 👇`
-        : `🎯 **Perfect! Let's book your free consultation!**
-
-Which service would you like a consultation for?
-
-1️⃣ ${services[0].name}
-2️⃣ ${services[1].name}
-3️⃣ ${services[2].name}
-4️⃣ ${services[3].name}
-
-Write the number (1-4) or the service name. 👇`
-
-    // Create or update session
     await sql`
-      INSERT INTO chat_sessions (session_id, booking_mode, flow_step, booking_data, updated_at)
+      INSERT INTO chat_sessions (session_id, booking_mode, flow_step, booking_data, created_at)
       VALUES (${sessionId}, true, 'awaiting_service', '{}', NOW())
       ON CONFLICT (session_id)
-      DO UPDATE SET booking_mode = true, flow_step = 'awaiting_service', updated_at = NOW()
+      DO UPDATE SET booking_mode = true, flow_step = 'awaiting_service', booking_data = '{}'
     `
 
-    return { message, completed: false, nextStep: "awaiting_service" }
+    const message =
+      language === "it"
+        ? `Perfetto! Iniziamo a prenotare la tua consulenza! 🎯
+
+**Per quale servizio vuoi prenotare?**
+
+1️⃣ ${services[0]}
+2️⃣ ${services[1]}
+3️⃣ ${services[2]}
+4️⃣ ${services[3]}
+
+Rispondi con il numero (1, 2, 3 o 4) 📝`
+        : `Perfect! Let's book your consultation! 🎯
+
+**Which service do you want to book?**
+
+1️⃣ ${services[0]}
+2️⃣ ${services[1]}
+3️⃣ ${services[2]}
+4️⃣ ${services[3]}
+
+Reply with the number (1, 2, 3, or 4) 📝`
+
+    return {
+      message,
+      nextStep: "awaiting_service",
+      completed: false,
+    }
   }
 
   private async handleServiceSelection(
     sessionId: string,
-    userMessage: string,
+    message: string,
     language: "it" | "en",
   ): Promise<BookingResponse> {
     const services = this.services[language]
-    const lowerMessage = userMessage.toLowerCase().trim()
+    const serviceIndex = Number.parseInt(message.trim()) - 1
 
-    let selectedService = null
-
-    // Check for number
-    if (["1", "2", "3", "4"].includes(lowerMessage)) {
-      selectedService = services[Number.parseInt(lowerMessage) - 1]
-    } else {
-      // Check for service name
-      selectedService = services.find((s) => lowerMessage.includes(s.name.toLowerCase()) || lowerMessage.includes(s.id))
+    if (serviceIndex < 0 || serviceIndex > 3 || isNaN(serviceIndex)) {
+      return {
+        message:
+          language === "it"
+            ? "Per favore, scegli un numero valido (1, 2, 3 o 4) 🔢"
+            : "Please choose a valid number (1, 2, 3, or 4) 🔢",
+        nextStep: "awaiting_service",
+        completed: false,
+      }
     }
 
-    if (!selectedService) {
-      const message =
-        language === "it"
-          ? `❌ Non ho capito. Scegli un servizio scrivendo il numero (1-4) o il nome:
+    const selectedService = services[serviceIndex]
+    const bookingData: BookingData = { service: selectedService }
 
-1️⃣ ${services[0].name}
-2️⃣ ${services[1].name}
-3️⃣ ${services[2].name}
-4️⃣ ${services[3].name}`
-          : `❌ I didn't understand. Choose a service by writing the number (1-4) or name:
-
-1️⃣ ${services[0].name}
-2️⃣ ${services[1].name}
-3️⃣ ${services[2].name}
-4️⃣ ${services[3].name}`
-
-      return { message, completed: false, nextStep: "awaiting_service" }
-    }
-
-    // Save service selection
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{service}', to_jsonb(${selectedService.id}::text)),
-          flow_step = 'awaiting_date',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_date', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Perfetto! Hai scelto **${selectedService.name}**
+        ? `Ottimo! Hai scelto: ${selectedService} ✅
 
-📅 **Quando preferisci la consulenza?**
+**Quando vuoi prenotare?**
 
 Scrivi la data nel formato:
-• **20/12** o **20/12/2024**
-• **20 dicembre**
+📅 "20/12" oppure "20 dicembre"
 
-⏰ Lavoriamo **Lun-Ven 9:00-18:00**
-❌ Weekend non disponibili
+⚠️ Ricorda: lavoriamo solo da lunedì a venerdì!`
+        : `Great! You chose: ${selectedService} ✅
 
-Quale data preferisci? 📆`
-        : `✅ Perfect! You chose **${selectedService.name}**
-
-📅 **When would you prefer the consultation?**
+**When do you want to book?**
 
 Write the date in format:
-• **20/12** or **20/12/2024**
-• **20 December**
+📅 "20/12" or "December 20"
 
-⏰ We work **Mon-Fri 9:00-18:00**
-❌ Weekends not available
+⚠️ Remember: we work only Monday to Friday!`
 
-Which date do you prefer? 📆`
-
-    return { message, completed: false, nextStep: "awaiting_date" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_date",
+      completed: false,
+    }
   }
 
   private async handleDateSelection(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const parsedDate = this.parseDate(userMessage)
+    const parsedDate = this.parseDate(message, language)
 
     if (!parsedDate) {
-      const message =
-        language === "it"
-          ? `❌ **Formato data non valido!**
-
-Scrivi la data in uno di questi formati:
-• **20/12** o **20/12/2024**
-• **20 dicembre**
-
-Riprova: 📆`
-          : `❌ **Invalid date format!**
-
-Write the date in one of these formats:
-• **20/12** or **20/12/2024**
-• **20 December**
-
-Try again: 📆`
-
-      return { message, completed: false, nextStep: "awaiting_date" }
+      return {
+        message:
+          language === "it"
+            ? 'Per favore, usa un formato valido come "20/12" o "20 dicembre" 📅'
+            : 'Please use a valid format like "20/12" or "December 20" 📅',
+        nextStep: "awaiting_date",
+        completed: false,
+      }
     }
 
-    // Check if weekend
-    const dayOfWeek = parsedDate.getDay()
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      const message =
-        language === "it"
-          ? `❌ **Weekend non disponibile!**
-
-⏰ Lavoriamo solo **Lun-Ven 9:00-18:00**
-
-Scegli una data in settimana: 📅`
-          : `❌ **Weekend not available!**
-
-⏰ We only work **Mon-Fri 9:00-18:00**
-
-Choose a weekday: 📅`
-
-      return { message, completed: false, nextStep: "awaiting_date" }
-    }
-
-    // Check if past date
+    // Check if date is in the past
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     if (parsedDate < today) {
-      const message =
-        language === "it"
-          ? `❌ **Non posso prenotare date passate!**
-
-Scegli una data futura: 📅`
-          : `❌ **Cannot book past dates!**
-
-Choose a future date: 📅`
-
-      return { message, completed: false, nextStep: "awaiting_date" }
+      return {
+        message:
+          language === "it"
+            ? "Non posso prenotare date passate! Per favore scegli una data futura 📅"
+            : "I cannot book past dates! Please choose a future date 📅",
+        nextStep: "awaiting_date",
+        completed: false,
+      }
     }
 
-    // Format date for DB (YYYY-MM-DD)
-    const formattedDate = parsedDate.toISOString().split("T")[0]
+    // Check if it's weekend
+    const dayOfWeek = parsedDate.getDay()
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      return {
+        message:
+          language === "it"
+            ? "Il weekend non lavoriamo! 😊 Scegli un giorno da lunedì a venerdì."
+            : "We don't work on weekends! 😊 Choose a day from Monday to Friday.",
+        nextStep: "awaiting_date",
+        completed: false,
+      }
+    }
 
-    // Get available time slots for this date
-    const availableSlots = await this.getAvailableTimeSlots(formattedDate)
+    const dateString = parsedDate.toISOString().split("T")[0]
+
+    // Check available time slots
+    const bookedSlots = await sql`
+      SELECT time FROM appointments
+      WHERE date = ${dateString}
+      AND status IN ('pending', 'confirmed')
+    `
+
+    const bookedTimes = bookedSlots.map((slot) => slot.time)
+    const availableSlots = this.timeSlots.filter((slot) => !bookedTimes.includes(slot))
 
     if (availableSlots.length === 0) {
-      const message =
-        language === "it"
-          ? `😔 **Tutti gli orari sono occupati per questa data!**
-
-Prova con un'altra data: 📅`
-          : `😔 **All time slots are booked for this date!**
-
-Try another date: 📅`
-
-      return { message, completed: false, nextStep: "awaiting_date" }
+      return {
+        message:
+          language === "it"
+            ? "Mi dispiace, non ci sono slot disponibili per questa data! 😔 Prova un'altra data."
+            : "Sorry, no available slots for this date! 😔 Try another date.",
+        nextStep: "awaiting_date",
+        completed: false,
+      }
     }
 
-    // Save date
+    bookingData.date = dateString
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{date}', to_jsonb(${formattedDate}::text)),
-          flow_step = 'awaiting_time',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_time', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    // Format date for display
-    const displayDate = parsedDate.toLocaleDateString(language === "it" ? "it-IT" : "en-US", {
+    const formattedDate = parsedDate.toLocaleDateString(language === "it" ? "it-IT" : "en-US", {
       weekday: "long",
       day: "numeric",
       month: "long",
     })
 
-    const slotsText = availableSlots.map((slot, idx) => `${idx + 1}. ${slot}`).join("\n")
+    const slotsMessage = availableSlots.map((slot, index) => `${index + 1}️⃣ ${slot}`).join("\n")
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Data selezionata: **${displayDate}**
+        ? `Perfetto! Data selezionata: ${formattedDate} ✅
 
-⏰ **Orari disponibili:**
+**Scegli un orario disponibile:**
 
-${slotsText}
+${slotsMessage}
 
-Scrivi il numero o l'orario che preferisci: 👇`
-        : `✅ Date selected: **${displayDate}**
+Rispondi con il numero dello slot! 🕐`
+        : `Perfect! Selected date: ${formattedDate} ✅
 
-⏰ **Available times:**
+**Choose an available time:**
 
-${slotsText}
+${slotsMessage}
 
-Write the number or time you prefer: 👇`
+Reply with the slot number! 🕐`
 
-    return { message, completed: false, nextStep: "awaiting_time" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_time",
+      completed: false,
+    }
   }
 
   private async handleTimeSelection(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    // Get session data
-    const session = await sql`
-      SELECT booking_data FROM chat_sessions WHERE session_id = ${sessionId}
-    `
-
-    if (!session.length) {
-      return this.startBooking(sessionId, language)
-    }
-
-    const bookingData = session[0].booking_data
-    const selectedDate = bookingData.date
-
-    // Get available slots
-    const availableSlots = await this.getAvailableTimeSlots(selectedDate)
-
-    let selectedTime = null
-    const lowerMessage = userMessage.toLowerCase().trim()
-
-    // Check for number selection
-    const slotNumber = Number.parseInt(lowerMessage)
-    if (!isNaN(slotNumber) && slotNumber >= 1 && slotNumber <= availableSlots.length) {
-      selectedTime = availableSlots[slotNumber - 1]
-    } else {
-      // Check for direct time format (09:00, 9:00, etc)
-      const timeMatch = lowerMessage.match(/(\d{1,2}):?(\d{2})?/)
-      if (timeMatch) {
-        const hour = timeMatch[1].padStart(2, "0")
-        const minute = timeMatch[2] || "00"
-        const timeStr = `${hour}:${minute}`
-        if (availableSlots.includes(timeStr)) {
-          selectedTime = timeStr
-        }
+    if (!bookingData.date) {
+      return {
+        message:
+          language === "it" ? "Errore: data non trovata. Ricominciamo! 🔄" : "Error: date not found. Let's restart! 🔄",
+        nextStep: null,
+        completed: true,
       }
     }
 
-    if (!selectedTime) {
-      const slotsText = availableSlots.map((slot, idx) => `${idx + 1}. ${slot}`).join("\n")
+    // Get available slots again
+    const bookedSlots = await sql`
+      SELECT time FROM appointments
+      WHERE date = ${bookingData.date}
+      AND status IN ('pending', 'confirmed')
+    `
 
-      const message =
-        language === "it"
-          ? `❌ Orario non valido o non disponibile!
+    const bookedTimes = bookedSlots.map((slot) => slot.time)
+    const availableSlots = this.timeSlots.filter((slot) => !bookedTimes.includes(slot))
 
-Scegli uno di questi orari:
+    const slotIndex = Number.parseInt(message.trim()) - 1
 
-${slotsText}
-
-Scrivi il numero o l'orario: 👇`
-          : `❌ Invalid or unavailable time!
-
-Choose one of these times:
-
-${slotsText}
-
-Write the number or time: 👇`
-
-      return { message, completed: false, nextStep: "awaiting_time" }
+    if (slotIndex < 0 || slotIndex >= availableSlots.length || isNaN(slotIndex)) {
+      return {
+        message:
+          language === "it"
+            ? "Per favore, scegli un numero valido dalla lista! 🔢"
+            : "Please choose a valid number from the list! 🔢",
+        nextStep: "awaiting_time",
+        completed: false,
+      }
     }
+
+    const selectedTime = availableSlots[slotIndex]
 
     // Double-check availability
-    const isAvailable = await this.checkSlotAvailability(selectedDate, selectedTime)
-    if (!isAvailable) {
-      const message =
-        language === "it"
-          ? `😔 **Questo orario è stato appena prenotato!**
+    const finalCheck = await sql`
+      SELECT id FROM appointments
+      WHERE date = ${bookingData.date}
+      AND time = ${selectedTime}
+      AND status IN ('pending', 'confirmed')
+    `
 
-Scegli un altro orario disponibile: ⏰`
-          : `😔 **This time slot was just booked!**
-
-Choose another available time: ⏰`
-
-      return { message, completed: false, nextStep: "awaiting_time" }
+    if (finalCheck.length > 0) {
+      return {
+        message:
+          language === "it"
+            ? "Mi dispiace, questo slot è stato appena prenotato! 😔 Scegline un altro."
+            : "Sorry, this slot was just booked! 😔 Choose another one.",
+        nextStep: "awaiting_time",
+        completed: false,
+      }
     }
 
-    // Save time
+    bookingData.time = selectedTime
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{time}', to_jsonb(${selectedTime}::text)),
-          flow_step = 'awaiting_name',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_name', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Orario confermato: **${selectedTime}**
+        ? `Perfetto! Orario selezionato: ${selectedTime} ✅
 
-👤 **Come ti chiami?**
+**Come ti chiami?**
 
-Scrivi il tuo nome completo: 📝`
-        : `✅ Time confirmed: **${selectedTime}**
+Inserisci il tuo nome completo 👤`
+        : `Perfect! Selected time: ${selectedTime} ✅
 
-👤 **What's your name?**
+**What's your name?**
 
-Write your full name: 📝`
+Enter your full name 👤`
 
-    return { message, completed: false, nextStep: "awaiting_name" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_name",
+      completed: false,
+    }
   }
 
   private async handleNameInput(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const name = userMessage.trim()
+    const name = message.trim()
 
     if (name.length < 2) {
-      const message =
-        language === "it"
-          ? `❌ Il nome sembra troppo corto!
-
-Scrivi il tuo nome completo: 📝`
-          : `❌ Name seems too short!
-
-Write your full name: 📝`
-
-      return { message, completed: false, nextStep: "awaiting_name" }
+      return {
+        message:
+          language === "it" ? "Il nome deve essere almeno 2 caratteri! 📝" : "Name must be at least 2 characters! 📝",
+        nextStep: "awaiting_name",
+        completed: false,
+      }
     }
 
-    // Save name
+    bookingData.name = name
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{name}', to_jsonb(${name}::text)),
-          flow_step = 'awaiting_email',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_email', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Ciao **${name}**!
+        ? `Ciao ${name}! 👋
 
-📧 **Qual è la tua email?**
+**Qual è la tua email?**
 
-Scrivi la tua email: 📬`
-        : `✅ Hi **${name}**!
+Inserisci un indirizzo email valido 📧`
+        : `Hi ${name}! 👋
 
-📧 **What's your email?**
+**What's your email?**
 
-Write your email: 📬`
+Enter a valid email address 📧`
 
-    return { message, completed: false, nextStep: "awaiting_email" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_email",
+      completed: false,
+    }
   }
 
   private async handleEmailInput(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const email = userMessage.trim()
+    const email = message.trim()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    if (!this.isValidEmail(email)) {
-      const message =
-        language === "it"
-          ? `❌ Email non valida!
-
-Scrivi una email corretta (es: nome@email.com): 📧`
-          : `❌ Invalid email!
-
-Write a valid email (e.g: name@email.com): 📧`
-
-      return { message, completed: false, nextStep: "awaiting_email" }
+    if (!emailRegex.test(email)) {
+      return {
+        message: language === "it" ? "Per favore, inserisci un'email valida! 📧" : "Please enter a valid email! 📧",
+        nextStep: "awaiting_email",
+        completed: false,
+      }
     }
 
-    // Save email
+    bookingData.email = email
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{email}', to_jsonb(${email}::text)),
-          flow_step = 'awaiting_phone',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_phone', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Email salvata: **${email}**
+        ? `Email confermata: ${email} ✅
 
-📱 **Qual è il tuo numero di telefono?**
+**Qual è il tuo numero di telefono?**
 
-Scrivi il tuo telefono: 📞`
-        : `✅ Email saved: **${email}**
+Inserisci un numero valido 📱`
+        : `Email confirmed: ${email} ✅
 
-📱 **What's your phone number?**
+**What's your phone number?**
 
-Write your phone: 📞`
+Enter a valid number 📱`
 
-    return { message, completed: false, nextStep: "awaiting_phone" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_phone",
+      completed: false,
+    }
   }
 
   private async handlePhoneInput(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const phone = userMessage.trim()
+    const phone = message.trim().replace(/\s/g, "")
+    const phoneRegex = /^[\d+\-()]{8,}$/
 
-    if (!this.isValidPhone(phone)) {
-      const message =
-        language === "it"
-          ? `❌ Telefono non valido!
-
-Scrivi un numero valido (es: +39 123 456 7890): 📱`
-          : `❌ Invalid phone!
-
-Write a valid number (e.g: +39 123 456 7890): 📱`
-
-      return { message, completed: false, nextStep: "awaiting_phone" }
+    if (!phoneRegex.test(phone)) {
+      return {
+        message:
+          language === "it"
+            ? "Per favore, inserisci un numero di telefono valido! 📱"
+            : "Please enter a valid phone number! 📱",
+        nextStep: "awaiting_phone",
+        completed: false,
+      }
     }
 
-    // Save phone
+    bookingData.phone = phone
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{phone}', to_jsonb(${phone}::text)),
-          flow_step = 'awaiting_message',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_message', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    const message =
+    const responseMessage =
       language === "it"
-        ? `✅ Telefono salvato: **${phone}**
+        ? `Telefono confermato: ${phone} ✅
 
-💬 **Vuoi aggiungere un messaggio? (Opzionale)**
+**Vuoi aggiungere un messaggio? (opzionale)**
 
-Descrivi brevemente il tuo progetto o scrivi "salta": ✍️`
-        : `✅ Phone saved: **${phone}**
+Scrivi un messaggio o "skip" per saltare 💬`
+        : `Phone confirmed: ${phone} ✅
 
-💬 **Want to add a message? (Optional)**
+**Want to add a message? (optional)**
 
-Briefly describe your project or write "skip": ✍️`
+Write a message or "skip" to skip 💬`
 
-    return { message, completed: false, nextStep: "awaiting_message" }
+    return {
+      message: responseMessage,
+      nextStep: "awaiting_message",
+      completed: false,
+    }
   }
 
   private async handleMessageInput(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const message =
-      userMessage.toLowerCase().trim() === "salta" || userMessage.toLowerCase().trim() === "skip"
-        ? ""
-        : userMessage.trim()
+    const userMessage = message.trim()
 
-    // Save message
+    if (userMessage.toLowerCase() !== "skip") {
+      bookingData.message = userMessage
+    }
+
     await sql`
       UPDATE chat_sessions
-      SET booking_data = jsonb_set(booking_data, '{message}', to_jsonb(${message}::text)),
-          flow_step = 'awaiting_confirmation',
-          updated_at = NOW()
+      SET flow_step = 'awaiting_confirmation', booking_data = ${JSON.stringify(bookingData)}
       WHERE session_id = ${sessionId}
     `
 
-    // Get complete booking data
-    const session = await sql`
-      SELECT booking_data FROM chat_sessions WHERE session_id = ${sessionId}
-    `
-
-    const bookingData = session[0].booking_data
-
-    // Format date for display
-    const dateObj = new Date(bookingData.date + "T00:00:00")
-    const displayDate = dateObj.toLocaleDateString(language === "it" ? "it-IT" : "en-US", {
+    const date = new Date(bookingData.date!)
+    const formattedDate = date.toLocaleDateString(language === "it" ? "it-IT" : "en-US", {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     })
 
-    const confirmMessage =
+    const summaryMessage =
       language === "it"
         ? `📋 **RIEPILOGO PRENOTAZIONE**
 
 ✅ **Servizio**: ${bookingData.service}
-📅 **Data**: ${displayDate}
-⏰ **Ora**: ${bookingData.time}
+📅 **Data**: ${formattedDate}
+🕐 **Orario**: ${bookingData.time}
 👤 **Nome**: ${bookingData.name}
 📧 **Email**: ${bookingData.email}
 📱 **Telefono**: ${bookingData.phone}
-${message ? `💬 **Messaggio**: ${message}` : ""}
+${bookingData.message ? `💬 **Messaggio**: ${bookingData.message}` : ""}
 
-✅ Confermi la prenotazione? (Scrivi "SI" o "NO") 🎯`
+Tutto corretto? Rispondi **"SI"** per confermare o **"NO"** per annullare 🎯`
         : `📋 **BOOKING SUMMARY**
 
 ✅ **Service**: ${bookingData.service}
-📅 **Date**: ${displayDate}
-⏰ **Time**: ${bookingData.time}
+📅 **Date**: ${formattedDate}
+🕐 **Time**: ${bookingData.time}
 👤 **Name**: ${bookingData.name}
 📧 **Email**: ${bookingData.email}
 📱 **Phone**: ${bookingData.phone}
-${message ? `💬 **Message**: ${message}` : ""}
+${bookingData.message ? `💬 **Message**: ${bookingData.message}` : ""}
 
-✅ Confirm booking? (Write "YES" or "NO") 🎯`
+Everything correct? Reply **"YES"** to confirm or **"NO"** to cancel 🎯`
 
-    return { message: confirmMessage, completed: false, nextStep: "awaiting_confirmation" }
+    return {
+      message: summaryMessage,
+      nextStep: "awaiting_confirmation",
+      completed: false,
+    }
   }
 
   private async handleConfirmation(
     sessionId: string,
-    userMessage: string,
+    message: string,
+    bookingData: BookingData,
     language: "it" | "en",
   ): Promise<BookingResponse> {
-    const lowerMessage = userMessage.toLowerCase().trim()
+    const response = message.trim().toLowerCase()
 
-    if (lowerMessage === "no" || lowerMessage === "annulla" || lowerMessage === "cancel") {
-      // Reset booking
+    if (response === "no") {
       await sql`
         UPDATE chat_sessions
-        SET booking_mode = false, flow_step = null, booking_data = '{}'
+        SET booking_mode = false, flow_step = null, booking_data = null
         WHERE session_id = ${sessionId}
       `
 
-      const message =
-        language === "it"
-          ? `❌ Prenotazione annullata!
-
-Vuoi riprenotare? Scrivi "prenota" 📅`
-          : `❌ Booking cancelled!
-
-Want to rebook? Write "book" 📅`
-
-      return { message, completed: true }
+      return {
+        message:
+          language === "it"
+            ? "Prenotazione annullata! 🙏 Se vuoi riprenotare, scrivi 'prenota'."
+            : "Booking cancelled! 🙏 If you want to book again, write 'book'.",
+        nextStep: null,
+        completed: true,
+      }
     }
 
-    if (lowerMessage !== "si" && lowerMessage !== "sì" && lowerMessage !== "yes") {
-      const message =
-        language === "it"
-          ? `❓ Scrivi "SI" per confermare o "NO" per annullare: 👇`
-          : `❓ Write "YES" to confirm or "NO" to cancel: 👇`
-
-      return { message, completed: false, nextStep: "awaiting_confirmation" }
+    if (response !== "si" && response !== "sì" && response !== "yes") {
+      return {
+        message: language === "it" ? 'Per favore, rispondi "SI" o "NO" 📝' : 'Please reply "YES" or "NO" 📝',
+        nextStep: "awaiting_confirmation",
+        completed: false,
+      }
     }
 
-    // Get booking data
-    const session = await sql`
-      SELECT booking_data FROM chat_sessions WHERE session_id = ${sessionId}
+    // Final check for slot availability
+    const finalCheck = await sql`
+      SELECT id FROM appointments
+      WHERE date = ${bookingData.date}
+      AND time = ${bookingData.time}
+      AND status IN ('pending', 'confirmed')
     `
 
-    const bookingData = session[0].booking_data
+    if (finalCheck.length > 0) {
+      await sql`
+        UPDATE chat_sessions
+        SET booking_mode = false, flow_step = null, booking_data = null
+        WHERE session_id = ${sessionId}
+      `
 
-    // Final availability check
-    const isAvailable = await this.checkSlotAvailability(bookingData.date, bookingData.time)
-    if (!isAvailable) {
-      const message =
-        language === "it"
-          ? `😔 **Questo orario è stato appena prenotato da qualcun altro!**
-
-Vuoi scegliere un altro orario? Scrivi "SI" 📅`
-          : `😔 **This time slot was just booked by someone else!**
-
-Want to choose another time? Write "YES" 📅`
-
-      return { message, completed: true }
+      return {
+        message:
+          language === "it"
+            ? "Mi dispiace, questo slot è stato appena prenotato da qualcun altro! 😔 Riprova con un altro orario."
+            : "Sorry, this slot was just booked by someone else! 😔 Try another time.",
+        nextStep: null,
+        completed: true,
+      }
     }
 
-    // Save to database
+    // Save appointment to database
     try {
       const result = await sql`
         INSERT INTO appointments (
-          name, email, phone, service, date, time, message, status, created_at
+          date, time, name, email, phone, service, message, status, created_at
         ) VALUES (
+          ${bookingData.date},
+          ${bookingData.time},
           ${bookingData.name},
           ${bookingData.email},
           ${bookingData.phone},
           ${bookingData.service},
-          ${bookingData.date},
-          ${bookingData.time},
           ${bookingData.message || ""},
           'pending',
           NOW()
@@ -695,165 +674,130 @@ Want to choose another time? Write "YES" 📅`
 
       const appointmentId = result[0].id
 
-      // Reset session
+      // Clear session
       await sql`
         UPDATE chat_sessions
-        SET booking_mode = false, flow_step = null, booking_data = '{}'
+        SET booking_mode = false, flow_step = null, booking_data = null
         WHERE session_id = ${sessionId}
       `
 
-      const message =
+      const date = new Date(bookingData.date!)
+      const formattedDate = date.toLocaleDateString(language === "it" ? "it-IT" : "en-US", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      })
+
+      const successMessage =
         language === "it"
-          ? `🎉 **PRENOTAZIONE CONFERMATA!**
+          ? `✅ **PRENOTAZIONE CONFERMATA!**
 
-✅ **ID Prenotazione**: #${appointmentId}
-📧 Ti abbiamo inviato una email di conferma
+🎉 La tua consulenza è stata prenotata con successo!
 
-📞 Ti contatteremo prima dell'appuntamento per confermare.
+📋 **ID Prenotazione**: #${appointmentId}
+📅 **Data**: ${formattedDate}
+🕐 **Orario**: ${bookingData.time}
 
-**Cosa succede ora?**
-1. ✅ Riceverai email di conferma
-2. 📞 Ti richiameremo per confermare
-3. 📅 L'appuntamento verrà aggiunto al calendario
+📧 Ti abbiamo inviato una conferma via email a ${bookingData.email}
 
-Grazie per aver scelto Digital Aura! 🚀
+Ti aspettiamo! 🚀
 
-Hai altre domande? 💡`
-          : `🎉 **BOOKING CONFIRMED!**
+Se hai domande, scrivimi pure! 💬`
+          : `✅ **BOOKING CONFIRMED!**
 
-✅ **Booking ID**: #${appointmentId}
-📧 We sent you a confirmation email
+🎉 Your consultation has been successfully booked!
 
-📞 We'll contact you before the appointment to confirm.
+📋 **Booking ID**: #${appointmentId}
+📅 **Date**: ${formattedDate}
+🕐 **Time**: ${bookingData.time}
 
-**What happens now?**
-1. ✅ You'll receive confirmation email
-2. 📞 We'll call you to confirm
-3. 📅 Appointment will be added to calendar
+📧 We sent you a confirmation email at ${bookingData.email}
 
-Thank you for choosing Digital Aura! 🚀
+See you there! 🚀
 
-Any other questions? 💡`
+If you have questions, just ask! 💬`
 
-      return { message, completed: true }
+      return {
+        message: successMessage,
+        nextStep: null,
+        completed: true,
+      }
     } catch (error) {
       console.error("Error saving appointment:", error)
 
-      const message =
-        language === "it"
-          ? `❌ Errore nel salvare la prenotazione!
+      await sql`
+        UPDATE chat_sessions
+        SET booking_mode = false, flow_step = null, booking_data = null
+        WHERE session_id = ${sessionId}
+      `
 
-Riprova o contattaci: info@digitalaura.it 📧`
-          : `❌ Error saving booking!
-
-Try again or contact us: info@digitalaura.it 📧`
-
-      return { message, completed: true }
+      return {
+        message:
+          language === "it"
+            ? "Mi dispiace, si è verificato un errore. Riprova! 🔄"
+            : "Sorry, an error occurred. Please try again! 🔄",
+        nextStep: null,
+        completed: true,
+      }
     }
   }
 
-  // Helper methods
-  private parseDate(input: string): Date | null {
-    const cleaned = input.trim().toLowerCase()
+  private parseDate(message: string, language: "it" | "en"): Date | null {
+    const cleaned = message.toLowerCase().trim()
 
-    // Italian month names
-    const italianMonths: Record<string, number> = {
-      gennaio: 0,
-      febbraio: 1,
-      marzo: 2,
-      aprile: 3,
-      maggio: 4,
-      giugno: 5,
-      luglio: 6,
-      agosto: 7,
-      settembre: 8,
-      ottobre: 9,
-      novembre: 10,
-      dicembre: 11,
-    }
-
-    // English month names
-    const englishMonths: Record<string, number> = {
-      january: 0,
-      february: 1,
-      march: 2,
-      april: 3,
-      may: 4,
-      june: 5,
-      july: 6,
-      august: 7,
-      september: 8,
-      october: 9,
-      november: 10,
-      december: 11,
-    }
-
-    // Try format: "20 dicembre" or "20 december"
-    const textMatch = cleaned.match(/(\d{1,2})\s+([a-z]+)/)
-    if (textMatch) {
-      const day = Number.parseInt(textMatch[1])
-      const monthName = textMatch[2]
-      const month = italianMonths[monthName] ?? englishMonths[monthName]
-
-      if (month !== undefined) {
-        const year = new Date().getFullYear()
-        const date = new Date(year, month, day)
-        if (date.getMonth() === month && date.getDate() === day) {
-          return date
-        }
-      }
-    }
-
-    // Try format: "20/12" or "20/12/2024"
+    // Format: "20/12" or "20/12/2024"
     const slashMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/)
     if (slashMatch) {
       const day = Number.parseInt(slashMatch[1])
       const month = Number.parseInt(slashMatch[2]) - 1
       const year = slashMatch[3] ? Number.parseInt(slashMatch[3]) : new Date().getFullYear()
+      return new Date(year, month, day)
+    }
 
-      const date = new Date(year, month, day)
-      if (date.getMonth() === month && date.getDate() === day) {
-        return date
+    // Format: "20 dicembre" or "December 20"
+    const months = {
+      it: [
+        "gennaio",
+        "febbraio",
+        "marzo",
+        "aprile",
+        "maggio",
+        "giugno",
+        "luglio",
+        "agosto",
+        "settembre",
+        "ottobre",
+        "novembre",
+        "dicembre",
+      ],
+      en: [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+      ],
+    }
+
+    const monthNames = months[language]
+    for (let i = 0; i < monthNames.length; i++) {
+      if (cleaned.includes(monthNames[i])) {
+        const dayMatch = cleaned.match(/(\d{1,2})/)
+        if (dayMatch) {
+          const day = Number.parseInt(dayMatch[1])
+          const year = new Date().getFullYear()
+          return new Date(year, i, day)
+        }
       }
     }
 
     return null
-  }
-
-  private async getAvailableTimeSlots(date: string): Promise<string[]> {
-    // Get booked slots for this date
-    const booked = await sql`
-      SELECT DISTINCT time
-      FROM appointments
-      WHERE date = ${date}
-      AND status IN ('pending', 'confirmed')
-    `
-
-    const bookedTimes = booked.map((row: any) => row.time)
-
-    // Return available slots
-    return this.timeSlots.filter((slot) => !bookedTimes.includes(slot))
-  }
-
-  private async checkSlotAvailability(date: string, time: string): Promise<boolean> {
-    const result = await sql`
-      SELECT COUNT(*) as count
-      FROM appointments
-      WHERE date = ${date}
-      AND time = ${time}
-      AND status IN ('pending', 'confirmed')
-    `
-
-    return result[0].count === 0
-  }
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
-  private isValidPhone(phone: string): boolean {
-    const cleaned = phone.replace(/[\s\-$$$$]/g, "")
-    return cleaned.length >= 8 && /^[+]?[\d]+$/.test(cleaned)
   }
 }
