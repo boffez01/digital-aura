@@ -5,8 +5,20 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, Clock, User, Mail, Phone, MessageSquare, AlertCircle, CheckCircle, XCircle } from "lucide-react"
-import { format, parseISO, isToday, isTomorrow, isYesterday } from "date-fns"
+import {
+  CalendarDays,
+  Clock,
+  User,
+  Mail,
+  Phone,
+  MessageSquare,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
+import { format, parseISO, isToday, isTomorrow, isYesterday, addMonths, subMonths } from "date-fns"
 import { it } from "date-fns/locale"
 
 interface Appointment {
@@ -25,10 +37,10 @@ interface Appointment {
 
 export default function AdminCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [debugInfo, setDebugInfo] = useState<any>(null)
 
   const fetchAppointments = async () => {
     try {
@@ -54,11 +66,6 @@ export default function AdminCalendar() {
 
       if (data.success && Array.isArray(data.appointments)) {
         setAppointments(data.appointments)
-        setDebugInfo({
-          totalAppointments: data.appointments.length,
-          apiResponse: data,
-          fetchTime: new Date().toISOString(),
-        })
         console.log(`✅ Loaded ${data.appointments.length} appointments`)
       } else {
         console.error("❌ Invalid API response format:", data)
@@ -127,7 +134,6 @@ export default function AdminCalendar() {
 
   const formatTime = (timeString: string) => {
     try {
-      // Handle different time formats
       if (timeString.includes(":")) {
         const [hours, minutes] = timeString.split(":")
         return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`
@@ -157,13 +163,21 @@ export default function AdminCalendar() {
       })
 
       if (response.ok) {
-        await fetchAppointments() // Refresh the list
+        await fetchAppointments()
       } else {
         console.error("Failed to update appointment status")
       }
     } catch (error) {
       console.error("Error updating appointment:", error)
     }
+  }
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth((prev) => subMonths(prev, 1))
+  }
+
+  const handleNextMonth = () => {
+    setCurrentMonth((prev) => addMonths(prev, 1))
   }
 
   if (loading) {
@@ -202,35 +216,24 @@ export default function AdminCalendar() {
         </Card>
       )}
 
-      {/* Debug Info */}
-      {debugInfo && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-sm text-blue-800">Debug Info</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-blue-700">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <strong>Totale Appuntamenti:</strong> {debugInfo.totalAppointments}
-              </div>
-              <div>
-                <strong>Ultimo Aggiornamento:</strong> {new Date(debugInfo.fetchTime).toLocaleString("it-IT")}
-              </div>
-              <div className="col-span-2">
-                <strong>Appuntamenti per Data Selezionata:</strong> {selectedDateAppointments.length}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CalendarDays className="h-5 w-5" />
-              <span>Calendario</span>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <CalendarDays className="h-5 w-5" />
+                <span>Calendario</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium">{format(currentMonth, "MMMM yyyy", { locale: it })}</span>
+                <Button variant="outline" size="sm" onClick={handleNextMonth}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </CardTitle>
             <CardDescription>Seleziona una data per vedere gli appuntamenti</CardDescription>
           </CardHeader>
@@ -239,6 +242,8 @@ export default function AdminCalendar() {
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
+              month={currentMonth}
+              onMonthChange={setCurrentMonth}
               modifiers={{
                 hasAppointments: datesWithAppointments,
               }}
