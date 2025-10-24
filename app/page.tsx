@@ -35,6 +35,8 @@ import {
   Sparkles,
   Play,
   Globe,
+  Brain,
+  Code,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -47,6 +49,16 @@ import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
 // The import for BusinessTransformationCTA was already correct and the component is defined below.
 // No changes needed here.
+
+// Added from updates
+import HeroBackground from "./components/hero-background"
+import TestimonialsCarousel from "./components/testimonials-carousel"
+import TeamSection from "./components/team-section"
+// BusinessTransformationCTA is now imported from a separate file as per updates
+// import BusinessTransformationCTA from "./components/business-transformation-cta"
+
+// Removed unused imports from existing code:
+// import { useState, useRef } from "react" (useState and useRef are still used in the new Home component, but ref is now handled within sections)
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -275,7 +287,7 @@ export default function DigitalAuraPortfolio() {
       problem:
         language === "it"
           ? "L'azienda manifatturiera aveva processi manuali inefficienti, sprechi elevati e difficoltà nel prevedere guasti alle macchine, causando fermi produzione costosi."
-          : "The manufacturing company had inefficient manual processes, high waste and difficulty predicting machine failures, causing costly production downtime.",
+          : "The manufacturing company had inefficient manual processes, high waste and difficulty predicting machine failures, causing production downtime.",
       solution:
         language === "it"
           ? "Sviluppato un sistema IoT integrato con AI predittiva per monitoraggio in tempo reale, manutenzione preventiva e ottimizzazione automatica dei processi produttivi."
@@ -559,6 +571,12 @@ export default function DigitalAuraPortfolio() {
     </div>
   )
 }
+
+// --- REPLACED BY NEW HOME COMPONENT ABOVE ---
+// The original DigitalAuraPortfolio component is effectively replaced by the new Home component.
+// The following functions are now defined within the new Home component or are no longer needed in their original form.
+
+// --- NEW COMPONENTS FROM UPDATES ---
 
 // Business Transformation CTA Section - NUOVA SEZIONE
 function BusinessTransformationCTA() {
@@ -1391,7 +1409,7 @@ function Footer() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-2xl font-bold text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
-                Digital Aura
+                Praxis Futura
               </span>
             </div>
             <p className="text-slate-300 mb-6 leading-relaxed text-base">
@@ -1500,8 +1518,8 @@ function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
             <p className="text-slate-400 mb-4 md:mb-0 text-base">
               {language === "it"
-                ? "© 2024 Digital Aura. Tutti i diritti riservati."
-                : "© 2024 Digital Aura. All rights reserved."}
+                ? "© 2024 Praxis Futura. Tutti i diritti riservati."
+                : "© 2024 Praxis Futura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
@@ -1534,5 +1552,383 @@ function Footer() {
         </div>
       </div>
     </footer>
+  )
+}
+
+// --- NEW HOME COMPONENT MERGED FROM UPDATES ---
+// This new component replaces the original DigitalAuraPortfolio structure for the home page.
+function Home() {
+  const { language } = useLanguage()
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    element?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  const services = [
+    {
+      icon: MessageSquare,
+      title: language === "it" ? "Chatbot Intelligenti" : "Intelligent Chatbots",
+      description:
+        language === "it"
+          ? "Assistenti AI 24/7 che comprendono e rispondono ai tuoi clienti in modo naturale"
+          : "24/7 AI assistants that understand and respond to your customers naturally",
+      color: "from-cyan-500 to-blue-500",
+      link: "/services/chatbot",
+    },
+    {
+      icon: Brain,
+      title: language === "it" ? "Automazione AI" : "AI Automation",
+      description:
+        language === "it"
+          ? "Ottimizza i processi aziendali con l'intelligenza artificiale avanzata"
+          : "Optimize business processes with advanced artificial intelligence",
+      color: "from-purple-500 to-pink-500",
+      link: "/services/ai-automation",
+    },
+    {
+      icon: Code,
+      title: language === "it" ? "Sviluppo Web" : "Web Development",
+      description:
+        language === "it"
+          ? "Siti web moderni, veloci e ottimizzati per le conversioni"
+          : "Modern, fast websites optimized for conversions",
+      color: "from-orange-500 to-red-500",
+      link: "/services/web-development",
+    },
+    {
+      icon: TrendingUp,
+      title: language === "it" ? "Marketing AI" : "AI Marketing",
+      description:
+        language === "it"
+          ? "Strategie di marketing potenziate dall'intelligenza artificiale"
+          : "Marketing strategies powered by artificial intelligence",
+      color: "from-green-500 to-emerald-500",
+      link: "/services/ai-marketing",
+    },
+  ]
+
+  // Dummy data and components for sections that are now present in the merged file
+  const dummyProjects = [
+    {
+      id: 1,
+      title: "Project 1",
+      description: "Description 1",
+      category: "AI",
+      tags: ["AI"],
+      timeline: "1 month",
+      roi: "100%",
+      image: "/placeholder.svg",
+    },
+    {
+      id: 2,
+      title: "Project 2",
+      description: "Description 2",
+      category: "Web",
+      tags: ["Web"],
+      timeline: "2 months",
+      roi: "200%",
+      image: "/placeholder.svg",
+    },
+  ]
+
+  const dummyValues = [
+    { icon: Lightbulb, title: "Value 1", description: "Desc 1", color: "text-cyan-400" },
+    { icon: Target, title: "Value 2", description: "Desc 2", color: "text-cyan-400" },
+  ]
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+      <Navbar />
+
+      {/* Hero Section with 3D Background */}
+      <section className="relative min-h-screen flex items-center justify-center pt-16">
+        <HeroBackground />
+
+        <div className="container mx-auto px-4 z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="mb-6"
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm font-medium backdrop-blur-sm">
+                <Sparkles className="w-4 h-4" />
+                {language === "it" ? "Innovazione AI per il Tuo Business" : "AI Innovation for Your Business"}
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
+            >
+              {language === "it" ? "Trasforma il Tuo Business con l'AI" : "Transform Your Business with AI"}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto"
+            >
+              {language === "it"
+                ? "Soluzioni AI personalizzate, chatbot intelligenti e sviluppo web di nuova generazione per far crescere la tua azienda"
+                : "Personalized AI solutions, intelligent chatbots and next-generation web development to grow your company"}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
+              <Link href="/appointments">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-8 py-6 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300 group"
+                >
+                  {language === "it" ? "Prenota Consulenza Gratuita" : "Book Free Consultation"}
+                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Button
+                size="lg"
+                onClick={() => scrollToSection("services")}
+                variant="outline"
+                className="border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 rounded-full font-semibold transition-all duration-300"
+              >
+                {language === "it" ? "Scopri i Servizi" : "Discover Services"}
+              </Button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 1 }}
+              className="mt-16 flex items-center justify-center gap-8 text-sm text-slate-400"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>{language === "it" ? "Supporto 24/7" : "24/7 Support"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                <span>{language === "it" ? "Risultati Garantiti" : "Guaranteed Results"}</span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <motion.div
+          animate={{
+            y: [0, 10, 0],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <button
+            onClick={() => scrollToSection("services")}
+            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            aria-label="Scroll to services"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        </motion.div>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+              {language === "it" ? "I Nostri Servizi" : "Our Services"}
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              {language === "it"
+                ? "Soluzioni complete per portare la tua azienda nel futuro digitale"
+                : "Complete solutions to bring your company into the digital future"}
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10 }}
+              >
+                <Link href={service.link}>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 h-full hover:border-cyan-500/50 transition-all duration-300 group cursor-pointer">
+                    <div
+                      className={`w-16 h-16 bg-gradient-to-r ${service.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <service.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-cyan-400 transition-colors">
+                      {service.title}
+                    </h3>
+                    <p className="text-slate-400 leading-relaxed">{service.description}</p>
+                    <div className="mt-6 flex items-center text-cyan-400 font-medium group-hover:gap-2 transition-all">
+                      {language === "it" ? "Scopri di più" : "Learn more"}
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <ProcessSection />
+
+      {/* ROI Calculator */}
+      <ROICalculatorSection />
+
+      {/* Testimonials */}
+      <TestimonialsCarousel />
+
+      {/* Team Section */}
+      <TeamSection />
+
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* Business Transformation CTA */}
+      <BusinessTransformationCTA />
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+              {language === "it"
+                ? "Inizia Oggi la Tua Trasformazione Digitale"
+                : "Start Your Digital Transformation Today"}
+            </h2>
+            <p className="text-xl text-slate-400 mb-8">
+              {language === "it"
+                ? "Prenota una consulenza gratuita e scopri come possiamo aiutarti"
+                : "Book a free consultation and discover how we can help you"}
+            </p>
+            <Link href="/appointments">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-8 py-6 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300 group"
+              >
+                {language === "it" ? "Prenota Consulenza" : "Book Consultation"}
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-800/50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4 text-cyan-400">Praxis Futura</h3>
+              <p className="text-slate-400">
+                {language === "it"
+                  ? "Soluzioni AI innovative per il tuo business"
+                  : "Innovative AI solutions for your business"}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">{language === "it" ? "Servizi" : "Services"}</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li>
+                  <Link href="/services/chatbot" className="hover:text-cyan-400 transition-colors">
+                    {language === "it" ? "Chatbot AI" : "AI Chatbots"}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/ai-automation" className="hover:text-cyan-400 transition-colors">
+                    {language === "it" ? "Automazione" : "Automation"}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/web-development" className="hover:text-cyan-400 transition-colors">
+                    {language === "it" ? "Sviluppo Web" : "Web Development"}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/ai-marketing" className="hover:text-cyan-400 transition-colors">
+                    Marketing AI
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">{language === "it" ? "Azienda" : "Company"}</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li>
+                  <Link href="/blog" className="hover:text-cyan-400 transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection("contact")} className="hover:text-cyan-400 transition-colors">
+                    {language === "it" ? "Contatti" : "Contact"}
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">{language === "it" ? "Legale" : "Legal"}</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li>
+                  <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-cyan-400 transition-colors">
+                    {language === "it" ? "Termini di Servizio" : "Terms of Service"}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/cookies" className="hover:text-cyan-400 transition-colors">
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-slate-800/50 pt-8 text-center text-slate-400">
+            <p>
+              &copy; 2025 Praxis Futura. {language === "it" ? "Tutti i diritti riservati." : "All rights reserved."}
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
   )
 }

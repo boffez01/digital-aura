@@ -3,50 +3,46 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
+import ChatbotWidget from "./components/chatbot-widget"
 import CookieConsentBanner from "./components/cookie-consent-banner"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Digital Aura | Soluzioni AI per il Business del Futuro",
+  title: "Praxis Futura - Soluzioni AI & Sviluppo Web",
   description:
-    "Trasformiamo aziende con chatbot intelligenti, automazione avanzata e sviluppo web. Scopri come l'AI può accelerare la tua crescita.",
-  keywords:
-    "AI, artificial intelligence, chatbots, automation, web development, digital marketing, business transformation",
-  authors: [{ name: "Digital Aura Team" }],
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-    shortcut: "/favicon-16x16.png",
-  },
+    "Trasforma il tuo business con soluzioni AI personalizzate, chatbot intelligenti e sviluppo web professionale. Consulenza specializzata e formazione.",
+  keywords: [
+    "AI",
+    "Intelligenza Artificiale",
+    "Chatbot",
+    "Sviluppo Web",
+    "Automazione",
+    "Marketing AI",
+    "Consulenza Digitale",
+    "Formazione AI",
+  ],
+  authors: [{ name: "Praxis Futura" }],
   openGraph: {
-    title: "Digital Aura | Soluzioni AI per il Business del Futuro",
-    description: "Trasformiamo aziende con chatbot intelligenti, automazione avanzata e sviluppo web.",
-    url: "https://digitalaura.it",
-    siteName: "Digital Aura",
-    images: [
-      {
-        url: "https://digitalaura.it/og-image.png",
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "it_IT",
+    title: "Praxis Futura - Soluzioni AI & Sviluppo Web",
+    description: "Trasforma il tuo business con soluzioni AI personalizzate",
     type: "website",
+    locale: "it_IT",
   },
     generator: 'v0.app'
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="it" className="scroll-smooth">
       <body className={inter.className}>
         <LanguageProvider>
           {children}
+          <ChatbotWidget />
           <CookieConsentBanner />
         </LanguageProvider>
       </body>

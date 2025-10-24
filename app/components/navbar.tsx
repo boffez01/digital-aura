@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Zap } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { useLanguage } from "../contexts/language-context"
 import LanguageSelector from "./language-selector"
 
@@ -59,17 +60,10 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <motion.div
-              whileHover={{ scale: 1.1, rotate: 180 }}
-              transition={{ duration: 0.3 }}
-              className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center shadow-lg"
-            >
-              <Zap className="w-5 h-5 text-white" />
+          <Link href="/" className="group">
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }} className="relative w-48 h-12">
+              <Image src="/praxis-futura-logo.png" alt="Praxis Futura" fill className="object-contain" priority />
             </motion.div>
-            <span className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
-              Digital Aura
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
