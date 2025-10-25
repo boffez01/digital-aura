@@ -59,10 +59,17 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo SVG */}
           <Link href="/" className="group">
-            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }} className="relative w-48 h-12">
-              <Image src="/praxis-futura-logo.png" alt="Praxis Futura" fill className="object-contain" priority />
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }} className="relative h-24 w-64">
+              <Image
+                src="/praxis-futura-logo-white.png"
+                alt="Praxis Futura"
+                fill
+                className="object-contain leading-10"
+                priority
+                quality={100}
+              />
             </motion.div>
           </Link>
 
