@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
-import ChatbotWidget from "./components/chatbot-widget"
 import CookieConsentBanner from "./components/cookie-consent-banner"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -42,8 +41,17 @@ export default function RootLayout({
       <body className={inter.className}>
         <LanguageProvider>
           {children}
-          <ChatbotWidget />
           <CookieConsentBanner />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`,
+            }}
+          />
+          <script
+            id="zsiqscript"
+            src="https://salesiq.zohopublic.eu/widget?wc=siqdde7e27b6297c8071c63580587a0153d5d21c646745d614929025d855cf5753d"
+            defer
+          />
         </LanguageProvider>
       </body>
     </html>
