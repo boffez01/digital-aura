@@ -6,11 +6,12 @@ import Navbar from "@/app/components/navbar" // Manteniamo la navbar
 export default function AppointmentsPage() {
   const { language } = useLanguage() // Otteniamo la lingua attuale ('it' o 'en')
 
-  // Definiamo l'URL base del widget
-  const baseUrl = "https://admin-praxisfutura.zohobookings.eu/portal-embed#/praxisfutura"
+  // Definiamo gli URL specifici per lingua
+  const italianWidgetSrc = "https://admin-praxisfutura.zohobookings.eu/portal-embed#/praxisfutura"
+  const englishWidgetSrc = "https://admin-praxisfutura.zohobookings.eu/portal-embed#/251678000000053004" // Corretto typo
 
-  // Aggiungiamo il parametro ?lang= in base alla lingua del contesto
-  const widgetSrc = `${baseUrl}?lang=${language}`
+  // Scegliamo l'URL corretto in base alla lingua
+  const widgetSrc = language === "it" ? italianWidgetSrc : englishWidgetSrc
 
   // Titoli e descrizioni bilingue per la pagina (FUORI dal widget)
   const title = language === "it" ? "Prenota una Consulenza" : "Book a Consultation"
@@ -41,9 +42,10 @@ export default function AppointmentsPage() {
               className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg overflow-hidden" // Stile contenitore opzionale
             >
               <iframe
+                key={language} // Aggiungiamo una key che cambia con la lingua per forzare il re-render dell'iframe
                 width="100%"
                 height="750px" // Puoi aggiustare l'altezza se necessario
-                src={widgetSrc} // Usiamo l'URL dinamico costruito sopra
+                src={widgetSrc} // Usiamo l'URL dinamico scelto sopra
                 frameBorder="0"
                 allowFullScreen
                 title={title} // Aggiunto titolo per accessibilità
