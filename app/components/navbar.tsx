@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useLanguage } from "../contexts/language-context"
 import LanguageSelector from "./language-selector"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -67,20 +68,17 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo SVG */}
           <Link href="/" className="group">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center space-x-1"
-            >
-              <span className={`text-2xl font-bold ${isAppointmentsPage ? "text-gray-900" : "text-white"}`}>PF</span>
-              <span className={`text-2xl font-light ${isAppointmentsPage ? "text-gray-400" : "text-slate-400"}`}>
-                |
-              </span>
-              <span
-                className={`text-xl font-light tracking-wider ${isAppointmentsPage ? "text-gray-700" : "text-slate-200"}`}
-              >
-                PRAXIS FUTURA
-              </span>
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }} className="relative h-10 w-auto">
+              <Image
+                src="/praxis-futura-logo.png"
+                alt="Praxis Futura"
+                width={280}
+                height={40}
+                className={`h-10 w-auto object-contain transition-all duration-300 ${
+                  isAppointmentsPage ? "brightness-0 saturate-100" : ""
+                }`}
+                priority
+              />
             </motion.div>
           </Link>
 
