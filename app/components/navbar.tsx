@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
 import { useLanguage } from "../contexts/language-context"
 import LanguageSelector from "./language-selector"
 import { usePathname } from "next/navigation"
@@ -68,15 +67,20 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo SVG */}
           <Link href="/" className="group">
-            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }} className="relative h-24 w-64">
-              <Image
-                src={isAppointmentsPage ? "/praxis-futura-logo-dark.png" : "/praxis-futura-logo-white.png"}
-                alt="Praxis Futura"
-                fill
-                className="object-contain leading-10"
-                priority
-                quality={100}
-              />
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center space-x-1"
+            >
+              <span className={`text-2xl font-bold ${isAppointmentsPage ? "text-gray-900" : "text-white"}`}>PF</span>
+              <span className={`text-2xl font-light ${isAppointmentsPage ? "text-gray-400" : "text-slate-400"}`}>
+                |
+              </span>
+              <span
+                className={`text-xl font-light tracking-wider ${isAppointmentsPage ? "text-gray-700" : "text-slate-200"}`}
+              >
+                PRAXIS FUTURA
+              </span>
             </motion.div>
           </Link>
 
