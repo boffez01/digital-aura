@@ -18,28 +18,44 @@ export default function NewsletterPopup() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    // Check if user has already seen or subscribed to the newsletter
+    console.log("[v0] Newsletter popup: Checking localStorage...")
     const hasSeenPopup = localStorage.getItem("newsletter-popup-seen")
     const hasSubscribed = localStorage.getItem("newsletter-subscribed")
 
+    console.log("[v0] Newsletter popup: hasSeenPopup =", hasSeenPopup)
+    console.log("[v0] Newsletter popup: hasSubscribed =", hasSubscribed)
+
     if (!hasSeenPopup && !hasSubscribed) {
+      console.log("[v0] Newsletter popup: Setting up scroll listener...")
+
       const handleScroll = () => {
         const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
+        console.log("[v0] Newsletter popup: Scroll percentage =", scrollPercentage.toFixed(2) + "%")
 
-        if (scrollPercentage >= 25) {
+        if (scrollPercentage >= 5) {
+          console.log("[v0] Newsletter popup: Showing popup!")
           setShowPopup(true)
           window.removeEventListener("scroll", handleScroll)
         }
       }
 
       window.addEventListener("scroll", handleScroll)
+
+      handleScroll()
+
       return () => window.removeEventListener("scroll", handleScroll)
+    } else {
+      console.log("[v0] Newsletter popup: Not showing (already seen or subscribed)")
+      console.log(
+        "[v0] Newsletter popup: To reset, run: localStorage.removeItem('newsletter-popup-seen'); localStorage.removeItem('newsletter-subscribed');",
+      )
     }
   }, [])
 
   const handleClose = () => {
     setShowPopup(false)
     localStorage.setItem("newsletter-popup-seen", "true")
+    console.log("[v0] Newsletter popup: Closed and marked as seen")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +63,6 @@ export default function NewsletterPopup() {
     setError("")
     setIsSubmitting(true)
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       setError(language === "it" ? "Inserisci un'email valida" : "Please enter a valid email")
@@ -56,14 +71,11 @@ export default function NewsletterPopup() {
     }
 
     try {
-      // TODO: Replace with your actual API endpoint or server action
-      // For now, we'll simulate a successful submission
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       setIsSuccess(true)
       localStorage.setItem("newsletter-subscribed", "true")
 
-      // Close popup after 2 seconds
       setTimeout(() => {
         setShowPopup(false)
       }, 2000)
@@ -101,7 +113,6 @@ export default function NewsletterPopup() {
     <AnimatePresence>
       {showPopup && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -110,7 +121,6 @@ export default function NewsletterPopup() {
             onClick={handleClose}
           />
 
-          {/* Popup */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -119,7 +129,6 @@ export default function NewsletterPopup() {
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md mx-4"
           >
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-2xl overflow-hidden">
-              {/* Close Button */}
               <button
                 onClick={handleClose}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
@@ -128,24 +137,19 @@ export default function NewsletterPopup() {
                 <X className="h-6 w-6" />
               </button>
 
-              {/* Content */}
               <div className="p-8">
                 {!isSuccess ? (
                   <>
-                    {/* Icon */}
                     <div className="flex justify-center mb-4">
                       <div className="bg-cyan-500/10 p-4 rounded-full">
                         <Mail className="h-8 w-8 text-cyan-400" />
                       </div>
                     </div>
 
-                    {/* Title */}
                     <h3 className="text-2xl font-bold text-white text-center mb-2">{t.title}</h3>
 
-                    {/* Description */}
                     <p className="text-gray-300 text-center mb-6 leading-relaxed">{t.description}</p>
 
-                    {/* Benefits */}
                     <div className="space-y-2 mb-6">
                       {t.benefits.map((benefit, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
@@ -155,7 +159,6 @@ export default function NewsletterPopup() {
                       ))}
                     </div>
 
-                    {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
                         <Input
@@ -179,7 +182,6 @@ export default function NewsletterPopup() {
                     </form>
                   </>
                 ) : (
-                  // Success State
                   <div className="text-center py-8">
                     <div className="flex justify-center mb-4">
                       <div className="bg-green-500/10 p-4 rounded-full">
