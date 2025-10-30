@@ -19,8 +19,10 @@ export default function NewsletterPopup() {
 
   useEffect(() => {
     console.log("[v0] Newsletter popup: Checking localStorage...")
-    const hasSeenPopup = localStorage.getItem("newsletter-popup-seen")
-    const hasSubscribed = localStorage.getItem("newsletter-subscribed")
+    // const hasSeenPopup = localStorage.getItem("newsletter-popup-seen")
+    // const hasSubscribed = localStorage.getItem("newsletter-subscribed")
+    const hasSeenPopup = null // Force to null for testing
+    const hasSubscribed = null // Force to null for testing
 
     console.log("[v0] Newsletter popup: hasSeenPopup =", hasSeenPopup)
     console.log("[v0] Newsletter popup: hasSubscribed =", hasSubscribed)
