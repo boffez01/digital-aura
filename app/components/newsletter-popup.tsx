@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "../contexts/language-context"
 import { X, Mail, Sparkles } from "lucide-react"
+import { subscribeToNewsletter } from "../actions/newsletter"
 
 export default function NewsletterPopup() {
   const { language } = useLanguage()
@@ -73,15 +74,27 @@ export default function NewsletterPopup() {
     }
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log("[v0] Newsletter popup: Subscribing email to Zoho Campaigns:", email)
 
-      setIsSuccess(true)
-      localStorage.setItem("newsletter-subscribed", "true")
+      const result = await subscribeToNewsletter(email)
 
-      setTimeout(() => {
-        setShowPopup(false)
-      }, 2000)
+      if (result.success) {
+        console.log("[v0] Newsletter popup: Successfully subscribed!")
+        setIsSuccess(true)
+        localStorage.setItem("newsletter-subscribed", "true")
+
+        setTimeout(() => {
+          setShowPopup(false)
+        }, 2000)
+      } else {
+        console.error("[v0] Newsletter popup: Subscription failed:", result.message)
+        setError(
+          result.message ||
+            (language === "it" ? "Errore durante l'iscrizione. Riprova." : "Error subscribing. Please try again."),
+        )
+      }
     } catch (err) {
+      console.error("[v0] Newsletter popup: Error:", err)
       setError(language === "it" ? "Errore durante l'iscrizione. Riprova." : "Error subscribing. Please try again.")
     } finally {
       setIsSubmitting(false)
