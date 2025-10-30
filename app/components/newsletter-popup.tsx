@@ -23,9 +23,17 @@ export default function NewsletterPopup() {
     const hasSubscribed = localStorage.getItem("newsletter-subscribed")
 
     if (!hasSeenPopup && !hasSubscribed) {
-      // Show popup after 5 seconds
-      const timer = setTimeout(() => setShowPopup(true), 5000)
-      return () => clearTimeout(timer)
+      const handleScroll = () => {
+        const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
+
+        if (scrollPercentage >= 25) {
+          setShowPopup(true)
+          window.removeEventListener("scroll", handleScroll)
+        }
+      }
+
+      window.addEventListener("scroll", handleScroll)
+      return () => window.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
