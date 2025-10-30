@@ -419,7 +419,7 @@ export default function DigitalAuraPortfolio() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center"
           >
-            <Badge className="mb-6 bg-white/10 text-white border-white/20 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
+            <Badge className="mb-6 bg-white/10 text-white px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
               <Sparkles className="w-4 h-4 mr-2" />
               {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
             </Badge>
@@ -470,7 +470,7 @@ export default function DigitalAuraPortfolio() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
+                  className="text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
                   onClick={() => scrollToSection("services")}
                 >
                   <Play className="mr-2 w-5 h-5" />
@@ -605,7 +605,7 @@ function BusinessTransformationCTA() {
               whileHover={{ y: -10, scale: 1.02 }}
               className="text-center"
             >
-              <Card className="bg-slate-800/50 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
+              <Card className="bg-slate-800/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
@@ -642,7 +642,7 @@ function BusinessTransformationCTA() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-cyan-500 text-lg px-10 py-4 rounded-full bg-transparent backdrop-blur-sm transition-all duration-300"
+              className="text-slate-300 hover:bg-slate-800/50 hover:border-cyan-500 text-lg px-10 py-4 rounded-full bg-transparent backdrop-blur-sm transition-all duration-300"
               onClick={() => {
                 const element = document.getElementById("contact")
                 element?.scrollIntoView({ behavior: "smooth" })
@@ -710,7 +710,7 @@ function ServicesSection({ services }: { services: any[] }) {
               className="h-full"
             >
               <Link href={service.href}>
-                <Card className="bg-slate-800/80 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500/50 cursor-pointer group">
+                <Card className="bg-slate-800/80 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500/50 cursor-pointer group">
                   <CardContent className="p-8 text-center flex-1 flex flex-col">
                     <motion.div
                       whileHover={{
@@ -813,7 +813,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
               onClick={() => onProjectClick(project)}
               className="cursor-pointer h-full"
             >
-              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-slate-800/50 border-slate-700 hover:border-cyan-500">
+              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-slate-800/50 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -841,7 +841,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                   )}
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/90 rounded-full p-4 shadow-lg border-2 border-white">
+                    <div className="bg-white/90 rounded-full p-4 shadow-lg">
                       <Eye className="w-6 h-6 text-slate-900" />
                     </div>
                   </div>
@@ -892,13 +892,13 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
+                        <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
                           {tag}
                         </Badge>
                       </motion.div>
                     ))}
                     {project.tags.length > 3 && (
-                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
+                      <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
                         +{project.tags.length - 3}
                       </Badge>
                     )}
@@ -1014,7 +1014,7 @@ function OurStorySection({ values }: { values: any[] }) {
               whileHover={{ y: -10, scale: 1.02 }}
               className="h-full"
             >
-              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 border-slate-700 hover:border-cyan-500">
+              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.2, rotate: 360 }}
                   transition={{ duration: 0.6 }}
@@ -1055,25 +1055,22 @@ function ContactSection({
   const [isScriptLoaded, setIsScriptLoaded] = useState(false)
 
   useEffect(() => {
-    // Wait for the div to be in the DOM
     const targetDiv = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw")
 
     if (!targetDiv || isScriptLoaded) return
 
     try {
-      // Clear any existing content
       targetDiv.innerHTML = ""
 
       const iframe = document.createElement("iframe")
       let ifrmSrc =
         "https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
 
-      // Add language parameter
       ifrmSrc = ifrmSrc + "&zf_hl=" + language
 
       iframe.src = ifrmSrc
       iframe.style.border = "none"
-      iframe.style.height = "934px"
+      iframe.style.height = "1400px"
       iframe.style.width = "90%"
       iframe.style.transition = "all 0.5s ease"
       iframe.setAttribute("aria-label", "Contattaci")
@@ -1081,7 +1078,6 @@ function ContactSection({
       targetDiv.appendChild(iframe)
       setIsScriptLoaded(true)
 
-      // Handle iframe height adjustment messages
       const handleMessage = (event: MessageEvent) => {
         const evntData = event.data
         if (evntData && evntData.constructor === String) {
@@ -1113,7 +1109,6 @@ function ContactSection({
 
       window.addEventListener("message", handleMessage)
 
-      // Cleanup function
       return () => {
         window.removeEventListener("message", handleMessage)
       }
@@ -1121,7 +1116,6 @@ function ContactSection({
       console.error("[v0] Error loading Zoho form:", e)
     }
   }, [language, isScriptLoaded])
-  // </CHANGE>
 
   const contactInfo = [
     {
@@ -1177,7 +1171,6 @@ function ContactSection({
         </motion.div>
 
         <div className="space-y-12">
-          {/* Contact Info Section */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
@@ -1194,7 +1187,7 @@ function ContactSection({
                   delay: index * 0.2 + 0.5,
                 }}
                 whileHover={{ y: -10, scale: 1.02 }}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:border-cyan-500 transition-all duration-300"
+                className="bg-slate-800/50 rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:border-cyan-500 transition-all duration-300"
               >
                 <motion.div
                   whileHover={{
@@ -1221,7 +1214,7 @@ function ContactSection({
             transition={{ duration: 0.6, delay: 0.5 }}
             className="w-full"
           >
-            <Card className="shadow-lg border-slate-700 bg-slate-800/50">
+            <Card className="shadow-lg bg-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-white text-2xl">
                   {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
@@ -1235,13 +1228,12 @@ function ContactSection({
               <CardContent>
                 <div
                   id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
-                  style={{ minHeight: "950px" }}
+                  style={{ minHeight: "1400px" }}
                   className="w-full flex justify-center"
                 ></div>
               </CardContent>
             </Card>
           </motion.div>
-          {/* </CHANGE> */}
         </div>
       </div>
     </section>
