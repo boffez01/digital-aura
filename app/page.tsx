@@ -1052,33 +1052,38 @@ function ContactSection({
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const { language } = useLanguage()
 
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false)
-
   useEffect(() => {
-    const targetDiv = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw")
+    // Determine which form to load based on language
+    const isEnglish = language === "en"
+    const targetDivId = isEnglish
+      ? "zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
+      : "zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
 
-    if (!targetDiv || isScriptLoaded) return
+    const targetDiv = document.getElementById(targetDivId)
+    if (!targetDiv) return
 
     try {
+      // Clear previous content
       targetDiv.innerHTML = ""
 
+      // Create iframe
       const iframe = document.createElement("iframe")
-      let ifrmSrc =
-        "https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
 
-      var langCode = language.toLowerCase()
-      ifrmSrc = ifrmSrc + "&zf_hl=" + langCode
+      // Set form URL based on language
+      const ifrmSrc = isEnglish
+        ? "https://forms.zohopublic.eu/praxisfutura1/form/contactus/formperma/PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs?zf_rszfm=1"
+        : "https://forms.zohopublic.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
 
       iframe.src = ifrmSrc
       iframe.style.border = "none"
-      iframe.style.height = "1400px"
+      iframe.style.height = isEnglish ? "915px" : "934px"
       iframe.style.width = "90%"
       iframe.style.transition = "all 0.5s ease"
-      iframe.setAttribute("aria-label", "Contattaci")
+      iframe.setAttribute("aria-label", isEnglish ? "contact us" : "Contattaci")
 
       targetDiv.appendChild(iframe)
-      setIsScriptLoaded(true)
 
+      // Handle iframe height adjustments
       const handleMessage = (event: MessageEvent) => {
         const evntData = event.data
         if (evntData && evntData.constructor === String) {
@@ -1116,7 +1121,7 @@ function ContactSection({
     } catch (e) {
       console.error("[v0] Error loading Zoho form:", e)
     }
-  }, [language, isScriptLoaded])
+  }, [language])
 
   const contactInfo = [
     {
@@ -1227,11 +1232,19 @@ function ContactSection({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div
-                  id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
-                  style={{ minHeight: "1400px" }}
-                  className="w-full flex justify-center"
-                ></div>
+                {language === "en" ? (
+                  <div
+                    id="zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
+                    style={{ minHeight: "915px" }}
+                    className="w-full flex justify-center"
+                  ></div>
+                ) : (
+                  <div
+                    id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+                    style={{ minHeight: "934px" }}
+                    className="w-full flex justify-center"
+                  ></div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
