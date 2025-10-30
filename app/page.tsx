@@ -1164,6 +1164,7 @@ function ContactSection({
               <CardContent>
                 <div
                   id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+                  style={{ minHeight: "950px" }}
                   className="w-full flex justify-center"
                 ></div>
                 <script
