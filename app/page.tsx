@@ -7,16 +7,12 @@ import { motion, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Zap,
   ArrowRight,
   Mail,
   Phone,
   MapPin,
-  CheckCircle,
   TrendingUp,
   Clock,
   Shield,
@@ -665,7 +661,7 @@ function BusinessTransformationCTA() {
 function ServicesSection({ services }: { services: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section id="services" className="py-20 px-4 bg-slate-800/30">
@@ -752,7 +748,7 @@ function ServicesSection({ services }: { services: any[] }) {
 function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProjectClick: (project: any) => void }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section id="projects" className="py-20 px-4">
@@ -937,7 +933,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
 function OurStorySection({ values }: { values: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section className="py-20 px-4">
@@ -1055,34 +1051,41 @@ function ContactSection({
 }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   const contactInfo = [
     {
-      icon: <Mail className="w-5 h-5 text-white" />,
+      icon: <Mail className="w-6 h-6 text-cyan-600" />,
       title: "Email",
-      info: "info@digitalaura.it",
+      info: "info@praxisfutura.com",
       description: language === "it" ? "Rispondiamo entro 2 ore" : "We respond within 2 hours",
-      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
+      color: "bg-cyan-50",
     },
     {
-      icon: <Phone className="w-5 h-5 text-white" />,
+      icon: <Phone className="w-6 h-6 text-cyan-600" />,
       title: language === "it" ? "Telefono" : "Phone",
       info: "+393500216480",
       description: language === "it" ? "Lun-Ven 9:00-18:00" : "Mon-Fri 9:00-18:00",
-      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
+      color: "bg-cyan-50",
     },
     {
-      icon: <MapPin className="w-5 h-5 text-white" />,
+      icon: <MapPin className="w-6 h-6 text-cyan-600" />,
       title: language === "it" ? "Sede" : "Office",
       info: "Brescia, Italia",
-      description: "Via dei Mille 5",
-      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
+      description: "Via Dei Mille 5",
+      color: "bg-cyan-50",
+    },
+    {
+      icon: <Shield className="w-6 h-6 text-cyan-600" />,
+      title: language === "it" ? "Garanzia di Qualità" : "Quality Guarantee",
+      info: language === "it" ? "Soddisfatti o rimborsati" : "Satisfied or refunded",
+      description: language === "it" ? "Entro 30 giorni" : "Within 30 days",
+      color: "bg-cyan-50",
     },
   ]
 
   return (
-    <section id="contact" className="py-20 px-4">
+    <section id="contact" className="py-20 px-4 bg-white">
       <div className="container mx-auto max-w-6xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -1094,7 +1097,7 @@ function ContactSection({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-6"
+            className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
           >
             {language === "it" ? "Contattaci" : "Contact Us"}
           </motion.h2>
@@ -1102,7 +1105,7 @@ function ContactSection({
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Pronto a trasformare il tuo business? Contattaci per una consulenza gratuita e scopri come possiamo aiutarti a raggiungere i tuoi obiettivi."
@@ -1110,224 +1113,101 @@ function ContactSection({
           </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="space-y-6"
-          >
-            {contactInfo.map((contact, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.2 + 0.5,
-                }}
-                whileHover={{ x: 10, scale: 1.02 }}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg p-6 flex items-center space-x-4 hover:border-cyan-500 transition-all duration-300"
-              >
-                <motion.div
-                  whileHover={{
-                    scale: 1.2,
-                    rotate: 360,
-                    transition: { duration: 0.6 },
-                  }}
-                  className={`p-3 rounded-full ${contact.color} shadow-lg`}
-                >
-                  {contact.icon}
-                </motion.div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">{contact.title}</h3>
-                  <p className="text-slate-300 font-medium text-base">{contact.info}</p>
-                  <p className="text-slate-500 text-sm">{contact.description}</p>
-                </div>
-              </motion.div>
-            ))}
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {contactInfo.map((contact, index) => (
             <motion.div
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.4, delay: 0.8 }}
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg shadow-lg p-6 text-white"
+              transition={{
+                duration: 0.4,
+                delay: index * 0.1 + 0.3,
+              }}
+              whileHover={{ y: -5, scale: 1.02 }}
+              className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-6 flex items-start space-x-4 hover:border-cyan-500 hover:shadow-md transition-all duration-300"
             >
-              <div className="flex items-center space-x-4">
-                <Shield className="w-6 h-6" />
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {language === "it" ? "Garanzia di Qualità" : "Quality Guarantee"}
-                  </h3>
-                  <p className="text-cyan-100 text-sm">
-                    {language === "it"
-                      ? "Soddisfatti o rimborsati entro 30 giorni. La tua soddisfazione è la nostra priorità."
-                      : "Satisfied or refunded within 30 days. Your satisfaction is our priority."}
-                  </p>
-                </div>
+              <motion.div
+                whileHover={{
+                  scale: 1.1,
+                  rotate: 360,
+                  transition: { duration: 0.6 },
+                }}
+                className={`p-3 rounded-lg ${contact.color} flex-shrink-0`}
+              >
+                {contact.icon}
+              </motion.div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{contact.title}</h3>
+                <p className="text-gray-900 font-medium text-base mb-1">{contact.info}</p>
+                <p className="text-gray-600 text-sm">{contact.description}</p>
               </div>
             </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <Card className="shadow-lg border-slate-700 bg-slate-800/50">
-              <CardHeader>
-                <CardTitle className="text-white text-2xl">
-                  {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
-                </CardTitle>
-                <CardDescription className="text-slate-400 text-base">
-                  {language === "it"
-                    ? "Compila il form e ti ricontatteremo entro 2 ore lavorative con una proposta personalizzata"
-                    : "Fill out the form and we'll contact you within 2 business hours with a personalized proposal"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {submitSuccess ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
-                  >
-                    <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {language === "it" ? "Messaggio Inviato!" : "Message Sent!"}
-                    </h3>
-                    <p className="text-slate-400 text-base">
-                      {language === "it" ? "Ti contatteremo entro 24 ore!" : "We'll contact you within 24 hours!"}
-                    </p>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={onSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Nome *" : "Name *"}
-                        </label>
-                        <Input
-                          value={formData.name}
-                          onChange={(e) => onInputChange("name", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="Mario Rossi"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Email *" : "Email *"}
-                        </label>
-                        <Input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => onInputChange("email", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="mario@esempio.com"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Telefono" : "Phone"}
-                        </label>
-                        <Input
-                          type="tel"
-                          pattern="[0-9\s\+]*"
-                          title="Per favore, inserisci un numero di telefono valido."
-                          value={formData.phone}
-                          onChange={(e) => onInputChange("phone", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="+39 123 456 7890"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Azienda" : "Company"}
-                        </label>
-                        <Input
-                          value={formData.company}
-                          onChange={(e) => onInputChange("company", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder={language === "it" ? "La Tua Azienda" : "Your Company"}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 mb-2 font-medium text-base">
-                        {language === "it" ? "Servizio di Interesse" : "Service of Interest"}
-                      </label>
-                      <Select value={formData.service} onValueChange={(value) => onInputChange("service", value)}>
-                        <SelectTrigger className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500">
-                          <SelectValue placeholder={language === "it" ? "Seleziona un servizio" : "Select a service"} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border border-slate-600 shadow-lg">
-                          <SelectItem value="ai">{language === "it" ? "AI Automation" : "AI Automation"}</SelectItem>
-                          <SelectItem value="chatbot">
-                            {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
-                          </SelectItem>
-                          <SelectItem value="web">
-                            {language === "it" ? "Web Development" : "Web Development"}
-                          </SelectItem>
-                          <SelectItem value="marketing">
-                            {language === "it" ? "AI Marketing" : "AI Marketing"}
-                          </SelectItem>
-                          <SelectItem value="consulting">{language === "it" ? "Consulenza" : "Consulting"}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 mb-2 font-medium text-base">
-                        {language === "it" ? "Messaggio *" : "Message *"}
-                      </label>
-                      <Textarea
-                        value={formData.message}
-                        onChange={(e) => onInputChange("message", e.target.value)}
-                        className="bg-slate-800/50 border-slate-600 text-white min-h-[120px] focus:border-cyan-500 focus:ring-cyan-500"
-                        placeholder={
-                          language === "it" ? "Raccontaci del tuo progetto..." : "Tell us about your project..."
-                        }
-                        required
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          {language === "it" ? "Invio in corso..." : "Sending..."}
-                        </>
-                      ) : (
-                        <>
-                          {language === "it" ? "Invia Richiesta" : "Send Request"}
-                          <ArrowRight className="ml-2 w-4 h-4 text-cyan-300" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+          ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="mt-0 overflow-hidden"
+        >
+          <div
+            id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+            className="w-full"
+            style={{ minHeight: "934px" }}
+          ></div>
+          <script
+            type="text/javascript"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var f = document.createElement("iframe");
+                    f.src = 'https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1';
+                    f.style.border = "none";
+                    f.style.height = "934px";
+                    f.style.width = "90%";
+                    f.style.transition = "all 0.5s ease";
+                    f.style.margin = "0 auto";
+                    f.style.display = "block";
+
+                    var d = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw");
+                    if (d) {
+                      d.appendChild(f);
+                    }
+
+                    window.addEventListener('message', function() {
+                      var evntData = event.data;
+                      if (evntData && evntData.constructor == String) {
+                        var zf_ifrm_data = evntData.split("|");
+                        if (zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3) {
+                          var zf_perma = zf_ifrm_data[0];
+                          var zf_ifrm_ht_nw = (parseInt(zf_ifrm_data[1], 10) + 15) + "px";
+                          var iframe = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw").getElementsByTagName("iframe")[0];
+                          if ((iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0) {
+                            var prevIframeHeight = iframe.style.height;
+                            if (prevIframeHeight != zf_ifrm_ht_nw) {
+                              iframe.style.height = zf_ifrm_ht_nw;
+                            }
+                          }
+                        }
+                      }
+                    }, false);
+                  } catch (e) {
+                    console.error("Error loading Zoho form:", e);
+                  }
+                })();
+              `,
+            }}
+          />
+        </motion.div>
       </div>
     </section>
   )
 }
 
 function Footer() {
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <footer className="bg-gradient-to-br from-slate-900 via-cyan-900/20 to-green-900/20 border-t border-cyan-400/30 text-white py-12 px-4 shadow-[0_0_50px_rgba(6,182,212,0.3)]">
@@ -1351,7 +1231,7 @@ function Footer() {
               <div className="flex items-center text-slate-300">
                 <Mail className="w-4 h-4 mr-3 text-cyan-400" />
                 <a href="mailto:info@digitalaura.it" className="hover:text-cyan-300 transition-colors text-base">
-                  info@digitalaura.it
+                  info@praxisfutura.com
                 </a>
               </div>
               <div className="flex items-center text-slate-300">
@@ -1362,7 +1242,7 @@ function Footer() {
               </div>
               <div className="flex items-center text-slate-300">
                 <MapPin className="w-4 h-4 mr-3 text-cyan-400" />
-                <span className="text-base">Brescia, Italia - Via dei Mille 5</span>
+                <span className="text-base">Brescia, Italia - Via Dei Mille 5</span>
               </div>
             </div>
           </div>
