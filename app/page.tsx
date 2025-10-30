@@ -15,7 +15,6 @@ import {
   MapPin,
   TrendingUp,
   Clock,
-  Shield,
   Lightbulb,
   Target,
   Handshake,
@@ -1055,37 +1054,30 @@ function ContactSection({
 
   const contactInfo = [
     {
-      icon: <Mail className="w-6 h-6 text-cyan-600" />,
+      icon: <Mail className="w-5 h-5 text-white" />,
       title: "Email",
       info: "info@praxisfutura.com",
       description: language === "it" ? "Rispondiamo entro 2 ore" : "We respond within 2 hours",
-      color: "bg-cyan-50",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
-      icon: <Phone className="w-6 h-6 text-cyan-600" />,
+      icon: <Phone className="w-5 h-5 text-white" />,
       title: language === "it" ? "Telefono" : "Phone",
       info: "+393500216480",
       description: language === "it" ? "Lun-Ven 9:00-18:00" : "Mon-Fri 9:00-18:00",
-      color: "bg-cyan-50",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
     {
-      icon: <MapPin className="w-6 h-6 text-cyan-600" />,
+      icon: <MapPin className="w-5 h-5 text-white" />,
       title: language === "it" ? "Sede" : "Office",
       info: "Brescia, Italia",
-      description: "Via Dei Mille 5",
-      color: "bg-cyan-50",
-    },
-    {
-      icon: <Shield className="w-6 h-6 text-cyan-600" />,
-      title: language === "it" ? "Garanzia di Qualità" : "Quality Guarantee",
-      info: language === "it" ? "Soddisfatti o rimborsati" : "Satisfied or refunded",
-      description: language === "it" ? "Entro 30 giorni" : "Within 30 days",
-      color: "bg-cyan-50",
+      description: "Via dei Mille 5",
+      color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
   ]
 
   return (
-    <section id="contact" className="py-20 px-4 bg-white">
+    <section id="contact" className="py-20 px-4">
       <div className="container mx-auto max-w-6xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -1097,7 +1089,7 @@ function ContactSection({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
             {language === "it" ? "Contattaci" : "Contact Us"}
           </motion.h2>
@@ -1105,7 +1097,7 @@ function ContactSection({
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
               ? "Pronto a trasformare il tuo business? Contattaci per una consulenza gratuita e scopri come possiamo aiutarti a raggiungere i tuoi obiettivi."
@@ -1113,94 +1105,161 @@ function ContactSection({
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {contactInfo.map((contact, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{
-                duration: 0.4,
-                delay: index * 0.1 + 0.3,
-              }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-6 flex items-start space-x-4 hover:border-cyan-500 hover:shadow-md transition-all duration-300"
-            >
+        <div className="space-y-12">
+          {/* Contact Info Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="grid md:grid-cols-3 gap-6"
+          >
+            {contactInfo.map((contact, index) => (
               <motion.div
-                whileHover={{
-                  scale: 1.1,
-                  rotate: 360,
-                  transition: { duration: 0.6 },
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.2 + 0.5,
                 }}
-                className={`p-3 rounded-lg ${contact.color} flex-shrink-0`}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:border-cyan-500 transition-all duration-300"
               >
-                {contact.icon}
+                <motion.div
+                  whileHover={{
+                    scale: 1.2,
+                    rotate: 360,
+                    transition: { duration: 0.6 },
+                  }}
+                  className={`p-3 rounded-full ${contact.color} shadow-lg mb-4`}
+                >
+                  {contact.icon}
+                </motion.div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{contact.title}</h3>
+                  <p className="text-slate-300 font-medium text-base mb-1">{contact.info}</p>
+                  <p className="text-slate-500 text-sm">{contact.description}</p>
+                </div>
               </motion.div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">{contact.title}</h3>
-                <p className="text-gray-900 font-medium text-base mb-1">{contact.info}</p>
-                <p className="text-gray-600 text-sm">{contact.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="mt-0 overflow-hidden"
-        >
-          <div
-            id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
             className="w-full"
-            style={{ minHeight: "934px" }}
-          ></div>
-          <script
-            type="text/javascript"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  try {
-                    var f = document.createElement("iframe");
-                    f.src = 'https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1';
-                    f.style.border = "none";
-                    f.style.height = "934px";
-                    f.style.width = "90%";
-                    f.style.transition = "all 0.5s ease";
-                    f.style.margin = "0 auto";
-                    f.style.display = "block";
-
-                    var d = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw");
-                    if (d) {
-                      d.appendChild(f);
-                    }
-
-                    window.addEventListener('message', function() {
-                      var evntData = event.data;
-                      if (evntData && evntData.constructor == String) {
-                        var zf_ifrm_data = evntData.split("|");
-                        if (zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3) {
-                          var zf_perma = zf_ifrm_data[0];
-                          var zf_ifrm_ht_nw = (parseInt(zf_ifrm_data[1], 10) + 15) + "px";
-                          var iframe = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw").getElementsByTagName("iframe")[0];
-                          if ((iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0) {
-                            var prevIframeHeight = iframe.style.height;
-                            if (prevIframeHeight != zf_ifrm_ht_nw) {
-                              iframe.style.height = zf_ifrm_ht_nw;
-                            }
-                          }
-                        }
-                      }
-                    }, false);
-                  } catch (e) {
-                    console.error("Error loading Zoho form:", e);
-                  }
-                })();
-              `,
-            }}
-          />
-        </motion.div>
+          >
+            <Card className="shadow-lg border-slate-700 bg-slate-800/50">
+              <CardHeader>
+                <CardTitle className="text-white text-2xl">
+                  {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
+                </CardTitle>
+                <CardDescription className="text-slate-400 text-base">
+                  {language === "it"
+                    ? "Compila il form e ti ricontatteremo entro 2 ore lavorative con una proposta personalizzata"
+                    : "Fill out the form and we'll contact you within 2 business hours with a personalized proposal"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div
+                  id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+                  className="w-full flex justify-center"
+                ></div>
+                <script
+                  dangerouslySetInnerHTML={{
+                    __html: `
+(function() {
+  try {
+    var f = document.createElement("iframe");
+    var ifrmSrc = 'https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1';
+    
+    var langCode = '${language}';
+    ifrmSrc = ifrmSrc + '&zf_hl=' + langCode;
+    
+    try {
+      if (typeof ZFAdvLead != "undefined" && typeof zfutm_zfAdvLead != "undefined") {
+        for(var prmIdx = 0; prmIdx < ZFAdvLead.utmPNameArr.length; prmIdx++) {
+          var utmPm = ZFAdvLead.utmPNameArr[prmIdx];
+          utmPm = (ZFAdvLead.isSameDomian && (ZFAdvLead.utmcustPNameArr.indexOf(utmPm) == -1)) ? "zf_" + utmPm : utmPm;
+          var utmVal = zfutm_zfAdvLead.zfautm_gC_enc(ZFAdvLead.utmPNameArr[prmIdx]);
+          if (typeof utmVal !== "undefined") {
+            if (utmVal != "") {
+              if(ifrmSrc.indexOf('?') > 0) {
+                ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
+              } else {
+                ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
+              }
+            }
+          }
+        }
+      }
+      if (typeof ZFLead !== "undefined" && typeof zfutm_zfLead != "undefined") {
+        for(var prmIdx = 0; prmIdx < ZFLead.utmPNameArr.length; prmIdx++) {
+          var utmPm = ZFLead.utmPNameArr[prmIdx];
+          var utmVal = zfutm_zfLead.zfutm_gC_enc(ZFLead.utmPNameArr[prmIdx]);
+          if (typeof utmVal !== "undefined") {
+            if (utmVal != "") {
+              if(ifrmSrc.indexOf('?') > 0) {
+                ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
+              } else {
+                ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
+              }
+            }
+          }
+        }
+      }
+    } catch(e) {}
+    
+    f.src = ifrmSrc;
+    f.style.border = "none";
+    f.style.height = "934px";
+    f.style.width = "90%";
+    f.style.transition = "all 0.5s ease";
+    f.setAttribute("aria-label", 'Contattaci');
+    
+    var d = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw");
+    if (d) {
+      d.appendChild(f);
+    }
+    
+    window.addEventListener('message', function() {
+      var evntData = event.data;
+      if(evntData && evntData.constructor == String) {
+        var zf_ifrm_data = evntData.split("|");
+        if (zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3) {
+          var zf_perma = zf_ifrm_data[0];
+          var zf_ifrm_ht_nw = (parseInt(zf_ifrm_data[1], 10) + 15) + "px";
+          var iframe = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw").getElementsByTagName("iframe")[0];
+          if ((iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0) {
+            var prevIframeHeight = iframe.style.height;
+            var zf_tout = false;
+            if(zf_ifrm_data.length == 3) {
+              iframe.scrollIntoView();
+              zf_tout = true;
+            }
+            if (prevIframeHeight != zf_ifrm_ht_nw) {
+              if(zf_tout) {
+                setTimeout(function() {
+                  iframe.style.height = zf_ifrm_ht_nw;
+                }, 500);
+              } else {
+                iframe.style.height = zf_ifrm_ht_nw;
+              }
+            }
+          }
+        }
+      }
+    }, false);
+  } catch(e) {}
+})();
+`,
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     </section>
   )
@@ -1230,7 +1289,7 @@ function Footer() {
             <div className="space-y-3">
               <div className="flex items-center text-slate-300">
                 <Mail className="w-4 h-4 mr-3 text-cyan-400" />
-                <a href="mailto:info@digitalaura.it" className="hover:text-cyan-300 transition-colors text-base">
+                <a href="mailto:info@praxisfutura.com" className="hover:text-cyan-300 transition-colors text-base">
                   info@praxisfutura.com
                 </a>
               </div>
@@ -1242,7 +1301,7 @@ function Footer() {
               </div>
               <div className="flex items-center text-slate-300">
                 <MapPin className="w-4 h-4 mr-3 text-cyan-400" />
-                <span className="text-base">Brescia, Italia - Via Dei Mille 5</span>
+                <span className="text-base">Brescia, Italia - Via dei Mille 5</span>
               </div>
             </div>
           </div>
