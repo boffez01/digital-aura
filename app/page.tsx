@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -1052,6 +1052,77 @@ function ContactSection({
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const { language } = useLanguage()
 
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false)
+
+  useEffect(() => {
+    // Wait for the div to be in the DOM
+    const targetDiv = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw")
+
+    if (!targetDiv || isScriptLoaded) return
+
+    try {
+      // Clear any existing content
+      targetDiv.innerHTML = ""
+
+      const iframe = document.createElement("iframe")
+      let ifrmSrc =
+        "https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
+
+      // Add language parameter
+      ifrmSrc = ifrmSrc + "&zf_hl=" + language
+
+      iframe.src = ifrmSrc
+      iframe.style.border = "none"
+      iframe.style.height = "934px"
+      iframe.style.width = "90%"
+      iframe.style.transition = "all 0.5s ease"
+      iframe.setAttribute("aria-label", "Contattaci")
+
+      targetDiv.appendChild(iframe)
+      setIsScriptLoaded(true)
+
+      // Handle iframe height adjustment messages
+      const handleMessage = (event: MessageEvent) => {
+        const evntData = event.data
+        if (evntData && evntData.constructor === String) {
+          const zf_ifrm_data = evntData.split("|")
+          if (zf_ifrm_data.length === 2 || zf_ifrm_data.length === 3) {
+            const zf_perma = zf_ifrm_data[0]
+            const zf_ifrm_ht_nw = Number.parseInt(zf_ifrm_data[1], 10) + 15 + "px"
+            const iframeElement = targetDiv.getElementsByTagName("iframe")[0]
+
+            if (
+              iframeElement &&
+              iframeElement.src.indexOf("formperma") > 0 &&
+              iframeElement.src.indexOf(zf_perma) > 0
+            ) {
+              const prevIframeHeight = iframeElement.style.height
+              if (prevIframeHeight !== zf_ifrm_ht_nw) {
+                if (zf_ifrm_data.length === 3) {
+                  setTimeout(() => {
+                    iframeElement.style.height = zf_ifrm_ht_nw
+                  }, 500)
+                } else {
+                  iframeElement.style.height = zf_ifrm_ht_nw
+                }
+              }
+            }
+          }
+        }
+      }
+
+      window.addEventListener("message", handleMessage)
+
+      // Cleanup function
+      return () => {
+        window.removeEventListener("message", handleMessage)
+      }
+    } catch (e) {
+      console.error("[v0] Error loading Zoho form:", e)
+    }
+  }, [language, isScriptLoaded])
+  // </CHANGE>
+
   const contactInfo = [
     {
       icon: <Mail className="w-5 h-5 text-white" />,
@@ -1167,99 +1238,10 @@ function ContactSection({
                   style={{ minHeight: "950px" }}
                   className="w-full flex justify-center"
                 ></div>
-                <script
-                  dangerouslySetInnerHTML={{
-                    __html: `
-(function() {
-  try {
-    var f = document.createElement("iframe");
-    var ifrmSrc = 'https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1';
-    
-    var langCode = '${language}';
-    ifrmSrc = ifrmSrc + '&zf_hl=' + langCode;
-    
-    try {
-      if (typeof ZFAdvLead != "undefined" && typeof zfutm_zfAdvLead != "undefined") {
-        for(var prmIdx = 0; prmIdx < ZFAdvLead.utmPNameArr.length; prmIdx++) {
-          var utmPm = ZFAdvLead.utmPNameArr[prmIdx];
-          utmPm = (ZFAdvLead.isSameDomian && (ZFAdvLead.utmcustPNameArr.indexOf(utmPm) == -1)) ? "zf_" + utmPm : utmPm;
-          var utmVal = zfutm_zfAdvLead.zfautm_gC_enc(ZFAdvLead.utmPNameArr[prmIdx]);
-          if (typeof utmVal !== "undefined") {
-            if (utmVal != "") {
-              if(ifrmSrc.indexOf('?') > 0) {
-                ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
-              } else {
-                ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
-              }
-            }
-          }
-        }
-      }
-      if (typeof ZFLead !== "undefined" && typeof zfutm_zfLead != "undefined") {
-        for(var prmIdx = 0; prmIdx < ZFLead.utmPNameArr.length; prmIdx++) {
-          var utmPm = ZFLead.utmPNameArr[prmIdx];
-          var utmVal = zfutm_zfLead.zfutm_gC_enc(ZFLead.utmPNameArr[prmIdx]);
-          if (typeof utmVal !== "undefined") {
-            if (utmVal != "") {
-              if(ifrmSrc.indexOf('?') > 0) {
-                ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
-              } else {
-                ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
-              }
-            }
-          }
-        }
-      }
-    } catch(e) {}
-    
-    f.src = ifrmSrc;
-    f.style.border = "none";
-    f.style.height = "934px";
-    f.style.width = "90%";
-    f.style.transition = "all 0.5s ease";
-    f.setAttribute("aria-label", 'Contattaci');
-    
-    var d = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw");
-    if (d) {
-      d.appendChild(f);
-    }
-    
-    window.addEventListener('message', function() {
-      var evntData = event.data;
-      if(evntData && evntData.constructor == String) {
-        var zf_ifrm_data = evntData.split("|");
-        if (zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3) {
-          var zf_perma = zf_ifrm_data[0];
-          var zf_ifrm_ht_nw = (parseInt(zf_ifrm_data[1], 10) + 15) + "px";
-          var iframe = document.getElementById("zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw").getElementsByTagName("iframe")[0];
-          if ((iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0) {
-            var prevIframeHeight = iframe.style.height;
-            var zf_tout = false;
-            if(zf_ifrm_data.length == 3) {
-              iframe.scrollIntoView();
-              zf_tout = true;
-            }
-            if (prevIframeHeight != zf_ifrm_ht_nw) {
-              if(zf_tout) {
-                setTimeout(function() {
-                  iframe.style.height = zf_ifrm_ht_nw;
-                }, 500);
-              } else {
-                iframe.style.height = zf_ifrm_ht_nw;
-              }
-            }
-          }
-        }
-      }
-    }, false);
-  } catch(e) {}
-})();
-`,
-                  }}
-                />
               </CardContent>
             </Card>
           </motion.div>
+          {/* </CHANGE> */}
         </div>
       </div>
     </section>
