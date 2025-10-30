@@ -1066,7 +1066,8 @@ function ContactSection({
       let ifrmSrc =
         "https://forms.zoho.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
 
-      ifrmSrc = ifrmSrc + "&zf_hl=" + language
+      var langCode = language.toLowerCase()
+      ifrmSrc = ifrmSrc + "&zf_hl=" + langCode
 
       iframe.src = ifrmSrc
       iframe.style.border = "none"
