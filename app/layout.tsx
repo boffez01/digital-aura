@@ -6,6 +6,7 @@ import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
 import CookieConsentBanner from "./components/cookie-consent-banner"
 import NewsletterPopup from "./components/newsletter-popup"
+import ChatbotWidget from "./components/chatbot-widget"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -45,6 +46,7 @@ export default function RootLayout({
           {children}
           <CookieConsentBanner />
           <NewsletterPopup />
+          <ChatbotWidget />
         </LanguageProvider>
         <Script id="zoho-salesiq-config" strategy="lazyOnload">
           {`window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`}
