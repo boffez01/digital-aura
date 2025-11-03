@@ -1,7 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Script from "next/script"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
 import CookieConsentBanner from "./components/cookie-consent-banner"
@@ -48,14 +47,6 @@ export default function RootLayout({
           <NewsletterPopup />
           <ChatbotWidget />
         </LanguageProvider>
-        <Script id="zoho-salesiq-config" strategy="lazyOnload">
-          {`window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`}
-        </Script>
-        <Script
-          id="zsiqscript"
-          strategy="lazyOnload"
-          src="https://salesiq.zohopublic.eu/widget?wc=siqdde7e27b6297c8071c63580587a0153d5d21c646745d614929025d855cf5753d"
-        />
       </body>
     </html>
   )
