@@ -1,144 +1,58 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { MessageSquare, X, Send, Bot, User } from "lucide-react"
+import { MessageSquare, X, Send, Calendar, Headphones, HelpCircle, Briefcase } from "lucide-react"
 import { useLanguage } from "../contexts/language-context"
+import Link from "next/link"
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Array<{ text: string; isBot: boolean; time: string }>>([])
   const [inputValue, setInputValue] = useState("")
   const { language } = useLanguage()
 
   const translations = {
     it: {
-      title: "Assistente Virtuale",
-      subtitle: "Siamo qui per aiutarti",
+      quickActions: "Azioni rapide:",
+      services: "Servizi",
+      faq: "FAQ",
+      book: "Prenota",
+      support: "Supporto",
+      greeting: "👋 Ciao! Sono AuraBot, l'assistente AI di Digital Aura.",
+      helpText: "Posso aiutarti con:",
+      aiServices: "🤖 AI Services - Automazione e chatbot intelligenti",
+      webDev: "💻 Web Development - Siti web moderni ed e-commerce",
+      aiMarketing: "📊 AI Marketing - Campagne automatizzate",
+      bookings: "📅 Bookings - Consulenze gratuite DIRETTAMENTE QUI",
+      helpQuestion: "Come posso aiutarti oggi? 😊",
       placeholder: "Scrivi un messaggio...",
-      greeting: "👋 Ciao! Sono l'assistente virtuale di Praxis Futura. Come posso aiutarti oggi?",
-      quickReplies: ["Vorrei informazioni sui servizi", "Voglio prenotare una consulenza", "Ho bisogno di supporto"],
     },
     en: {
-      title: "Virtual Assistant",
-      subtitle: "We're here to help",
+      quickActions: "Quick actions:",
+      services: "Services",
+      faq: "FAQ",
+      book: "Book",
+      support: "Support",
+      greeting: "👋 Hello! I'm AuraBot, Digital Aura's AI assistant.",
+      helpText: "I can help you with:",
+      aiServices: "🤖 AI Services - Automation and intelligent chatbots",
+      webDev: "💻 Web Development - Modern websites and e-commerce",
+      aiMarketing: "📊 AI Marketing - Automated campaigns",
+      bookings: "📅 Bookings - Free consultations DIRECTLY HERE",
+      helpQuestion: "How can I help you today? 😊",
       placeholder: "Type a message...",
-      greeting: "👋 Hello! I'm Praxis Futura's virtual assistant. How can I help you today?",
-      quickReplies: ["I'd like information about services", "I want to book a consultation", "I need support"],
     },
   }
 
   const t = translations[language]
 
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      const now = new Date()
-      const timeString = now.toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-      setMessages([
-        {
-          text: t.greeting,
-          isBot: true,
-          time: timeString,
-        },
-      ])
-    }
-  }, [isOpen, messages.length, t.greeting, language])
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return
-
+  const getCurrentTime = () => {
     const now = new Date()
-    const timeString = now.toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
+    return now.toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
       hour: "2-digit",
       minute: "2-digit",
     })
-
-    // Add user message
-    setMessages((prev) => [
-      ...prev,
-      {
-        text: inputValue,
-        isBot: false,
-        time: timeString,
-      },
-    ])
-
-    setInputValue("")
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse =
-        language === "it"
-          ? "Grazie per il tuo messaggio! Un nostro consulente ti risponderà a breve. Nel frattempo, puoi prenotare una consulenza gratuita dalla pagina appuntamenti."
-          : "Thank you for your message! One of our consultants will respond shortly. In the meantime, you can book a free consultation from the appointments page."
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: botResponse,
-          isBot: true,
-          time: new Date().toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ])
-    }, 1000)
-  }
-
-  const handleQuickReply = (reply: string) => {
-    const now = new Date()
-    const timeString = now.toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        text: reply,
-        isBot: false,
-        time: timeString,
-      },
-    ])
-
-    // Simulate bot response based on quick reply
-    setTimeout(() => {
-      let botResponse = ""
-      if (reply.toLowerCase().includes("servizi") || reply.toLowerCase().includes("services")) {
-        botResponse =
-          language === "it"
-            ? "Offriamo diversi servizi: AI Automation, Chatbot Intelligenti, Sviluppo Web e AI Marketing. Quale ti interessa di più?"
-            : "We offer several services: AI Automation, Intelligent Chatbots, Web Development and AI Marketing. Which one interests you most?"
-      } else if (reply.toLowerCase().includes("consulenza") || reply.toLowerCase().includes("consultation")) {
-        botResponse =
-          language === "it"
-            ? "Perfetto! Puoi prenotare una consulenza gratuita visitando la nostra pagina appuntamenti. Ti serve aiuto per prenotare?"
-            : "Perfect! You can book a free consultation by visiting our appointments page. Do you need help booking?"
-      } else {
-        botResponse =
-          language === "it"
-            ? "Sarò felice di aiutarti! Puoi descrivermi meglio di cosa hai bisogno?"
-            : "I'll be happy to help you! Can you describe what you need in more detail?"
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: botResponse,
-          isBot: true,
-          time: new Date().toLocaleTimeString(language === "it" ? "it-IT" : "en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ])
-    }, 1000)
   }
 
   return (
@@ -154,7 +68,7 @@ export default function ChatbotWidget() {
           >
             <Button
               onClick={() => setIsOpen(true)}
-              className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-2xl"
+              className="h-16 w-16 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 shadow-2xl"
             >
               <MessageSquare className="h-7 w-7 text-white" />
             </Button>
@@ -169,90 +83,94 @@ export default function ChatbotWidget() {
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-50 w-[420px] bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
+            style={{
+              border: "2px solid transparent",
+              backgroundImage: "linear-gradient(#1e293b, #1e293b), linear-gradient(135deg, #06b6d4, #a855f7)",
+              backgroundOrigin: "border-box",
+              backgroundClip: "padding-box, border-box",
+            }}
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <Bot className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="font-semibold">{t.title}</div>
-                  <div className="text-xs opacity-90">{t.subtitle}</div>
-                </div>
-              </div>
+            {/* Header with Close Button */}
+            <div className="flex justify-end p-2 bg-slate-900">
               <Button
                 onClick={() => setIsOpen(false)}
                 variant="ghost"
                 size="icon"
-                className="hover:bg-white/20 text-white"
+                className="hover:bg-slate-800 text-slate-400 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-900">
-              {messages.map((message, index) => (
-                <div key={index} className={`flex items-start space-x-3 ${message.isBot ? "" : "justify-end"}`}>
-                  {message.isBot && (
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-lg p-3 max-w-xs ${
-                      message.isBot ? "bg-slate-700 text-white" : "bg-blue-500 text-white"
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <div className={`text-xs mt-1 ${message.isBot ? "text-slate-400" : "opacity-90"}`}>
-                      {message.time}
-                    </div>
-                  </div>
-                  {!message.isBot && (
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                </div>
-              ))}
+            {/* Quick Actions */}
+            <div className="px-6 pb-4">
+              <div className="text-white text-sm font-medium mb-3 flex items-center">
+                <span className="text-red-500 mr-2">🚀</span>
+                {t.quickActions}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/services">
+                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    {t.services}
+                  </Button>
+                </Link>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  {t.faq}
+                </Button>
+                <Link href="/appointments">
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-medium">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {t.book}
+                  </Button>
+                </Link>
+                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-medium">
+                  <Headphones className="h-4 w-4 mr-2" />
+                  {t.support}
+                </Button>
+              </div>
+            </div>
 
-              {/* Quick Replies */}
-              {messages.length === 1 && (
-                <div className="space-y-2">
-                  {t.quickReplies.map((reply, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleQuickReply(reply)}
-                      className="w-full bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-lg text-left text-sm transition-colors"
-                    >
-                      {reply}
-                    </motion.button>
-                  ))}
+            {/* Chat Messages */}
+            <div className="px-6 pb-4 max-h-[400px] overflow-y-auto">
+              {/* Bot Avatar and Greeting */}
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-lg">🤖</span>
                 </div>
-              )}
+                <div className="flex-1">
+                  <div className="bg-slate-800 rounded-lg p-3 text-white text-sm">
+                    <p className="font-semibold mb-1">{t.greeting}</p>
+                    <p className="mb-2">{t.helpText}</p>
+                    <div className="space-y-1 text-xs">
+                      <p>{t.aiServices}</p>
+                      <p>{t.webDev}</p>
+                      <p>{t.aiMarketing}</p>
+                      <p>{t.bookings}</p>
+                    </div>
+                    <p className="mt-3">{t.helpQuestion}</p>
+                    <div className="text-xs text-slate-400 mt-2">{getCurrentTime()}</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-slate-800 border-t border-slate-700">
+            <div className="px-6 pb-6">
               <div className="flex space-x-2">
-                <Input
+                <input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   placeholder={t.placeholder}
-                  className="flex-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <Button
-                  onClick={handleSendMessage}
                   disabled={!inputValue.trim()}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 rounded-full w-12 h-12 p-0"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 </Button>
               </div>
             </div>
