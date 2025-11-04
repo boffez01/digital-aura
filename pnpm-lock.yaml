@@ -15,8 +15,8 @@ importers:
         specifier: latest
         version: 1.4.0
       '@google/generative-ai':
-        specifier: ^0.21.0
-        version: 0.21.0
+        specifier: latest
+        version: 0.24.1
       '@neondatabase/serverless':
         specifier: latest
         version: 1.0.2
@@ -122,9 +122,6 @@ importers:
       next:
         specifier: 14.2.15
         version: 14.2.15(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      next-themes:
-        specifier: latest
-        version: 0.4.6(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
       pg:
         specifier: 8.16.3
         version: 8.16.3(pg-native@3.5.2)
@@ -498,8 +495,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@google/generative-ai@0.21.0':
-    resolution: {integrity: sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg==}
+  '@google/generative-ai@0.24.1':
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
     engines: {node: '>=18.0.0'}
 
   '@humanwhocodes/config-array@0.6.0':
@@ -3725,12 +3722,6 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
-  next-themes@0.4.6:
-    resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
-    peerDependencies:
-      react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
-      react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
-
   next@14.2.15:
     resolution: {integrity: sha512-h9ctmOokpoDphRvMGnwOJAedT6zKhwqyZML9mDtspgf4Rh3Pn7UTYKqePNoDvhsWBAO5GoPNYshnAUGIazVGmw==}
     engines: {node: '>=18.17.0'}
@@ -5221,7 +5212,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@google/generative-ai@0.21.0': {}
+  '@google/generative-ai@0.24.1': {}
 
   '@humanwhocodes/config-array@0.6.0':
     dependencies:
@@ -8560,11 +8551,6 @@ snapshots:
   natural-compare@1.4.0: {}
 
   negotiator@1.0.0: {}
-
-  next-themes@0.4.6(react-dom@18.0.0(react@18.0.0))(react@18.0.0):
-    dependencies:
-      react: 18.0.0
-      react-dom: 18.0.0(react@18.0.0)
 
   next@14.2.15(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0):
     dependencies:
