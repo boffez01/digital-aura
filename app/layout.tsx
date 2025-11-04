@@ -3,8 +3,9 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
-import ChatbotWidget from "./components/chatbot-widget"
 import CookieConsentBanner from "./components/cookie-consent-banner"
+import NewsletterPopup from "./components/newsletter-popup"
+import ChatbotWidget from "./components/chatbot-widget"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -42,8 +43,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <LanguageProvider>
           {children}
-          <ChatbotWidget />
           <CookieConsentBanner />
+          <NewsletterPopup />
+          <ChatbotWidget />
         </LanguageProvider>
       </body>
     </html>

@@ -2,24 +2,19 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Zap,
   ArrowRight,
   Mail,
   Phone,
   MapPin,
-  CheckCircle,
   TrendingUp,
   Clock,
-  Shield,
   Lightbulb,
   Target,
   Handshake,
@@ -35,30 +30,15 @@ import {
   Sparkles,
   Play,
   Globe,
-  Brain,
-  Code,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ProjectModal from "./components/project-modal"
-import ChatbotWidget from "./components/chatbot-widget"
 import FAQSection from "./components/faq-section"
 import ROICalculatorSection from "./components/roi-calculator"
 import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
-// The import for BusinessTransformationCTA was already correct and the component is defined below.
-// No changes needed here.
-
-// Added from updates
-import HeroBackground from "./components/hero-background"
-import TestimonialsCarousel from "./components/testimonials-carousel"
-import TeamSection from "./components/team-section"
-// BusinessTransformationCTA is now imported from a separate file as per updates
-// import BusinessTransformationCTA from "./components/business-transformation-cta"
-
-// Removed unused imports from existing code:
-// import { useState, useRef } from "react" (useState and useRef are still used in the new Home component, but ref is now handled within sections)
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -398,7 +378,6 @@ export default function DigitalAuraPortfolio() {
         setSubmitSuccess(true)
         setFormData({ name: "", email: "", phone: "", company: "", service: "", message: "" })
 
-        // Hide success message after 5 seconds
         setTimeout(() => setSubmitSuccess(false), 5000)
       } else {
         const errorData = await response.json()
@@ -421,15 +400,12 @@ export default function DigitalAuraPortfolio() {
 
   return (
     <div className="bg-slate-900 text-white overflow-x-hidden">
-      {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section - DIMENSIONE CORRETTA COME NELL'IMMAGINE */}
       <section
         id="home"
         className="relative min-h-screen flex items-center justify-center px-4 pt-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
       >
-        {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.1),transparent_50%)]" />
@@ -443,13 +419,11 @@ export default function DigitalAuraPortfolio() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center"
           >
-            {/* Badge */}
-            <Badge className="mb-6 bg-white/10 text-white border-white/20 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
+            <Badge className="mb-6 bg-white/10 text-white px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
               <Sparkles className="w-4 h-4 mr-2" />
               {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
             </Badge>
 
-            {/* Main Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-white leading-tight">
               {language === "it" ? (
                 <>
@@ -472,14 +446,12 @@ export default function DigitalAuraPortfolio() {
               )}
             </h1>
 
-            {/* Description */}
             <p className="text-lg text-white/80 mb-10 leading-relaxed max-w-3xl mx-auto">
               {language === "it"
                 ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business."
                 : "Intelligent chatbots, advanced automation and innovative web solutions to bring your company into the digital future. Join over 500 companies that have already transformed their business."}
             </p>
 
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/appointments">
@@ -498,7 +470,7 @@ export default function DigitalAuraPortfolio() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
+                  className="text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
                   onClick={() => scrollToSection("services")}
                 >
                   <Play className="mr-2 w-5 h-5" />
@@ -507,7 +479,6 @@ export default function DigitalAuraPortfolio() {
               </motion.div>
             </div>
 
-            {/* Stats Mini */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               {[
                 { value: "500+", label: language === "it" ? "Clienti Soddisfatti" : "Happy Clients" },
@@ -530,28 +501,13 @@ export default function DigitalAuraPortfolio() {
         </div>
       </section>
 
-      {/* Services Section - COME NELL'IMMAGINE */}
       <ServicesSection services={services} />
-
-      {/* Process Section */}
       <ProcessSection />
-
-      {/* Projects Section */}
       <ProjectsSection projects={projects} onProjectClick={setSelectedProject} />
-
-      {/* Our Story Section */}
       <OurStorySection values={values} />
-
-      {/* ROI Calculator */}
       <ROICalculatorSection />
-
-      {/* FAQ Section */}
       <FAQSection />
-
-      {/* Business Transformation CTA Section - NUOVO */}
       <BusinessTransformationCTA />
-
-      {/* Contact Section - UNICO FORM */}
       <ContactSection
         formData={formData}
         isSubmitting={isSubmitting}
@@ -560,25 +516,13 @@ export default function DigitalAuraPortfolio() {
         onInputChange={handleInputChange}
       />
 
-      {/* Project Modal - CORRETTO CON isOpen */}
       <ProjectModal project={selectedProject} isOpen={!!selectedProject} onClose={() => setSelectedProject(null)} />
 
-      {/* Chatbot Widget */}
-      <ChatbotWidget />
-
-      {/* Footer - COLORI NEON */}
       <Footer />
     </div>
   )
 }
 
-// --- REPLACED BY NEW HOME COMPONENT ABOVE ---
-// The original DigitalAuraPortfolio component is effectively replaced by the new Home component.
-// The following functions are now defined within the new Home component or are no longer needed in their original form.
-
-// --- NEW COMPONENTS FROM UPDATES ---
-
-// Business Transformation CTA Section - NUOVA SEZIONE
 function BusinessTransformationCTA() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -605,7 +549,6 @@ function BusinessTransformationCTA() {
 
   return (
     <section className="py-20 px-4 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(6,182,212,0.3),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(59,130,246,0.3),transparent_70%)]" />
@@ -618,7 +561,6 @@ function BusinessTransformationCTA() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          {/* Question */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
@@ -630,7 +572,6 @@ function BusinessTransformationCTA() {
               : "Haven't found the answer you were looking for?"}
           </motion.p>
 
-          {/* Main Title */}
           <motion.h2
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
@@ -642,7 +583,6 @@ function BusinessTransformationCTA() {
             </span>
           </motion.h2>
 
-          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
@@ -655,7 +595,6 @@ function BusinessTransformationCTA() {
           </motion.p>
         </motion.div>
 
-        {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {features.map((feature, index) => (
             <motion.div
@@ -666,7 +605,7 @@ function BusinessTransformationCTA() {
               whileHover={{ y: -10, scale: 1.02 }}
               className="text-center"
             >
-              <Card className="bg-slate-800/50 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
+              <Card className="bg-slate-800/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
@@ -681,7 +620,6 @@ function BusinessTransformationCTA() {
           ))}
         </div>
 
-        {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -704,7 +642,7 @@ function BusinessTransformationCTA() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-cyan-500 text-lg px-10 py-4 rounded-full bg-transparent backdrop-blur-sm transition-all duration-300"
+              className="text-slate-300 hover:bg-slate-800/50 hover:border-cyan-500 text-lg px-10 py-4 rounded-full bg-transparent backdrop-blur-sm transition-all duration-300"
               onClick={() => {
                 const element = document.getElementById("contact")
                 element?.scrollIntoView({ behavior: "smooth" })
@@ -719,11 +657,10 @@ function BusinessTransformationCTA() {
   )
 }
 
-// Services Section - COME NELL'IMMAGINE CON 4 COLONNE E ICONE
 function ServicesSection({ services }: { services: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section id="services" className="py-20 px-4 bg-slate-800/30">
@@ -754,7 +691,6 @@ function ServicesSection({ services }: { services: any[] }) {
           </motion.p>
         </motion.div>
 
-        {/* LAYOUT COME NELL'IMMAGINE - 4 COLONNE */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {services.map((service, index) => (
             <motion.div
@@ -774,9 +710,8 @@ function ServicesSection({ services }: { services: any[] }) {
               className="h-full"
             >
               <Link href={service.href}>
-                <Card className="bg-slate-800/80 border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500/50 cursor-pointer group">
+                <Card className="bg-slate-800/80 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:border-cyan-500/50 cursor-pointer group">
                   <CardContent className="p-8 text-center flex-1 flex flex-col">
-                    {/* ICONA GRANDE COME NELL'IMMAGINE */}
                     <motion.div
                       whileHover={{
                         scale: 1.1,
@@ -788,15 +723,12 @@ function ServicesSection({ services }: { services: any[] }) {
                       {service.icon}
                     </motion.div>
 
-                    {/* TITOLO */}
                     <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
                       {service.title}
                     </h3>
 
-                    {/* DESCRIZIONE */}
                     <p className="text-slate-300 text-base leading-relaxed mb-6 flex-1">{service.description}</p>
 
-                    {/* LINK - FRECCIA PIÙ VISIBILE */}
                     <div className="flex items-center justify-center text-cyan-400 font-semibold group-hover:text-white transition-colors">
                       <span className="mr-2">{language === "it" ? "Scopri di più" : "Learn more"}</span>
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300 text-cyan-300" />
@@ -812,11 +744,10 @@ function ServicesSection({ services }: { services: any[] }) {
   )
 }
 
-// Projects Section - SENZA INVESTIMENTI
 function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProjectClick: (project: any) => void }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section id="projects" className="py-20 px-4">
@@ -882,7 +813,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
               onClick={() => onProjectClick(project)}
               className="cursor-pointer h-full"
             >
-              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-slate-800/50 border-slate-700 hover:border-cyan-500">
+              <Card className="overflow-hidden group h-full shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-slate-800/50 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -910,7 +841,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                   )}
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/90 rounded-full p-4 shadow-lg border-2 border-white">
+                    <div className="bg-white/90 rounded-full p-4 shadow-lg">
                       <Eye className="w-6 h-6 text-slate-900" />
                     </div>
                   </div>
@@ -961,13 +892,13 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                         }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
+                        <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
                           {tag}
                         </Badge>
                       </motion.div>
                     ))}
                     {project.tags.length > 3 && (
-                      <Badge variant="outline" className="border-slate-600 text-slate-300 text-sm bg-slate-700/50">
+                      <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
                         +{project.tags.length - 3}
                       </Badge>
                     )}
@@ -998,11 +929,10 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
   )
 }
 
-// Our Story Section
 function OurStorySection({ values }: { values: any[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <section className="py-20 px-4">
@@ -1034,7 +964,6 @@ function OurStorySection({ values }: { values: any[] }) {
           </motion.p>
         </motion.div>
 
-        {/* Vision and Commitment */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -1075,7 +1004,6 @@ function OurStorySection({ values }: { values: any[] }) {
           </motion.div>
         </div>
 
-        {/* Values */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value, index) => (
             <motion.div
@@ -1086,7 +1014,7 @@ function OurStorySection({ values }: { values: any[] }) {
               whileHover={{ y: -10, scale: 1.02 }}
               className="h-full"
             >
-              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 border-slate-700 hover:border-cyan-500">
+              <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 hover:border-cyan-500">
                 <motion.div
                   whileHover={{ scale: 1.2, rotate: 360 }}
                   transition={{ duration: 0.6 }}
@@ -1107,7 +1035,6 @@ function OurStorySection({ values }: { values: any[] }) {
   )
 }
 
-// Contact Section - UNICO FORM FUNZIONANTE
 function ContactSection({
   formData,
   isSubmitting,
@@ -1123,13 +1050,84 @@ function ContactSection({
 }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
+
+  useEffect(() => {
+    // Determine which form to load based on language
+    const isEnglish = language === "en"
+    const targetDivId = isEnglish
+      ? "zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
+      : "zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+
+    const targetDiv = document.getElementById(targetDivId)
+    if (!targetDiv) return
+
+    try {
+      // Clear previous content
+      targetDiv.innerHTML = ""
+
+      // Create iframe
+      const iframe = document.createElement("iframe")
+
+      // Set form URL based on language
+      const ifrmSrc = isEnglish
+        ? "https://forms.zohopublic.eu/praxisfutura1/form/contactus/formperma/PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs?zf_rszfm=1"
+        : "https://forms.zohopublic.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
+
+      iframe.src = ifrmSrc
+      iframe.style.border = "none"
+      iframe.style.height = isEnglish ? "915px" : "934px"
+      iframe.style.width = "90%"
+      iframe.style.transition = "all 0.5s ease"
+      iframe.setAttribute("aria-label", isEnglish ? "contact us" : "Contattaci")
+
+      targetDiv.appendChild(iframe)
+
+      // Handle iframe height adjustments
+      const handleMessage = (event: MessageEvent) => {
+        const evntData = event.data
+        if (evntData && evntData.constructor === String) {
+          const zf_ifrm_data = evntData.split("|")
+          if (zf_ifrm_data.length === 2 || zf_ifrm_data.length === 3) {
+            const zf_perma = zf_ifrm_data[0]
+            const zf_ifrm_ht_nw = Number.parseInt(zf_ifrm_data[1], 10) + 15 + "px"
+            const iframeElement = targetDiv.getElementsByTagName("iframe")[0]
+
+            if (
+              iframeElement &&
+              iframeElement.src.indexOf("formperma") > 0 &&
+              iframeElement.src.indexOf(zf_perma) > 0
+            ) {
+              const prevIframeHeight = iframeElement.style.height
+              if (prevIframeHeight !== zf_ifrm_ht_nw) {
+                if (zf_ifrm_data.length === 3) {
+                  setTimeout(() => {
+                    iframeElement.style.height = zf_ifrm_ht_nw
+                  }, 500)
+                } else {
+                  iframeElement.style.height = zf_ifrm_ht_nw
+                }
+              }
+            }
+          }
+        }
+      }
+
+      window.addEventListener("message", handleMessage)
+
+      return () => {
+        window.removeEventListener("message", handleMessage)
+      }
+    } catch (e) {
+      console.error("[v0] Error loading Zoho form:", e)
+    }
+  }, [language])
 
   const contactInfo = [
     {
       icon: <Mail className="w-5 h-5 text-white" />,
       title: "Email",
-      info: "info@digitalaura.it",
+      info: "info@praxisfutura.com",
       description: language === "it" ? "Rispondiamo entro 2 ore" : "We respond within 2 hours",
       color: "bg-gradient-to-r from-cyan-600 to-blue-600",
     },
@@ -1178,12 +1176,12 @@ function ContactSection({
           </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="space-y-12">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="space-y-6"
+            className="grid md:grid-cols-3 gap-6"
           >
             {contactInfo.map((contact, index) => (
               <motion.div
@@ -1194,8 +1192,8 @@ function ContactSection({
                   duration: 0.4,
                   delay: index * 0.2 + 0.5,
                 }}
-                whileHover={{ x: 10, scale: 1.02 }}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg p-6 flex items-center space-x-4 hover:border-cyan-500 transition-all duration-300"
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="bg-slate-800/50 rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:border-cyan-500 transition-all duration-300"
               >
                 <motion.div
                   whileHover={{
@@ -1203,46 +1201,26 @@ function ContactSection({
                     rotate: 360,
                     transition: { duration: 0.6 },
                   }}
-                  className={`p-3 rounded-full ${contact.color} shadow-lg`}
+                  className={`p-3 rounded-full ${contact.color} shadow-lg mb-4`}
                 >
                   {contact.icon}
                 </motion.div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{contact.title}</h3>
-                  <p className="text-slate-300 font-medium text-base">{contact.info}</p>
+                  <h3 className="text-lg font-semibold text-white mb-2">{contact.title}</h3>
+                  <p className="text-slate-300 font-medium text-base mb-1">{contact.info}</p>
                   <p className="text-slate-500 text-sm">{contact.description}</p>
                 </div>
               </motion.div>
             ))}
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.4, delay: 0.8 }}
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg shadow-lg p-6 text-white"
-            >
-              <div className="flex items-center space-x-4">
-                <Shield className="w-6 h-6" />
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {language === "it" ? "Garanzia di Qualità" : "Quality Guarantee"}
-                  </h3>
-                  <p className="text-cyan-100 text-sm">
-                    {language === "it"
-                      ? "Soddisfatti o rimborsati entro 30 giorni. La tua soddisfazione è la nostra priorità."
-                      : "Satisfied or refunded within 30 days. Your satisfaction is our priority."}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
             transition={{ duration: 0.6, delay: 0.5 }}
+            className="w-full"
           >
-            <Card className="shadow-lg border-slate-700 bg-slate-800/50">
+            <Card className="shadow-lg bg-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-white text-2xl">
                   {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
@@ -1254,136 +1232,18 @@ function ContactSection({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {submitSuccess ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
-                  >
-                    <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {language === "it" ? "Messaggio Inviato!" : "Message Sent!"}
-                    </h3>
-                    <p className="text-slate-400 text-base">
-                      {language === "it" ? "Ti contatteremo entro 24 ore!" : "We'll contact you within 24 hours!"}
-                    </p>
-                  </motion.div>
+                {language === "en" ? (
+                  <div
+                    id="zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
+                    style={{ minHeight: "915px" }}
+                    className="w-full flex justify-center"
+                  ></div>
                 ) : (
-                  <form onSubmit={onSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Nome *" : "Name *"}
-                        </label>
-                        <Input
-                          value={formData.name}
-                          onChange={(e) => onInputChange("name", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="Mario Rossi"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Email *" : "Email *"}
-                        </label>
-                        <Input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => onInputChange("email", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="mario@esempio.com"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Telefono" : "Phone"}
-                        </label>
-                        <Input
-                          type="tel"
-                          pattern="[0-9\s\+]*"
-                          title="Per favore, inserisci un numero di telefono valido."
-                          value={formData.phone}
-                          onChange={(e) => onInputChange("phone", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder="+39 123 456 7890"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-300 mb-2 font-medium text-base">
-                          {language === "it" ? "Azienda" : "Company"}
-                        </label>
-                        <Input
-                          value={formData.company}
-                          onChange={(e) => onInputChange("company", e.target.value)}
-                          className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500"
-                          placeholder={language === "it" ? "La Tua Azienda" : "Your Company"}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 mb-2 font-medium text-base">
-                        {language === "it" ? "Servizio di Interesse" : "Service of Interest"}
-                      </label>
-                      <Select value={formData.service} onValueChange={(value) => onInputChange("service", value)}>
-                        <SelectTrigger className="bg-slate-800/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500">
-                          <SelectValue placeholder={language === "it" ? "Seleziona un servizio" : "Select a service"} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border border-slate-600 shadow-lg">
-                          <SelectItem value="ai">{language === "it" ? "AI Automation" : "AI Automation"}</SelectItem>
-                          <SelectItem value="chatbot">
-                            {language === "it" ? "Smart Chatbots" : "Smart Chatbots"}
-                          </SelectItem>
-                          <SelectItem value="web">
-                            {language === "it" ? "Web Development" : "Web Development"}
-                          </SelectItem>
-                          <SelectItem value="marketing">
-                            {language === "it" ? "AI Marketing" : "AI Marketing"}
-                          </SelectItem>
-                          <SelectItem value="consulting">{language === "it" ? "Consulenza" : "Consulting"}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 mb-2 font-medium text-base">
-                        {language === "it" ? "Messaggio *" : "Message *"}
-                      </label>
-                      <Textarea
-                        value={formData.message}
-                        onChange={(e) => onInputChange("message", e.target.value)}
-                        className="bg-slate-800/50 border-slate-600 text-white min-h-[120px] focus:border-cyan-500 focus:ring-cyan-500"
-                        placeholder={
-                          language === "it" ? "Raccontaci del tuo progetto..." : "Tell us about your project..."
-                        }
-                        required
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          {language === "it" ? "Invio in corso..." : "Sending..."}
-                        </>
-                      ) : (
-                        <>
-                          {language === "it" ? "Invia Richiesta" : "Send Request"}
-                          <ArrowRight className="ml-2 w-4 h-4 text-cyan-300" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
+                  <div
+                    id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
+                    style={{ minHeight: "934px" }}
+                    className="w-full flex justify-center"
+                  ></div>
                 )}
               </CardContent>
             </Card>
@@ -1394,15 +1254,13 @@ function ContactSection({
   )
 }
 
-// Footer Component - COLORI NEON
 function Footer() {
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <footer className="bg-gradient-to-br from-slate-900 via-cyan-900/20 to-green-900/20 border-t border-cyan-400/30 text-white py-12 px-4 shadow-[0_0_50px_rgba(6,182,212,0.3)]">
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
-          {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-green-400 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.5)]">
@@ -1420,8 +1278,8 @@ function Footer() {
             <div className="space-y-3">
               <div className="flex items-center text-slate-300">
                 <Mail className="w-4 h-4 mr-3 text-cyan-400" />
-                <a href="mailto:info@digitalaura.it" className="hover:text-cyan-300 transition-colors text-base">
-                  info@digitalaura.it
+                <a href="mailto:info@praxisfutura.com" className="hover:text-cyan-300 transition-colors text-base">
+                  info@praxisfutura.com
                 </a>
               </div>
               <div className="flex items-center text-slate-300">
@@ -1437,7 +1295,6 @@ function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="text-xl font-semibold mb-6 text-green-300 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]">
               {language === "it" ? "Link Rapidi" : "Quick Links"}
@@ -1471,7 +1328,6 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Our Services */}
           <div>
             <h3 className="text-xl font-semibold mb-6 text-green-300 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]">
               {language === "it" ? "I Nostri Servizi" : "Our Services"}
@@ -1513,13 +1369,12 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
         <div className="border-t border-cyan-400/30 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
             <p className="text-slate-400 mb-4 md:mb-0 text-base">
               {language === "it"
-                ? "© 2024 Praxis Futura. Tutti i diritti riservati."
-                : "© 2024 Praxis Futura. All rights reserved."}
+                ? "© 2025 Praxis Futura. Tutti i diritti riservati."
+                : "© 2025 Praxis Futura. All rights reserved."}
             </p>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-slate-400 hover:text-cyan-300 transition-colors text-base">
@@ -1552,383 +1407,5 @@ function Footer() {
         </div>
       </div>
     </footer>
-  )
-}
-
-// --- NEW HOME COMPONENT MERGED FROM UPDATES ---
-// This new component replaces the original DigitalAuraPortfolio structure for the home page.
-function Home() {
-  const { language } = useLanguage()
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    element?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const services = [
-    {
-      icon: MessageSquare,
-      title: language === "it" ? "Chatbot Intelligenti" : "Intelligent Chatbots",
-      description:
-        language === "it"
-          ? "Assistenti AI 24/7 che comprendono e rispondono ai tuoi clienti in modo naturale"
-          : "24/7 AI assistants that understand and respond to your customers naturally",
-      color: "from-cyan-500 to-blue-500",
-      link: "/services/chatbot",
-    },
-    {
-      icon: Brain,
-      title: language === "it" ? "Automazione AI" : "AI Automation",
-      description:
-        language === "it"
-          ? "Ottimizza i processi aziendali con l'intelligenza artificiale avanzata"
-          : "Optimize business processes with advanced artificial intelligence",
-      color: "from-purple-500 to-pink-500",
-      link: "/services/ai-automation",
-    },
-    {
-      icon: Code,
-      title: language === "it" ? "Sviluppo Web" : "Web Development",
-      description:
-        language === "it"
-          ? "Siti web moderni, veloci e ottimizzati per le conversioni"
-          : "Modern, fast websites optimized for conversions",
-      color: "from-orange-500 to-red-500",
-      link: "/services/web-development",
-    },
-    {
-      icon: TrendingUp,
-      title: language === "it" ? "Marketing AI" : "AI Marketing",
-      description:
-        language === "it"
-          ? "Strategie di marketing potenziate dall'intelligenza artificiale"
-          : "Marketing strategies powered by artificial intelligence",
-      color: "from-green-500 to-emerald-500",
-      link: "/services/ai-marketing",
-    },
-  ]
-
-  // Dummy data and components for sections that are now present in the merged file
-  const dummyProjects = [
-    {
-      id: 1,
-      title: "Project 1",
-      description: "Description 1",
-      category: "AI",
-      tags: ["AI"],
-      timeline: "1 month",
-      roi: "100%",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 2,
-      title: "Project 2",
-      description: "Description 2",
-      category: "Web",
-      tags: ["Web"],
-      timeline: "2 months",
-      roi: "200%",
-      image: "/placeholder.svg",
-    },
-  ]
-
-  const dummyValues = [
-    { icon: Lightbulb, title: "Value 1", description: "Desc 1", color: "text-cyan-400" },
-    { icon: Target, title: "Value 2", description: "Desc 2", color: "text-cyan-400" },
-  ]
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
-      <Navbar />
-
-      {/* Hero Section with 3D Background */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16">
-        <HeroBackground />
-
-        <div className="container mx-auto px-4 z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="mb-6"
-            >
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm font-medium backdrop-blur-sm">
-                <Sparkles className="w-4 h-4" />
-                {language === "it" ? "Innovazione AI per il Tuo Business" : "AI Innovation for Your Business"}
-              </span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
-            >
-              {language === "it" ? "Trasforma il Tuo Business con l'AI" : "Transform Your Business with AI"}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto"
-            >
-              {language === "it"
-                ? "Soluzioni AI personalizzate, chatbot intelligenti e sviluppo web di nuova generazione per far crescere la tua azienda"
-                : "Personalized AI solutions, intelligent chatbots and next-generation web development to grow your company"}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <Link href="/appointments">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-8 py-6 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300 group"
-                >
-                  {language === "it" ? "Prenota Consulenza Gratuita" : "Book Free Consultation"}
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Button
-                size="lg"
-                onClick={() => scrollToSection("services")}
-                variant="outline"
-                className="border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 rounded-full font-semibold transition-all duration-300"
-              >
-                {language === "it" ? "Scopri i Servizi" : "Discover Services"}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 1 }}
-              className="mt-16 flex items-center justify-center gap-8 text-sm text-slate-400"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>{language === "it" ? "Supporto 24/7" : "24/7 Support"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                <span>{language === "it" ? "Risultati Garantiti" : "Guaranteed Results"}</span>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        <motion.div
-          animate={{
-            y: [0, 10, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <button
-            onClick={() => scrollToSection("services")}
-            className="text-cyan-400 hover:text-cyan-300 transition-colors"
-            aria-label="Scroll to services"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </button>
-        </motion.div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-20 relative">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              {language === "it" ? "I Nostri Servizi" : "Our Services"}
-            </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              {language === "it"
-                ? "Soluzioni complete per portare la tua azienda nel futuro digitale"
-                : "Complete solutions to bring your company into the digital future"}
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-              >
-                <Link href={service.link}>
-                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 h-full hover:border-cyan-500/50 transition-all duration-300 group cursor-pointer">
-                    <div
-                      className={`w-16 h-16 bg-gradient-to-r ${service.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <service.icon className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-cyan-400 transition-colors">
-                      {service.title}
-                    </h3>
-                    <p className="text-slate-400 leading-relaxed">{service.description}</p>
-                    <div className="mt-6 flex items-center text-cyan-400 font-medium group-hover:gap-2 transition-all">
-                      {language === "it" ? "Scopri di più" : "Learn more"}
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <ProcessSection />
-
-      {/* ROI Calculator */}
-      <ROICalculatorSection />
-
-      {/* Testimonials */}
-      <TestimonialsCarousel />
-
-      {/* Team Section */}
-      <TeamSection />
-
-      {/* FAQ Section */}
-      <FAQSection />
-
-      {/* Business Transformation CTA */}
-      <BusinessTransformationCTA />
-
-      {/* Contact Section */}
-      <section id="contact" className="py-20 relative">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              {language === "it"
-                ? "Inizia Oggi la Tua Trasformazione Digitale"
-                : "Start Your Digital Transformation Today"}
-            </h2>
-            <p className="text-xl text-slate-400 mb-8">
-              {language === "it"
-                ? "Prenota una consulenza gratuita e scopri come possiamo aiutarti"
-                : "Book a free consultation and discover how we can help you"}
-            </p>
-            <Link href="/appointments">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold px-8 py-6 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300 group"
-              >
-                {language === "it" ? "Prenota Consulenza" : "Book Consultation"}
-                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4 text-cyan-400">Praxis Futura</h3>
-              <p className="text-slate-400">
-                {language === "it"
-                  ? "Soluzioni AI innovative per il tuo business"
-                  : "Innovative AI solutions for your business"}
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">{language === "it" ? "Servizi" : "Services"}</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/services/chatbot" className="hover:text-cyan-400 transition-colors">
-                    {language === "it" ? "Chatbot AI" : "AI Chatbots"}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/ai-automation" className="hover:text-cyan-400 transition-colors">
-                    {language === "it" ? "Automazione" : "Automation"}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/web-development" className="hover:text-cyan-400 transition-colors">
-                    {language === "it" ? "Sviluppo Web" : "Web Development"}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/ai-marketing" className="hover:text-cyan-400 transition-colors">
-                    Marketing AI
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">{language === "it" ? "Azienda" : "Company"}</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/blog" className="hover:text-cyan-400 transition-colors">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <button onClick={() => scrollToSection("contact")} className="hover:text-cyan-400 transition-colors">
-                    {language === "it" ? "Contatti" : "Contact"}
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">{language === "it" ? "Legale" : "Legal"}</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-cyan-400 transition-colors">
-                    {language === "it" ? "Termini di Servizio" : "Terms of Service"}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/cookies" className="hover:text-cyan-400 transition-colors">
-                    Cookie Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-800/50 pt-8 text-center text-slate-400">
-            <p>
-              &copy; 2025 Praxis Futura. {language === "it" ? "Tutti i diritti riservati." : "All rights reserved."}
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
   )
 }
