@@ -1,38 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { initializeBookingFlow, processBookingStep, type BookingState } from "@/lib/booking-flow"
-
-const bookingSessions = new Map<string, BookingState>()
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, sessionId, language = "it" } = await request.json()
+    const bookingData = await request.json()
 
-    if (!message || typeof message !== "string") {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 })
-    }
+    console.log("[v0] Booking request received:", bookingData)
 
-    let bookingState = bookingSessions.get(sessionId)
-    if (!bookingState) {
-      bookingState = initializeBookingFlow(language)
-      bookingSessions.set(sessionId, bookingState)
-    }
+    // Here you would typically:
+    // 1. Validate the booking data
+    // 2. Check availability
+    // 3. Create calendar event
+    // 4. Send confirmation email
+    // 5. Store in database
 
-    const result = processBookingStep(bookingState, message)
-    bookingState.step = result.nextStep
-
-    if (result.completed) {
-      console.log("[v0] Booking completed:", bookingState.data)
-      bookingSessions.delete(sessionId)
-    }
-
+    // For now, we'll just return success
     return NextResponse.json({
-      response: result.message,
-      step: result.nextStep,
-      completed: result.completed,
-      bookingData: bookingState.data,
+      success: true,
+      message: "Booking request received successfully",
+      bookingId: `booking_${Date.now()}`,
     })
   } catch (error) {
     console.error("[v0] Booking API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to process booking" }, { status: 500 })
   }
 }

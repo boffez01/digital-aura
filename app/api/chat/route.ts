@@ -1,47 +1,45 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateChatResponse, detectIntent } from "@/lib/gemini-ai"
-import { getSession, addMessage, createSession } from "@/lib/session-manager"
+import { generateAIResponse } from "@/lib/gemini-ai"
+import { createSession, getSession, updateSession, setSessionContext } from "@/lib/session-manager"
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, sessionId, language = "it" } = await request.json()
+    const { message, sessionId, language = "en", context } = await request.json()
 
-    if (!message || typeof message !== "string") {
+    if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
 
+    // Get or create session
     let currentSessionId = sessionId
-    if (!currentSessionId) {
+    if (!currentSessionId || !getSession(currentSessionId)) {
       currentSessionId = createSession(language)
     }
 
-    const session = getSession(currentSessionId)
-    if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 })
+    // Update context if provided
+    if (context) {
+      setSessionContext(currentSessionId, context)
     }
 
-    addMessage(currentSessionId, {
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-    })
+    // Get session for context
+    const session = getSession(currentSessionId)
+    const sessionContext = session?.context || ""
 
-    const intent = await detectIntent(message, language)
-    const response = await generateChatResponse(session, message)
+    // Update session with user message
+    updateSession(currentSessionId, { role: "user", content: message })
 
-    addMessage(currentSessionId, {
-      role: "assistant",
-      content: response,
-      timestamp: new Date(),
-    })
+    // Generate AI response
+    const aiResponse = await generateAIResponse(message, sessionContext, language)
+
+    // Update session with AI response
+    updateSession(currentSessionId, { role: "assistant", content: aiResponse })
 
     return NextResponse.json({
-      response,
+      response: aiResponse,
       sessionId: currentSessionId,
-      intent,
     })
   } catch (error) {
     console.error("[v0] Chat API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 })
   }
 }

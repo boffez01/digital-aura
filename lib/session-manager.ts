@@ -1,57 +1,71 @@
-import type { ChatContext, ChatMessage } from "./gemini-ai"
+interface ChatSession {
+  id: string
+  messages: Array<{ role: "user" | "assistant"; content: string; timestamp: number }>
+  context: string
+  language: "it" | "en"
+  createdAt: number
+  lastActivity: number
+}
 
-const sessions = new Map<string, ChatContext>()
+const sessions = new Map<string, ChatSession>()
 
-export function createSession(language: "it" | "en" = "it"): string {
+export function createSession(language: "it" | "en" = "en"): string {
   const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-  const context: ChatContext = {
-    sessionId,
+  sessions.set(sessionId, {
+    id: sessionId,
+    messages: [],
+    context: "",
     language,
-    history: [],
-  }
-
-  sessions.set(sessionId, context)
-
-  setTimeout(
-    () => {
-      sessions.delete(sessionId)
-    },
-    30 * 60 * 1000,
-  )
+    createdAt: Date.now(),
+    lastActivity: Date.now(),
+  })
 
   return sessionId
 }
 
-export function getSession(sessionId: string): ChatContext | null {
-  return sessions.get(sessionId) || null
-}
-
-export function updateSession(sessionId: string, updates: Partial<ChatContext>): boolean {
+export function getSession(sessionId: string): ChatSession | null {
   const session = sessions.get(sessionId)
-  if (!session) return false
+  if (!session) return null
 
-  Object.assign(session, updates)
-  return true
-}
-
-export function addMessage(sessionId: string, message: ChatMessage): boolean {
-  const session = sessions.get(sessionId)
-  if (!session) return false
-
-  session.history.push(message)
-
-  if (session.history.length > 20) {
-    session.history = session.history.slice(-20)
+  // Clean up old sessions (older than 1 hour)
+  if (Date.now() - session.lastActivity > 3600000) {
+    sessions.delete(sessionId)
+    return null
   }
 
-  return true
+  return session
 }
 
-export function deleteSession(sessionId: string): boolean {
-  return sessions.delete(sessionId)
+export function updateSession(sessionId: string, message: { role: "user" | "assistant"; content: string }): void {
+  const session = sessions.get(sessionId)
+  if (!session) return
+
+  session.messages.push({
+    ...message,
+    timestamp: Date.now(),
+  })
+  session.lastActivity = Date.now()
 }
 
-export function getSessionCount(): number {
-  return sessions.size
+export function setSessionContext(sessionId: string, context: string): void {
+  const session = sessions.get(sessionId)
+  if (!session) return
+
+  session.context = context
+  session.lastActivity = Date.now()
+}
+
+export function getSessionMessages(sessionId: string) {
+  const session = sessions.get(sessionId)
+  return session?.messages || []
+}
+
+export function clearOldSessions(): void {
+  const now = Date.now()
+  for (const [id, session] of sessions.entries()) {
+    if (now - session.lastActivity > 3600000) {
+      sessions.delete(id)
+    }
+  }
 }
