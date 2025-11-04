@@ -1,19 +1,30 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { sessionId, rating, comment } = await request.json()
+    const body = await request.json()
+    const { messageId, feedback, timestamp } = body
 
-    console.log("[v0] Feedback received:", { sessionId, rating, comment })
+    // Log del feedback per miglioramento continuo
+    console.log(`📊 Feedback ricevuto:`, {
+      messageId,
+      feedback,
+      timestamp,
+      userAgent: request.headers.get("user-agent"),
+    })
 
-    // Here you would typically store feedback in a database
+    // Qui potresti salvare il feedback in un database per analisi
+    // await saveFeedbackToDatabase({ messageId, feedback, timestamp })
 
     return NextResponse.json({
       success: true,
-      message: "Thank you for your feedback!",
+      message: "Feedback ricevuto con successo",
     })
   } catch (error) {
-    console.error("[v0] Feedback API error:", error)
-    return NextResponse.json({ error: "Failed to submit feedback" }, { status: 500 })
+    console.error("Errore nel salvare il feedback:", error)
+    return NextResponse.json({
+      success: false,
+      error: "Errore nel processare il feedback",
+    })
   }
 }
