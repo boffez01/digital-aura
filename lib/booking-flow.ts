@@ -184,10 +184,10 @@ export class BookingFlow {
     switch (step) {
       case "booking_start": {
         await sql`
-          INSERT INTO chat_sessions (session_id, booking_mode, flow_step, booking_data, created_at)
-          VALUES (${sessionId}, true, 'service_selection', ${JSON.stringify(bookingData)}, NOW())
+          INSERT INTO chat_sessions (session_id, booking_mode, flow_step, booking_data, language, created_at)
+          VALUES (${sessionId}, true, 'service_selection', ${JSON.stringify(bookingData)}, ${language}, NOW())
           ON CONFLICT (session_id) 
-          DO UPDATE SET booking_mode = true, flow_step = 'service_selection', booking_data = ${JSON.stringify(bookingData)}
+          DO UPDATE SET booking_mode = true, flow_step = 'service_selection', booking_data = ${JSON.stringify(bookingData)}, language = ${language}
         `
 
         const startMessage =
@@ -232,7 +232,7 @@ Write the number (1, 2, 3, 4) or service name.`
         if (lowerMessage.includes("1") || lowerMessage.includes("automation") || lowerMessage.includes("automazione")) {
           selectedService = "AI Automation"
         } else if (lowerMessage.includes("2") || lowerMessage.includes("chatbot") || lowerMessage.includes("bot")) {
-          selectedService = "Chatbot Intelligenti"
+          selectedService = "Intelligent Chatbots"
         } else if (lowerMessage.includes("3") || lowerMessage.includes("web") || lowerMessage.includes("sito")) {
           selectedService = "Web Development"
         } else if (lowerMessage.includes("4") || lowerMessage.includes("marketing")) {
@@ -242,8 +242,8 @@ Write the number (1, 2, 3, 4) or service name.`
         if (!selectedService) {
           const retryMessage =
             language === "it"
-              ? "❌ Servizio non riconosciuto. Scegli tra: 1️⃣ AI Automation, 2️⃣ Chatbot, 3️⃣ Web Development, 4️⃣ Marketing"
-              : "❌ Service not recognized. Choose: 1️⃣ AI Automation, 2️⃣ Chatbot, 3️⃣ Web Development, 4️⃣ Marketing"
+              ? "❌ Servizio non riconosciuto. Scegli tra: 1️⃣ AI Automation, 2️⃣ Intelligent Chatbots, 3️⃣ Web Development, 4️⃣ AI Marketing"
+              : "❌ Service not recognized. Choose: 1️⃣ AI Automation, 2️⃣ Intelligent Chatbots, 3️⃣ Web Development, 4️⃣ AI Marketing"
 
           return {
             message: retryMessage,

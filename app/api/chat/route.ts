@@ -284,16 +284,25 @@ export async function POST(request: NextRequest) {
     }
 
     const currentSessionId = sessionId || `session_${Date.now()}`
-    const language = detectLanguage(message)
-
-    console.log(`📨 Message: "${message}", Language: ${language}, Session: ${currentSessionId}`)
-
-    // Check if user is in booking mode
     const sessionData = await sql`
-      SELECT booking_mode, flow_step, booking_data
+      SELECT booking_mode, flow_step, booking_data, language
       FROM chat_sessions
       WHERE session_id = ${currentSessionId}
     `
+
+    let language: "it" | "en" = "it"
+
+    if (sessionData.length > 0 && sessionData[0].language) {
+      // Use previously detected language from session
+      language = sessionData[0].language as "it" | "en"
+      console.log(`🔄 Using stored language from session: ${language}`)
+    } else {
+      // Detect language for new session
+      language = detectLanguage(message)
+      console.log(`🆕 Detected new language: ${language}`)
+    }
+
+    console.log(`📨 Message: "${message}", Language: ${language}, Session: ${currentSessionId}`)
 
     const isBookingMode = sessionData.length > 0 && sessionData[0].booking_mode === true
     const currentStep = sessionData.length > 0 ? sessionData[0].flow_step : null
@@ -364,7 +373,9 @@ export async function POST(request: NextRequest) {
           - 🌐 Web Development
           - 📈 AI Marketing
           
-          YOUR PRIMARY DIRECTIVE: Automatically detect the language of the user's question (e.g., Italian, English, or other) and respond ONLY in that detected language.
+          YOUR PRIMARY DIRECTIVE: Always detect the language of the user's question (e.g., Italian, English) and ensure the ENTIRE response is ONLY in that language.
+          
+          If the question is completely outside the scope of AI, Chatbots, Web Development, or AI Marketing, or is inappropriate, you MUST politely decline the request and redirect the user back to the business services, maintaining the exact language of the user's query for your refusal.
 
           ${contextString}
 
@@ -373,6 +384,7 @@ export async function POST(request: NextRequest) {
           - DO NOT mention "demo" or "free support".
           - Always encourage the user to book a consultation.
           - Use relevant emojis.
+          - CRITICAL: Even when refusing inappropriate requests, ALWAYS respond in the same language as the user's question.
 
           User Question to Answer: ${message}`
 
