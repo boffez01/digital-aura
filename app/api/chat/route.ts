@@ -31,7 +31,7 @@ const faqDatabase = {
       "🌐 **Web Development - Siti Moderni e Performanti**\n\nCreiamo siti web professionali con:\n\n✅ Design responsive e moderno\n✅ Ottimizzazione SEO avanzata\n✅ Velocità di caricamento ottimale\n✅ E-commerce completo\n✅ Integrazione con sistemi esistenti\n✅ Sicurezza e backup automatici\n\n💡 Ogni progetto include formazione completa per il tuo team!\n\nVuoi prenotare una consulenza per discutere il tuo progetto? 🚀",
 
     quarto:
-      "📈 **AI Marketing - Campagne Intelligenti**\n\nIl nostro Marketing AI include:\n\n✅ Analisi predittiva comportamento clienti\n✅ Personalizzazione contenuti automatica\n✅ Ottimizzazione campagne pubblicitarie\n✅ Segmentazione intelligente audience\n✅ Lead generation automatizzata\n✅ Analytics avanzati e reporting\n\n💡 Ogni progetto include strategia completa!\n\nVuoi sapere come può aiutare la tua azienda? Prenota una consulenza! 💡",
+      "📈 **AI Marketing - Campagne Intelligenti**\n\nIl nostro Marketing AI include:\n\n✅ Analisi predittiva comportamento clienti\n✅ Personalizzazione contenuti automatica\n✅ Ottimizzazione campagne pubblicitarie\n✅ Segmentazione intelligente audience\n✅ Lead generation automatizzata\n✅ Analytics avanzati e reporting\n\n💡 Ogni progetto include strategia completa!\n\nVuoi sapere come può aiutare la tua azienda? 💡",
 
     "sviluppo web":
       "🌐 **Web Development - Siti Moderni e Performanti**\n\nCreiamo siti web professionali con:\n\n✅ Design responsive e moderno\n✅ Ottimizzazione SEO avanzata\n✅ Velocità di caricamento ottimale\n✅ E-commerce completo\n✅ Integrazione con sistemi esistenti\n✅ Sicurezza e backup automatici\n\n💡 Ogni progetto include formazione completa per il tuo team!\n\nVuoi prenotare una consulenza per discutere il tuo progetto? 🚀",
@@ -266,8 +266,8 @@ let model: any = null
 try {
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
-    console.log("✅ Gemini 1.5 Flash initialized successfully")
+    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
+    console.log("✅ Gemini 2.0 Flash initialized successfully")
   } else {
     console.warn("⚠️ GOOGLE_GENERATIVE_AI_API_KEY not found")
   }
