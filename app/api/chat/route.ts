@@ -348,52 +348,33 @@ export async function POST(request: NextRequest) {
     // Use AI for complex queries
     if (model) {
       try {
-        // NOTE: In a real implementation, extract email from session/auth
         const userEmail = sessionData.length > 0 ? sessionData[0].booking_data?.email : null
         let contextString = ""
 
         if (userEmail) {
           const customerInfo = await zohoService.getCustomerContext(userEmail)
           if (customerInfo) {
-            contextString =
-              language === "it"
-                ? `\n\nCONTESTO ZOHO ZIA: Utente trovato. Status: ${customerInfo.status}, Lead Score: ${customerInfo.lead_score}, Priorità: ${customerInfo.priority}. Adatta la risposta in base a questi dati.`
-                : `\n\nZOHO ZIA CONTEXT: User found. Status: ${customerInfo.status}, Lead Score: ${customerInfo.lead_score}, Priority: ${customerInfo.priority}. Adapt response based on this data.`
+            contextString = `\n\nZOHO ZIA CONTEXT: User found. Status: ${customerInfo.status}, Lead Score: ${customerInfo.lead_score}, Priority: ${customerInfo.priority}. Adapt the response based on this data, maintaining the user's language.`
           }
         }
 
-        const systemPrompt =
-          language === "it"
-            ? `Tu sei PraxisBot. Rispondi SOLO in italiano.${contextString}
+        const systemPrompt = `You are PraxisBot, the AI assistant for Praxis Futura. Your expertise includes:
+          - 🤖 AI Automation
+          - 💬 Intelligent Chatbots
+          - 🌐 Web Development
+          - 📈 AI Marketing
+          
+          YOUR PRIMARY DIRECTIVE: Automatically detect the language of the user's question (e.g., Italian, English, or other) and respond ONLY in that detected language.
 
-Sei l'assistente AI di Praxis Futura, azienda specializzata in:
-🤖 AI Automation
-💬 Chatbot Intelligenti
-🌐 Web Development
-📈 AI Marketing
+          ${contextString}
 
-IMPORTANTE:
-- Risposte brevi (max 100 parole)
-- NON menzionare "demo" o "supporto gratuito"
-- Incoraggia a prenotare una consulenza
-- Usa emoji
+          IMPORTANT RULES:
+          - Keep responses brief (max 100 words).
+          - DO NOT mention "demo" or "free support".
+          - Always encourage the user to book a consultation.
+          - Use relevant emojis.
 
-Domanda: ${message}`
-            : `You are PraxisBot. Respond ONLY in English.${contextString}
-
-You are Praxis Futura's AI assistant, specialized in:
-🤖 AI Automation
-💬 Intelligent Chatbots
-🌐 Web Development
-📈 AI Marketing
-
-IMPORTANT:
-- Brief responses (max 100 words)
-- DO NOT mention "demo" or "free support"
-- Encourage booking a consultation
-- Use emojis
-
-Question: ${message}`
+          User Question to Answer: ${message}`
 
         const result = await model.generateContent(systemPrompt)
         const response = await result.response
