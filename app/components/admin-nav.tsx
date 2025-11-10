@@ -1,101 +1,110 @@
 "use client"
+
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Settings, Calendar, Users, Activity, Heart, ChevronDown, AlertCircle } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { BarChart, Clock, Zap, MessageSquare, Shield, Settings, Bell } from "lucide-react"
+import { useLanguage } from "../contexts/language-context"
+
+const adminNavItems = [
+  {
+    name: "Dashboard",
+    href: "/admin",
+    icon: BarChart,
+    isExact: true,
+  },
+  {
+    name: "Health Score",
+    href: "/admin/health-score",
+    icon: Zap,
+    isExact: false,
+  },
+  {
+    name: "Journey",
+    href: "/admin/journey",
+    icon: Clock,
+    isExact: false,
+  },
+  {
+    name: "Messages",
+    href: "/admin/messages",
+    icon: MessageSquare,
+    isExact: false,
+  },
+
+  // - Contatti/Customers
+  // - Appointments/Calendar
+
+  {
+    name: "Services",
+    href: "/admin/services",
+    icon: Settings,
+    isExact: false,
+  },
+  {
+    name: "Notifications",
+    href: "/admin/notifications",
+    icon: Bell,
+    isExact: false,
+  },
+  {
+    name: "Security",
+    href: "/admin/security",
+    icon: Shield,
+    isExact: false,
+  },
+]
 
 export function AdminNav() {
-  const adminModules = [
-    {
-      title: "Dashboard Principale",
-      href: "/admin",
-      icon: Settings,
-      description: "Panoramica generale sistema",
-    },
-    {
-      title: "Gestione Appuntamenti",
-      href: "/admin/appointments",
-      icon: Calendar,
-      description: "Appuntamenti e assistenza prioritaria",
-      urgent: 3,
-    },
-    {
-      title: "Database Clienti",
-      href: "/admin/customers",
-      icon: Users,
-      description: "CRM e gestione clienti",
-    },
-    {
-      title: "Customer Journey",
-      href: "/admin/journey",
-      icon: Activity,
-      description: "Analisi percorso clienti",
-    },
-    {
-      title: "Health Score",
-      href: "/admin/health-score",
-      icon: Heart,
-      description: "Scoring e analisi clienti",
-    },
-  ]
+  const pathname = usePathname()
+  const { language } = useLanguage()
+
+  const isActive = (href: string, isExact: boolean) => {
+    if (isExact) {
+      return pathname === href
+    }
+    return pathname.startsWith(href)
+  }
+
+  const getDisplayName = (name: string) => {
+    if (language === "it") {
+      switch (name) {
+        case "Dashboard":
+          return "Dashboard"
+        case "Health Score":
+          return "Punteggio Salute"
+        case "Journey":
+          return "Percorso Utente"
+        case "Messages":
+          return "Messaggi"
+        case "Services":
+          return "Servizi"
+        case "Notifications":
+          return "Notifiche"
+        case "Security":
+          return "Sicurezza"
+        default:
+          return name
+      }
+    }
+    return name
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="relative bg-transparent">
-          <Settings className="w-4 h-4 mr-2" />
-          Admin Panel
-          <ChevronDown className="w-4 h-4 ml-2" />
-          <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 py-0 min-w-[20px] h-5 rounded-full animate-pulse">
-            3
-          </Badge>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end">
-        <DropdownMenuLabel className="flex items-center">
-          <Settings className="w-4 h-4 mr-2" />
-          Pannello Amministrativo
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
-        {adminModules.map((module, index) => (
-          <DropdownMenuItem key={index} asChild>
-            <Link href={module.href} className="flex items-start space-x-3 p-3 cursor-pointer">
-              <div className="flex-shrink-0">
-                <module.icon className="w-5 h-5 text-purple-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900 truncate">{module.title}</p>
-                  {module.urgent && (
-                    <Badge className="bg-red-500 text-white text-xs ml-2">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      {module.urgent}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{module.description}</p>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-        ))}
-
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/admin" className="flex items-center justify-center p-2 text-purple-600 font-medium">
-            <Settings className="w-4 h-4 mr-2" />
-            Vai al Dashboard Completo
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <nav className="space-y-2">
+      {adminNavItems.map((item) => (
+        <Link
+          key={item.name}
+          href={item.href}
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+            isActive(item.href, item.isExact)
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <item.icon className="h-5 w-5" />
+          {getDisplayName(item.name)}
+        </Link>
+      ))}
+    </nav>
   )
 }
