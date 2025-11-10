@@ -12,7 +12,7 @@ interface BookingData {
 
 // Punti di accesso API per il dominio Europeo (zohoapis.eu)
 const ZOHO_AUTH_URL = "https://accounts.zoho.eu/oauth/v2/token"
-const ZOHO_BOOKINGS_BASE_URL = "https://bookings.zoho.eu/api/v1"
+const ZOHO_BOOKINGS_BASE_URL = "https://www.zohoapis.eu/bookings/v1/json"
 const ZOHO_CRM_BASE_URL = "https://www.zohoapis.eu/crm/v6"
 
 export class ZohoService {
@@ -22,6 +22,10 @@ export class ZohoService {
   private getZohoServiceId(serviceName: string): string {
     // Usa la ZOHO_LIST_KEY come ID predefinito del servizio
     return process.env.ZOHO_LIST_KEY || ""
+  }
+
+  private getZohoOrgId(): string {
+    return process.env.ZOHO_ORGANIZATION_ID || "ORGANIZATION_ID_MANCANTE"
   }
 
   // 1. Gestione Access Token (Refresh Token)
@@ -99,7 +103,7 @@ export class ZohoService {
     }
 
     try {
-      const zohoApiUrl = `${ZOHO_BOOKINGS_BASE_URL}/appointments`
+      const zohoApiUrl = `${ZOHO_BOOKINGS_BASE_URL}/appointment`
 
       const response = await fetch(zohoApiUrl, {
         method: "POST",
