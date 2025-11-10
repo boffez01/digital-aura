@@ -1,6 +1,6 @@
 "use client"
-import { useLanguage } from "path-to-useLanguage" // Adjust the import path as necessary
-import { Zap, Mail, Phone, MapPin } from "path-to-icons" // Adjust the import path as necessary
+import { useLanguage } from "@/app/contexts/language-context"
+import { Zap, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
   const { t, language } = useLanguage()
