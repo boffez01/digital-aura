@@ -266,8 +266,8 @@ let model: any = null
 try {
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
-    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
-    console.log("✅ Gemini 2.0 Flash initialized successfully")
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+    console.log("✅ Gemini 2.5 Flash Lite initialized successfully")
   } else {
     console.warn("⚠️ GOOGLE_GENERATIVE_AI_API_KEY not found")
   }
