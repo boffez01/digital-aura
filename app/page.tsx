@@ -481,9 +481,9 @@ export default function DigitalAuraPortfolio() {
 
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               {[
-                { value: "500+", label: language === "it" ? "Clienti Soddisfatti" : "Happy Clients" },
+                { value: "24/7", label: language === "it" ? "Assistenza Continua" : "Continuous Support" },
                 { value: "95%", label: language === "it" ? "Tasso Successo" : "Success Rate" },
-                { value: "24/7", label: language === "it" ? "Supporto" : "Support" },
+                { value: "ROI+", label: language === "it" ? "Crescita Garantita" : "Guaranteed Growth" },
               ].map((stat, index) => (
                 <motion.div
                   key={index}

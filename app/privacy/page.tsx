@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
       sections: [
         {
           title: "1. Introduzione",
-          content: `Digital Aura ("noi", "nostro" o "la Società") rispetta la tua privacy e si impegna a proteggere i tuoi dati personali. Questa Privacy Policy spiega come raccogliamo, utilizziamo e proteggiamo le tue informazioni quando utilizzi il nostro sito web e i nostri servizi.`,
+          content: `Praxis Futura ("noi", "nostro" o "la Società") rispetta la tua privacy e si impegna a proteggere i tuoi dati personali. Questa Privacy Policy spiega come raccogliamo, utilizziamo e proteggiamo le tue informazioni quando utilizzi il nostro sito web e i nostri servizi.`,
         },
         {
           title: "2. Dati che Raccogliamo",
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
 • **Dati di Contatto**: Nome, email, numero di telefono, azienda
 • **Dati di Prenotazione**: Informazioni per appuntamenti e consultazioni
 • **Dati di Navigazione**: Indirizzo IP, browser, pagine visitate
-• **Dati del Chatbot**: Conversazioni con AuraBot per migliorare il servizio
+• **Dati del Chatbot**: Conversazioni con PraxisBot per migliorare il servizio
 • **Cookie e Tecnologie Simili**: Per personalizzare l'esperienza utente`,
         },
         {
@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
           
 • Fornire i nostri servizi di consulenza AI e sviluppo web
 • Gestire appuntamenti e comunicazioni
-• Migliorare AuraBot e i nostri servizi attraverso l'analisi delle conversazioni
+• Migliorare PraxisBot e i nostri servizi attraverso l'analisi delle conversazioni
 • Inviarti aggiornamenti sui nostri servizi (solo con il tuo consenso)
 • Rispettare obblighi legali e contrattuali
 • Analizzare l'utilizzo del sito per miglioramenti`,
@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
           title: "5. Condivisione dei Dati",
           content: `Non vendiamo i tuoi dati personali. Possiamo condividere i tuoi dati con:
           
-• **Fornitori di Servizi**: Google Analytics, OpenAI per AuraBot, servizi di hosting
+• **Fornitori di Servizi**: Google Analytics, OpenAI per PraxisBot, servizi di hosting
 • **Partner Tecnologici**: Solo per fornire i servizi richiesti
 • **Autorità Legali**: Se richiesto dalla legge
 • **Successori Aziendali**: In caso di fusione o acquisizione`,
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
 • **Cancellazione**: Richiedere la cancellazione dei tuoi dati
 • **Limitazione**: Limitare il trattamento dei tuoi dati
 • **Portabilità**: Ricevere i tuoi dati in formato strutturato
-• **Opposizione**: Opporti al trattamento per marketing
+• **Opposizione**: Opporsi al trattamento per marketing
 • **Revoca del Consenso**: Ritirare il consenso in qualsiasi momento`,
         },
         {
@@ -120,7 +120,7 @@ Puoi gestire le preferenze cookie attraverso le impostazioni del browser.`,
           
 • Avviso sul nostro sito web
 • Email (se hai fornito il consenso)
-• Notifica nel chatbot AuraBot
+• Notifica nel chatbot PraxisBot
           
 L'uso continuato dei nostri servizi dopo le modifiche costituisce accettazione della nuova policy.`,
         },
@@ -129,8 +129,8 @@ L'uso continuato dei nostri servizi dopo le modifiche costituisce accettazione d
           content: `Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti, contattaci:
           
 **Data Protection Officer**
-Email: privacy@digitalaura.it
-Telefono: +39 350 021 6480
+Email: info@praxisfutura.com
+Telefono: +393500216480
 Indirizzo: Via dei Mille 5, Brescia, Italia
           
 **Autorità di Controllo**
@@ -144,7 +144,7 @@ Puoi anche presentare reclamo al Garante per la Protezione dei Dati Personali (w
       sections: [
         {
           title: "1. Introduction",
-          content: `Digital Aura ("we", "our" or "the Company") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use and protect your information when you use our website and services.`,
+          content: `Praxis Futura ("we", "our" or "the Company") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use and protect your information when you use our website and services.`,
         },
         {
           title: "2. Data We Collect",
@@ -153,7 +153,7 @@ Puoi anche presentare reclamo al Garante per la Protezione dei Dati Personali (w
 • **Contact Data**: Name, email, phone number, company
 • **Booking Data**: Information for appointments and consultations
 • **Navigation Data**: IP address, browser, pages visited
-• **Chatbot Data**: Conversations with AuraBot to improve service
+• **Chatbot Data**: Conversations with PraxisBot to improve service
 • **Cookies and Similar Technologies**: To personalize user experience`,
         },
         {
@@ -162,7 +162,7 @@ Puoi anche presentare reclamo al Garante per la Protezione dei Dati Personali (w
           
 • Provide our AI consulting and web development services
 • Manage appointments and communications
-• Improve AuraBot and our services through conversation analysis
+• Improve PraxisBot and our services through conversation analysis
 • Send you service updates (only with your consent)
 • Comply with legal and contractual obligations
 • Analyze site usage for improvements`,
@@ -180,7 +180,7 @@ Puoi anche presentare reclamo al Garante per la Protezione dei Dati Personali (w
           title: "5. Data Sharing",
           content: `We do not sell your personal data. We may share your data with:
           
-• **Service Providers**: Google Analytics, OpenAI for AuraBot, hosting services
+• **Service Providers**: Google Analytics, OpenAI for PraxisBot, hosting services
 • **Technology Partners**: Only to provide requested services
 • **Legal Authorities**: If required by law
 • **Business Successors**: In case of merger or acquisition`,
@@ -247,7 +247,7 @@ You can manage cookie preferences through browser settings.`,
           
 • Notice on our website
 • Email (if you have provided consent)
-• Notification in AuraBot chatbot
+• Notification in PraxisBot chatbot
           
 Continued use of our services after changes constitutes acceptance of the new policy.`,
         },
@@ -256,8 +256,8 @@ Continued use of our services after changes constitutes acceptance of the new po
           content: `For any privacy questions or to exercise your rights, contact us:
           
 **Data Protection Officer**
-Email: privacy@digitalaura.it
-Phone: +39 350 021 6480
+Email: info@praxisfutura.com
+Phone: +393500216480
 Address: Via dei Mille 5, Brescia, Italy
           
 **Supervisory Authority**
@@ -322,14 +322,14 @@ You can also file a complaint with the Italian Data Protection Authority (www.gp
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-center text-slate-300">
                 <Mail className="w-4 h-4 mr-2 text-cyan-400" />
-                <a href="mailto:privacy@digitalaura.it" className="hover:text-cyan-300">
-                  privacy@digitalaura.it
+                <a href="mailto:info@praxisfutura.com" className="hover:text-cyan-300">
+                  info@praxisfutura.com
                 </a>
               </div>
               <div className="flex items-center text-slate-300">
                 <Phone className="w-4 h-4 mr-2 text-cyan-400" />
                 <a href="tel:+393500216480" className="hover:text-cyan-300">
-                  +39 350 021 6480
+                  +393500216480
                 </a>
               </div>
               <div className="flex items-center text-slate-300">

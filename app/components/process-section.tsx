@@ -58,7 +58,7 @@ export default function ProcessSection() {
 
   return (
     <section className="py-24 bg-slate-900">
-      <div className="container">
+      <div className="container mx-auto max-w-7xl px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,17 +66,17 @@ export default function ProcessSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold mb-4 text-white">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
             {language === "it" ? "Il Nostro Processo" : "Our Process"}
           </h2>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
             {language === "it"
               ? "Un approccio strutturato per trasformare le tue idee in soluzioni AI innovative"
               : "A structured approach to transform your ideas into innovative AI solutions"}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {steps.map((step, index) => (
             <motion.div
               key={index}
@@ -86,12 +86,12 @@ export default function ProcessSection() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-slate-700 hover:border-cyan-500 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 group h-full">
+              <div className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-slate-700 hover:border-cyan-500 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 group h-full flex flex-col items-center text-center">
                 <div className="inline-flex p-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
                   <step.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-white">{step.title}</h3>
-                <p className="text-slate-300 leading-relaxed">{step.description}</p>
+                <h3 className="text-xl font-bold mb-4 text-white">{step.title}</h3>
+                <p className="text-slate-200 leading-relaxed">{step.description}</p>
               </div>
 
               {/* Connection line */}

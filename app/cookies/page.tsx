@@ -152,8 +152,8 @@ Impostazioni > Privacy, ricerca e servizi > Cookie
 • Limitazioni funzionalità sito`,
         },
         {
-          title: "7. Cookie e AuraBot",
-          content: `Il nostro chatbot AuraBot utilizza cookie per:
+          title: "7. Cookie e PraxisBot",
+          content: `Il nostro chatbot PraxisBot utilizza cookie per:
 
 **Funzionalità:**
 • Mantenere contesto conversazione
@@ -222,7 +222,7 @@ Impostazioni > Privacy, ricerca e servizi > Cookie
           content: `**Notifiche di Modifica:**
 • Banner informativo sul sito
 • Email agli utenti registrati
-• Notifica tramite AuraBot
+• Notifica tramite PraxisBot
 • Aggiornamento data "ultimo aggiornamento"
 
 **Periodo di Transizione:**
@@ -240,8 +240,8 @@ Impostazioni > Privacy, ricerca e servizi > Cookie
         {
           title: "11. Contatti e Supporto",
           content: `**Per Domande sui Cookie:**
-Email: privacy@digitalaura.it
-Telefono: +39 350 021 6480
+Email: info@praxisfutura.com
+Telefono: +393500216480
 Orari: Lun-Ven 9:00-18:00
 
 **Supporto Tecnico:**
@@ -405,8 +405,8 @@ Settings > Privacy, search and services > Cookies
 • Site functionality limitations`,
         },
         {
-          title: "7. Cookies and AuraBot",
-          content: `Our AuraBot chatbot uses cookies for:
+          title: "7. Cookies and PraxisBot",
+          content: `Our PraxisBot chatbot uses cookies for:
 
 **Functionality:**
 • Maintain conversation context
@@ -475,7 +475,7 @@ Settings > Privacy, search and services > Cookies
           content: `**Change Notifications:**
 • Informative banner on site
 • Email to registered users
-• Notification via AuraBot
+• Notification via PraxisBot
 • Update of "last updated" date
 
 **Transition Period:**
@@ -493,8 +493,8 @@ Settings > Privacy, search and services > Cookies
         {
           title: "11. Contact and Support",
           content: `**For Cookie Questions:**
-Email: privacy@digitalaura.it
-Phone: +39 350 021 6480
+Email: info@praxisfutura.com
+Phone: +393500216480
 Hours: Mon-Fri 9:00-18:00
 
 **Technical Support:**
@@ -574,14 +574,14 @@ Hours: Mon-Fri 9:00-18:00
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-center text-slate-300">
                 <Mail className="w-4 h-4 mr-2 text-orange-400" />
-                <a href="mailto:privacy@digitalaura.it" className="hover:text-orange-300">
-                  privacy@digitalaura.it
+                <a href="mailto:info@praxisfutura.com" className="hover:text-orange-300">
+                  info@praxisfutura.com
                 </a>
               </div>
               <div className="flex items-center text-slate-300">
                 <Phone className="w-4 h-4 mr-2 text-orange-400" />
                 <a href="tel:+393500216480" className="hover:text-orange-300">
-                  +39 350 021 6480
+                  +393500216480
                 </a>
               </div>
               <div className="flex items-center text-slate-300">
