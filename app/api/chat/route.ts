@@ -2,10 +2,11 @@ import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { BookingFlow } from "@/lib/booking-flow"
 import { neon } from "@neondatabase/serverless"
+import { ZohoService } from "@/lib/zoho-service"
 
 const sql = neon(process.env.DATABASE_URL!)
+const zohoService = new ZohoService()
 
-// Comprehensive FAQ database
 const faqDatabase = {
   it: {
     // Pricing and Costs
@@ -24,7 +25,7 @@ const faqDatabase = {
       "⚡ **AI Automation - Processi Automatizzati**\n\nLe nostre soluzioni possono:\n\n✅ Automatizzare task ripetitivi\n✅ Analizzare dati e generare report\n✅ Gestire email e comunicazioni\n✅ Ottimizzare workflow aziendali\n✅ Integrare sistemi diversi\n✅ Ridurre errori e costi\n\n💡 Ogni progetto include analisi completa e formazione!\n\nIn quale area vorresti automatizzare? Prenota una consulenza! 🎯",
 
     secondo:
-      "🤖 **Chatbot Intelligenti - Assistenti AI 24/7**\n\nI nostri chatbot possono:\n\n✅ Rispondere automaticamente alle domande\n✅ Gestire prenotazioni e appuntamenti\n✅ Qualificare lead in automatico\n✅ Supportare multiple lingue\n✅ Integrarsi con i tuoi sistemi\n✅ Apprendere dalle conversazioni\n\n💡 Ogni progetto include training AI e formazione completa!\n\nVuoi prenotare una consulenza per discutere il tuo chatbot? 📅",
+      "🤖 **Chatbot Intelligenti - Assistenti AI 24/7**\n\nI nostre chatbot possono:\n\n✅ Rispondere automaticamente alle domande\n✅ Gestire prenotazioni e appuntamenti\n✅ Qualificare lead in automatico\n✅ Supportare multiple lingue\n✅ Integrarsi con i tuoi sistemi\n✅ Apprendere dalle conversazioni\n\n💡 Ogni progetto include training AI e formazione completa!\n\nVuoi prenotare una consulenza per discutere il tuo chatbot? 📅",
 
     terzo:
       "🌐 **Web Development - Siti Moderni e Performanti**\n\nCreiamo siti web professionali con:\n\n✅ Design responsive e moderno\n✅ Ottimizzazione SEO avanzata\n✅ Velocità di caricamento ottimale\n✅ E-commerce completo\n✅ Integrazione con sistemi esistenti\n✅ Sicurezza e backup automatici\n\n💡 Ogni progetto include formazione completa per il tuo team!\n\nVuoi prenotare una consulenza per discutere il tuo progetto? 🚀",
@@ -36,13 +37,13 @@ const faqDatabase = {
       "🌐 **Web Development - Siti Moderni e Performanti**\n\nCreiamo siti web professionali con:\n\n✅ Design responsive e moderno\n✅ Ottimizzazione SEO avanzata\n✅ Velocità di caricamento ottimale\n✅ E-commerce completo\n✅ Integrazione con sistemi esistenti\n✅ Sicurezza e backup automatici\n\n💡 Ogni progetto include formazione completa per il tuo team!\n\nVuoi prenotare una consulenza per discutere il tuo progetto? 🚀",
 
     chatbot:
-      "🤖 **Chatbot Intelligenti - Assistenti AI 24/7**\n\nI nostri chatbot possono:\n\n✅ Rispondere automaticamente alle domande\n✅ Gestire prenotazioni e appuntamenti\n✅ Qualificare lead in automatico\n✅ Supportare multiple lingue\n✅ Integrarsi con i tuoi sistemi\n✅ Apprendere dalle conversazioni\n\n💡 Ogni progetto include training AI e formazione completa!\n\nVuoi prenotare una consulenza per discutere il tuo chatbot? 📅",
+      "🤖 **Chatbot Intelligenti - Assistenti AI 24/7**\n\nI nostre chatbot possono:\n\n✅ Rispondere automaticamente alle domande\n✅ Gestire prenotazioni e appuntamenti\n✅ Qualificare lead in automatico\n✅ Supportare multiple lingue\n✅ Integrarsi con i tuoi sistemi\n✅ Apprendere dalle conversazioni\n\n💡 Ogni progetto include training AI e formazione completa!\n\nVuoi prenotare una consulenza per discutere il tuo chatbot? 📅",
 
     automazione:
       "⚡ **AI Automation - Processi Automatizzati**\n\nLe nostre soluzioni possono:\n\n✅ Automatizzare task ripetitivi\n✅ Analizzare dati e generare report\n✅ Gestire email e comunicazioni\n✅ Ottimizzare workflow aziendali\n✅ Integrare sistemi diversi\n✅ Ridurre errori e costi\n\n💡 Ogni progetto include analisi completa e formazione!\n\nIn quale area vorresti automatizzare? Prenota una consulenza! 🎯",
 
     marketing:
-      "📈 **AI Marketing - Campagne Intelligenti**\n\nIl nostro Marketing AI include:\n\n✅ Analisi predittiva comportamento clienti\n✅ Personalizzazione contenuti automatica\n✅ Ottimizzazione campagne pubblicitarie\n✅ Segmentazione intelligente audience\n✅ Lead generation automatizzata\n✅ Analytics avanzati e reporting\n\n💡 Ogni progetto include strategia completa!\n\nVuoi sapere come può aiutare la tua azienda? Prenota una consulenza! 💡",
+      "📈 **AI Marketing - Campagne Intelligenti**\n\nIl nostro Marketing AI include:\n\n✅ Analisi predittiva comportamento clienti\n✅ Personalizzazione contenuti automatica\n✅ Ottimizzazione campagne pubblicitarie\n✅ Segmentazione intelligente audience\n✅ Lead generation automatizzata\n✅ Analytics avanzati e reporting\n\n💡 Ogni progetto include strategia completa!\n\nVuoi sapere come può aiutare la tua azienda? 💡",
 
     // Timeline and Process
     tempi:
@@ -59,16 +60,16 @@ const faqDatabase = {
 
     // Contact
     contatti:
-      "Ecco come puoi contattarci: 📞\n\n📧 **Email**: info@digitalaura.it\n📱 **Telefono**: +39 350 021 6480\n🌐 **Sito**: www.digitalaura.it\n\n**Orari**: Lun-Ven 9:00-18:00\n\nPreferisci prenotare direttamente una consulenza? 📅",
+      "Ecco come puoi contattarci: 📞\n\n📧 **Email**: info@praxisfutura.it\n📱 **Telefono**: +39 350 021 6480\n🌐 **Sito**: www.praxisfutura.it\n\n**Orari**: Lun-Ven 9:00-18:00\n\nPreferisci prenotare direttamente una consulenza? 📅",
 
     // General and Greetings
-    ciao: "Ciao! 👋 Sono AuraBot, l'assistente AI di Digital Aura! Sono qui per aiutarti a scoprire come l'Intelligenza Artificiale può trasformare la tua azienda. Come posso aiutarti oggi? 🚀",
+    ciao: "Ciao! 👋 Sono PraxisBot, l'assistente AI di Praxis Futura! Sono qui per aiutarti a scoprire come l'Intelligenza Artificiale può trasformare la tua azienda. Come posso aiutarti oggi? 🚀",
 
     aiuto:
       "Sono qui per aiutarti! 🤝 Posso rispondere a domande su:\n\n🤖 **Chatbot e AI Automation**\n🌐 **Sviluppo Web**\n📈 **Marketing AI**\n💰 **Costi e Tempistiche**\n📅 **Prenotazioni Consulenze**\n\nCosa ti interessa di più? 🎯",
 
     "chi siete":
-      "Siamo Digital Aura, esperti in trasformazione digitale e AI! 🌟\n\n**La nostra missione**: Aiutare le aziende a crescere attraverso l'innovazione tecnologica.\n\n**I nostri valori**:\n✅ Innovazione continua\n✅ Qualità eccellente\n✅ Risultati misurabili\n✅ Formazione completa\n\nVuoi sapere come possiamo aiutare la tua azienda? 💡",
+      "Siamo Praxis Futura, esperti in trasformazione digitale e AI! 🌟\n\n**La nostra missione**: Aiutare le aziende a crescere attraverso l'innovazione tecnologica.\n\n**I nostri valori**:\n✅ Innovazione continua\n✅ Qualità eccellente\n✅ Risultati misurabili\n✅ Formazione completa\n\nVuoi sapere come possiamo aiutare la tua azienda? 💡",
 
     grazie:
       "Prego! 😊 È stato un piacere aiutarti! Se hai altre domande o vuoi approfondire qualche argomento, sono sempre qui. Ricorda che puoi prenotare una consulenza per discutere il tuo progetto in dettaglio! 🚀",
@@ -265,7 +266,7 @@ let model: any = null
 try {
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) // CORRETTO!
+    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
     console.log("✅ Gemini 1.5 Flash initialized successfully")
   } else {
     console.warn("⚠️ GOOGLE_GENERATIVE_AI_API_KEY not found")
@@ -347,11 +348,25 @@ export async function POST(request: NextRequest) {
     // Use AI for complex queries
     if (model) {
       try {
+        // NOTE: In a real implementation, extract email from session/auth
+        const userEmail = sessionData.length > 0 ? sessionData[0].booking_data?.email : null
+        let contextString = ""
+
+        if (userEmail) {
+          const customerInfo = await zohoService.getCustomerContext(userEmail)
+          if (customerInfo) {
+            contextString =
+              language === "it"
+                ? `\n\nCONTESTO ZOHO ZIA: Utente trovato. Status: ${customerInfo.status}, Lead Score: ${customerInfo.lead_score}, Priorità: ${customerInfo.priority}. Adatta la risposta in base a questi dati.`
+                : `\n\nZOHO ZIA CONTEXT: User found. Status: ${customerInfo.status}, Lead Score: ${customerInfo.lead_score}, Priority: ${customerInfo.priority}. Adapt response based on this data.`
+          }
+        }
+
         const systemPrompt =
           language === "it"
-            ? `Tu sei AuraBot. Rispondi SOLO in italiano.
+            ? `Tu sei PraxisBot. Rispondi SOLO in italiano.${contextString}
 
-Sei l'assistente AI di Digital Aura, azienda specializzata in:
+Sei l'assistente AI di Praxis Futura, azienda specializzata in:
 🤖 AI Automation
 💬 Chatbot Intelligenti
 🌐 Web Development
@@ -364,9 +379,9 @@ IMPORTANTE:
 - Usa emoji
 
 Domanda: ${message}`
-            : `You are AuraBot. Respond ONLY in English.
+            : `You are PraxisBot. Respond ONLY in English.${contextString}
 
-You are Digital Aura's AI assistant, specialized in:
+You are Praxis Futura's AI assistant, specialized in:
 🤖 AI Automation
 💬 Intelligent Chatbots
 🌐 Web Development

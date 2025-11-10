@@ -87,7 +87,7 @@ export class GeminiAI {
   // ===== CODICE MODIFICATO =====
   private buildPrompt(prompt: string, context: any, language: string): string {
     const systemPrompts = {
-      it: `Sei AuraBot, un assistente AI per Digital Aura.
+      it: `Sei PraxisBot, un assistente AI per Praxis Futura.
 
 **REGOLA CRITICA E OBBLIGATORIA:**
 **DEVI RISPONDERE SEMPRE E SOLO IN ITALIANO.** Non usare MAI un'altra lingua, indipendentemente dalla lingua della domanda dell'utente. Questa è la regola più importante.
@@ -100,7 +100,7 @@ export class GeminiAI {
 
 Domanda utente: ${prompt}`,
 
-      en: `You are AuraBot, an AI assistant for Digital Aura.
+      en: `You are PraxisBot, an AI assistant for Praxis Futura.
 
 **CRITICAL AND MANDATORY RULE:**
 **YOU MUST ALWAYS AND ONLY RESPOND IN ENGLISH.** Never use any other language, regardless of the user's question language. This is the most important rule.
@@ -296,7 +296,7 @@ Which service interests you? 😊`,
 
   private getGeneralFallback(prompt: string, language: string): AIResponse {
     const responses = {
-      it: `👋 **Ciao! Sono AuraBot di Digital Aura**
+      it: `👋 **Ciao! Sono PraxisBot di Praxis Futura**
 
 Posso aiutarti con:
 
@@ -320,7 +320,7 @@ Offriamo consulenze gratuite per valutare il tuo progetto!
 
 Come posso aiutarti oggi? 😊`,
 
-      en: `👋 **Hi! I'm AuraBot from Digital Aura**
+      en: `👋 **Hi! I'm PraxisBot from Praxis Futura**
 
 I can help you with:
 

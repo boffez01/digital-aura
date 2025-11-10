@@ -1,6 +1,8 @@
 import { neon } from "@neondatabase/serverless"
+import { ZohoService } from "@/lib/zoho-service"
 
 const sql = neon(process.env.DATABASE_URL!)
+const zohoService = new ZohoService()
 
 interface BookingData {
   service?: string
@@ -125,9 +127,20 @@ export class BookingFlow {
     return slots
   }
 
-  private async getAvailableSlots(date: string): Promise<string[]> {
+  private async getAvailableSlots(date: string, serviceName: string): Promise<string[]> {
     try {
       const allSlots = this.getTimeSlots()
+
+      console.log("[v0] Tentativo di recupero disponibilità da Zoho...")
+      const zohoSlots = await zohoService.getAvailableSlots(date, serviceName)
+
+      if (zohoSlots.length > 0) {
+        console.log("[v0] Disponibilità recuperata da Zoho:", zohoSlots)
+        return zohoSlots
+      }
+
+      // Fallback: usa il database locale se Zoho non risponde
+      console.log("[v0] Zoho non ha restituito slot, fallback su database locale")
       const occupiedSlots = await sql`
         SELECT DISTINCT time 
         FROM appointments 
@@ -352,33 +365,7 @@ We work only **Mon-Fri**. Choose a working day.`
 
         console.log(`✅ Saving date to database: ${formattedDate}`)
 
-        const availableSlots = await this.getAvailableSlots(formattedDate)
-
-        if (availableSlots.length === 0) {
-          const noSlotsMessage =
-            language === "it"
-              ? `❌ **Tutti gli orari del ${parsedDate.toLocaleDateString("it-IT")} sono occupati!**
-
-Scegli un'altra data per favore.`
-              : `❌ **All time slots on ${parsedDate.toLocaleDateString("en-US")} are occupied!**
-
-Please choose another date.`
-
-          return {
-            message: noSlotsMessage,
-            nextStep: "date_selection",
-            completed: false,
-          }
-        }
-
-        await sql`
-          UPDATE chat_sessions 
-          SET flow_step = 'time_selection', booking_data = ${JSON.stringify(bookingData)}
-          WHERE session_id = ${sessionId}
-        `
-
-        const morningSlots = availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) < 12)
-        const afternoonSlots = availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14)
+        const availableSlots = await this.getAvailableSlots(formattedDate, bookingData.service!)
 
         const timeMessage =
           language === "it"
@@ -387,16 +374,22 @@ Please choose another date.`
 🕐 **ORARI DISPONIBILI:**
 
 ${
-  morningSlots.length > 0
+  availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) < 12).length > 0
     ? `**🌅 MATTINA (9:00-12:00):**
-${morningSlots.map((slot, i) => `${i + 1}️⃣ ${slot}`).join("\n")}`
+${availableSlots
+  .filter((slot) => Number.parseInt(slot.split(":")[0]) < 12)
+  .map((slot, i) => `${i + 1}️⃣ ${slot}`)
+  .join("\n")}`
     : "❌ Nessuno slot disponibile al mattino"
 }
 
 ${
-  afternoonSlots.length > 0
+  availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14).length > 0
     ? `**🌆 POMERIGGIO (14:00-18:00):**
-${afternoonSlots.map((slot, i) => `${i + morningSlots.length + 1}️⃣ ${slot}`).join("\n")}`
+${availableSlots
+  .filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14)
+  .map((slot, i) => `${i + 1}️⃣ ${slot}`)
+  .join("\n")}`
     : "❌ Nessuno slot disponibile al pomeriggio"
 }
 
@@ -407,16 +400,22 @@ Scrivi il numero o l'orario (es: "3" oppure "10:30")`
 🕐 **AVAILABLE TIMES:**
 
 ${
-  morningSlots.length > 0
+  availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) < 12).length > 0
     ? `**🌅 MORNING (9:00-12:00):**
-${morningSlots.map((slot, i) => `${i + 1}️⃣ ${slot}`).join("\n")}`
+${availableSlots
+  .filter((slot) => Number.parseInt(slot.split(":")[0]) < 12)
+  .map((slot, i) => `${i + 1}️⃣ ${slot}`)
+  .join("\n")}`
     : "❌ No morning slots available"
 }
 
 ${
-  afternoonSlots.length > 0
+  availableSlots.filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14).length > 0
     ? `**🌆 AFTERNOON (14:00-18:00):**
-${afternoonSlots.map((slot, i) => `${i + morningSlots.length + 1}️⃣ ${slot}`).join("\n")}`
+${availableSlots
+  .filter((slot) => Number.parseInt(slot.split(":")[0]) >= 14)
+  .map((slot, i) => `${i + 1}️⃣ ${slot}`)
+  .join("\n")}`
     : "❌ No afternoon slots available"
 }
 
@@ -432,7 +431,7 @@ Write the number or time (e.g: "3" or "10:30")`
       }
 
       case "time_selection": {
-        const availableSlots = await this.getAvailableSlots(bookingData.date!)
+        const availableSlots = await this.getAvailableSlots(bookingData.date!, bookingData.service!)
         let selectedTime = ""
 
         const timeMatch = message.match(/(\d{1,2}):(\d{2})/)
@@ -682,7 +681,7 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
 
       case "confirmation": {
         if (lowerMessage.includes("conferma") || lowerMessage.includes("confirm")) {
-          const availableSlots = await this.getAvailableSlots(bookingData.date!)
+          const availableSlots = await this.getAvailableSlots(bookingData.date!, bookingData.service!)
           if (!availableSlots.includes(bookingData.time!)) {
             const conflictMessage =
               language === "it"
@@ -703,7 +702,19 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
           }
 
           try {
-            console.log(`💾 Saving appointment: date=${bookingData.date}, time=${bookingData.time}`)
+            console.log(`💾 TENTATIVO 1: Prenotazione su Zoho Bookings...`)
+
+            const zohoBookingId = await zohoService.bookAppointment({
+              service: bookingData.service!,
+              date: bookingData.date!,
+              time: bookingData.time!,
+              name: bookingData.name!,
+              email: bookingData.email!,
+              phone: bookingData.phone!,
+              message: bookingData.message,
+            })
+
+            console.log(`✅ Zoho Booking successful. ID: ${zohoBookingId}`)
 
             await sql`
               INSERT INTO appointments (
@@ -732,7 +743,7 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
               language === "it"
                 ? `🎉 **PRENOTAZIONE CONFERMATA!**
 
-✅ La tua consulenza è stata prenotata!
+✅ La tua consulenza è stata prenotata su Zoho Bookings!
 
 📋 **Dettagli:**
 🎯 Servizio: ${bookingData.service}
@@ -741,10 +752,10 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
 
 📧 Riceverai un'email di conferma a: ${bookingData.email}
 
-**Grazie per aver scelto Digital Aura!** 🌟`
+**Grazie per aver scelto Praxis Futura!** 🌟`
                 : `🎉 **BOOKING CONFIRMED!**
 
-✅ Your consultation has been booked!
+✅ Your consultation has been booked via Zoho Bookings!
 
 📋 **Details:**
 🎯 Service: ${bookingData.service}
@@ -753,7 +764,7 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
 
 📧 You'll receive a confirmation email at: ${bookingData.email}
 
-**Thank you for choosing Digital Aura!** 🌟`
+**Thank you for choosing Praxis Futura!** 🌟`
 
             return {
               message: successMessage,
@@ -761,13 +772,31 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
               completed: true,
               bookingData,
             }
-          } catch (error) {
-            console.error("Error saving appointment:", error)
+          } catch (error: any) {
+            if (error.message === "BOOKING_CONFLICT") {
+              const conflictMessage =
+                language === "it"
+                  ? "❌ L'orario è stato appena prenotato da qualcun altro. Scegli un altro orario."
+                  : "❌ The time was just booked by someone else. Choose another time."
 
+              await sql`
+                UPDATE chat_sessions 
+                SET flow_step = 'time_selection'
+                WHERE session_id = ${sessionId}
+              `
+
+              return {
+                message: conflictMessage,
+                nextStep: "time_selection",
+                completed: false,
+              }
+            }
+
+            // Errore generico
             const errorMessage =
               language === "it"
-                ? "❌ Errore nel salvare la prenotazione. Contattaci: info@digitalaura.it"
-                : "❌ Error saving booking. Contact us: info@digitalaura.it"
+                ? "❌ Errore nel salvare la prenotazione su Zoho. Contattaci: info@praxisfutura.it"
+                : "❌ Error saving booking to Zoho. Contact us: info@praxisfutura.it"
 
             return {
               message: errorMessage,

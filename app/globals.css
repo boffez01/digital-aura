@@ -486,3 +486,13 @@ body {
 .rdp-day_range_middle {
   background-color: rgb(59 130 246 / 0.1);
 }
+
+/* Hide scrollbar utility class for chatbot */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

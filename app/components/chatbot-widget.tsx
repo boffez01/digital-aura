@@ -70,7 +70,7 @@ export default function ChatbotWidget() {
 
   const translations = {
     it: {
-      title: "Digital Aura AI",
+      title: "Praxis Futura AI",
       supportTitle: "Supporto Tecnico",
       bookingTitle: "Prenotazione Attiva",
       placeholder: "Scrivi un messaggio...",
@@ -80,11 +80,11 @@ export default function ChatbotWidget() {
       book: "Prenota",
       support: "Assistenza",
       welcome:
-        "👋 **Ciao! Sono AuraBot, l'assistente AI di Digital Aura.**\n\nPosso aiutarti con:\n\n🤖 **Servizi AI** - Automazione e chatbots intelligenti\n🌐 **Sviluppo Web** - Siti moderni e e-commerce\n📊 **AI Marketing** - Campagne automatizzate\n📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI\n\n**Come posso aiutarti oggi?** 😊",
+        "👋 **Ciao! Sono PraxisBot, l'assistente AI di Praxis Futura.**\n\nPosso aiutarti con:\n\n🤖 **Servizi AI** - Automazione e chatbots intelligenti\n🌐 **Sviluppo Web** - Siti moderni e e-commerce\n📊 **AI Marketing** - Campagne automatizzate\n📅 **Prenotazioni** - Consulenze gratuite DIRETTAMENTE QUI\n\n**Come posso aiutarti oggi?** 😊",
       connectionError: "Mi dispiace, ho problemi di connessione. Riprova tra poco o contattaci direttamente.",
     },
     en: {
-      title: "Digital Aura AI",
+      title: "Praxis Futura AI",
       supportTitle: "Technical Support",
       bookingTitle: "Booking Active",
       placeholder: "Type a message...",
@@ -94,7 +94,7 @@ export default function ChatbotWidget() {
       book: "Book",
       support: "Support",
       welcome:
-        "👋 **Hello! I'm AuraBot, Digital Aura's AI assistant.**\n\nI can help you with:\n\n🤖 **AI Services** - Automation and intelligent chatbots\n🌐 **Web Development** - Modern websites and e-commerce\n📊 **AI Marketing** - Automated campaigns\n📅 **Bookings** - Free consultations DIRECTLY HERE\n\n**How can I help you today?** 😊",
+        "👋 **Hello! I'm PraxisBot, Praxis Futura's AI assistant.**\n\nI can help you with:\n\n🤖 **AI Services** - Automation and intelligent chatbots\n🌐 **Web Development** - Modern websites and e-commerce\n📊 **AI Marketing** - Automated campaigns\n📅 **Bookings** - Free consultations DIRECTLY HERE\n\n**How can I help you today?** 😊",
       connectionError: "Sorry, I'm having connection issues. Please try again or contact us directly.",
     },
   }
@@ -349,7 +349,7 @@ export default function ChatbotWidget() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="text-white hover:bg-white/20 w-8 h-8"
+                  className="text-white hover:bg-white/20 w-8 h-8 flex-shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -397,7 +397,7 @@ export default function ChatbotWidget() {
               </div>
 
               {/* Area messaggi */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900 scrollbar-hide">
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[85%]">
