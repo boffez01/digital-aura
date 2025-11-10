@@ -1,133 +1,128 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  RefreshCw,
-  Mail,
-  Phone,
-  Building,
-  Calendar,
-  MessageSquare,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  User,
-} from "lucide-react"
+import { RefreshCw, MessageSquare, AlertCircle, Clock, User, Bot, Calendar, Zap } from "lucide-react"
 import { useLanguage } from "../../contexts/language-context"
 
-interface Contact {
-  id: string
-  name: string
-  email: string
-  phone: string
-  company: string
-  service: string
-  message: string
-  createdAt: string
-  status: string
-  priority: string
-  notes: string
+interface SessionSummary {
+  session_id: string
+  message_count: number
+  last_user_message: string | null
+  last_activity: string
+  in_booking_mode: number
 }
 
-interface ContactStats {
+interface MessageDetail {
+  id: string
+  content: string
+  sender: "user" | "bot"
+  created_at: string
+}
+
+interface MessageStats {
   total: number
   thisMonth: number
-  byService: Record<string, number>
-  byStatus: Record<string, number>
+  activeBookings: number
 }
 
 export default function AdminMessagesPage() {
   const { language } = useLanguage()
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [stats, setStats] = useState<ContactStats>({
+  const [sessions, setSessions] = useState<SessionSummary[]>([])
+  const [selectedSession, setSelectedSession] = useState<SessionSummary | null>(null)
+  const [sessionMessages, setSessionMessages] = useState<MessageDetail[]>([])
+
+  const [stats, setStats] = useState<MessageStats>({
     total: 0,
     thisMonth: 0,
-    byService: {},
-    byStatus: { new: 0, contacted: 0, qualified: 0, converted: 0, closed: 0 },
+    activeBookings: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [loadingDetails, setLoadingDetails] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
 
-  const fetchMessages = async () => {
+  const fetchSessionDetails = useCallback(async (sessionId: string) => {
+    setLoadingDetails(true)
+    setSessionMessages([])
+    try {
+      const response = await fetch("/api/admin/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+        cache: "no-store",
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setSessionMessages(data.data || [])
+      } else {
+        throw new Error(data.error || "Errore nel caricamento della sessione dettagliata")
+      }
+    } catch (err) {
+      console.error("❌ Error fetching session details:", err)
+      setError(err instanceof Error ? err.message : "Errore nel caricamento dei dettagli conversazione")
+    } finally {
+      setLoadingDetails(false)
+    }
+  }, [])
+
+  const fetchSessions = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      console.log("🔄 Fetching contacts from API...")
+      console.log("🔄 Fetching chat sessions from API...")
 
-      // QUESTA È LA RIGA CHIAVE: cache: 'no-store' forza il refresh dei dati
-      const response = await fetch("/api/admin/contacts", {
+      const response = await fetch("/api/admin/messages", {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store", // ← RISOLVE IL PROBLEMA DEL CACHING!
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
       })
 
       const data = await response.json()
-      console.log("📧 API Response:", data)
+      console.log("💬 API Sessions Response:", data)
 
       if (data.success) {
-        setContacts(data.contacts || [])
-        setStats(
-          data.stats || {
-            total: 0,
-            thisMonth: 0,
-            byService: {},
-            byStatus: { new: 0, contacted: 0, qualified: 0, converted: 0, closed: 0 },
-          },
-        )
-        console.log(`✅ Loaded ${data.contacts?.length || 0} contacts`)
+        const sessionData: SessionSummary[] = data.data || []
+        setSessions(sessionData)
+
+        const total = sessionData.length
+        const thisMonth = sessionData.filter(
+          (s) => new Date(s.last_activity).getMonth() === new Date().getMonth(),
+        ).length
+        const activeBookings = sessionData.filter((s) => s.in_booking_mode === 1).length
+
+        setStats({ total, thisMonth, activeBookings })
+
+        console.log(`✅ Loaded ${sessionData.length} chat sessions`)
       } else {
-        throw new Error(data.error || "Errore nel caricamento dei contatti")
+        throw new Error(data.error || "Errore nel caricamento delle sessioni")
       }
     } catch (err) {
-      console.error("❌ Error fetching contacts:", err)
-      setError(err instanceof Error ? err.message : "Errore sconosciuto")
+      console.error("❌ Error fetching sessions:", err)
+      setError(err instanceof Error ? err.message : "Errore sconosciuto nel caricamento sessioni")
     } finally {
       setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchMessages()
   }, [])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "new":
-        return "bg-blue-500"
-      case "contacted":
-        return "bg-yellow-500"
-      case "qualified":
-        return "bg-green-500"
-      case "converted":
-        return "bg-purple-500"
-      case "closed":
-        return "bg-gray-500"
-      default:
-        return "bg-blue-500"
-    }
+  useEffect(() => {
+    fetchSessions()
+  }, [fetchSessions])
+
+  const handleSelectSession = (session: SessionSummary) => {
+    setSelectedSession(session)
+    fetchSessionDetails(session.session_id)
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "new":
-        return <AlertCircle className="w-4 h-4" />
-      case "contacted":
-        return <Clock className="w-4 h-4" />
-      case "qualified":
-        return <CheckCircle className="w-4 h-4" />
-      default:
-        return <MessageSquare className="w-4 h-4" />
-    }
-  }
+  const getStatusColor = (inBookingMode: number) => (inBookingMode === 1 ? "bg-red-500" : "bg-gray-500")
+
+  const getStatusText = (inBookingMode: number) => (inBookingMode === 1 ? "In Prenotazione" : "Completata")
 
   const formatDate = (dateString: string) => {
     try {
@@ -148,7 +143,7 @@ export default function AdminMessagesPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-          <span className="ml-2 text-lg">Caricamento messaggi...</span>
+          <span className="ml-2 text-lg">Caricamento sessioni chat...</span>
         </div>
       </div>
     )
@@ -164,7 +159,7 @@ export default function AdminMessagesPage() {
               <span className="font-semibold">Errore nel caricamento</span>
             </div>
             <p className="text-red-700 mb-4">{error}</p>
-            <Button onClick={fetchMessages} variant="outline" className="border-red-300 bg-transparent">
+            <Button onClick={fetchSessions} variant="outline" className="border-red-300 bg-transparent">
               <RefreshCw className="w-4 h-4 mr-2" />
               Riprova
             </Button>
@@ -180,28 +175,25 @@ export default function AdminMessagesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            {language === "it" ? "Messaggi" : "Messages"} ({stats.total})
+            {language === "it" ? "Sessioni Chat" : "Chat Sessions"} ({stats.total})
           </h1>
           <p className="text-muted-foreground">
-            {language === "it"
-              ? `${stats.thisMonth} nuovi messaggi questo mese`
-              : `${stats.thisMonth} new messages this month`}
+            {language === "it" ? `${stats.thisMonth} sessioni questo mese` : `${stats.thisMonth} sessions this month`}
           </p>
         </div>
-        <Button onClick={fetchMessages} variant="outline">
+        <Button onClick={fetchSessions} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" />
           {language === "it" ? "Aggiorna" : "Refresh"}
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Totali</p>
+                <p className="text-sm text-muted-foreground">Sessioni Totali</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
             </div>
@@ -210,10 +202,10 @@ export default function AdminMessagesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-500" />
+              <Zap className="w-5 h-5 text-red-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Nuovi</p>
-                <p className="text-2xl font-bold">{stats.byStatus.new || 0}</p>
+                <p className="text-sm text-muted-foreground">In Booking Mode</p>
+                <p className="text-2xl font-bold">{stats.activeBookings}</p>
               </div>
             </div>
           </CardContent>
@@ -223,77 +215,66 @@ export default function AdminMessagesPage() {
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Questo Mese</p>
+                <p className="text-sm text-muted-foreground">Attività (Mese)</p>
                 <p className="text-2xl font-bold">{stats.thisMonth}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-purple-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Servizi Richiesti</p>
-                <p className="text-2xl font-bold">{Object.keys(stats.byService).length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Messages List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Messages List */}
+        {/* Sessions List */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5" />
-              Lista Messaggi
+              <MessageSquare className="w-5 h-5" />
+              Lista Sessioni Recenti
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[600px]">
               <div className="space-y-4">
-                {contacts.length === 0 ? (
+                {sessions.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Nessun messaggio trovato</p>
-                    <Button onClick={fetchMessages} className="mt-4 bg-transparent" variant="outline">
+                    <p>Nessuna sessione trovata</p>
+                    <Button onClick={fetchSessions} className="mt-4 bg-transparent" variant="outline">
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Ricarica Messaggi
+                      Ricarica Sessioni
                     </Button>
                   </div>
                 ) : (
-                  contacts.map((contact) => (
+                  sessions.map((session) => (
                     <Card
-                      key={contact.id}
+                      key={session.session_id}
                       className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedContact?.id === contact.id ? "ring-2 ring-primary" : ""
+                        selectedSession?.session_id === session.session_id ? "ring-2 ring-primary" : ""
                       }`}
-                      onClick={() => setSelectedContact(contact)}
+                      onClick={() => handleSelectSession(session)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-semibold">{contact.name}</span>
-                            <Badge variant="outline" className={`${getStatusColor(contact.status)} text-white`}>
-                              {contact.status}
+                            <span className="font-semibold">ID Sessione: {session.session_id.substring(8, 16)}...</span>
+                            <Badge
+                              variant="outline"
+                              className={`${getStatusColor(session.in_booking_mode)} text-white`}
+                            >
+                              {getStatusText(session.in_booking_mode)}
                             </Badge>
                           </div>
-                          <span className="text-xs text-muted-foreground">{formatDate(contact.createdAt)}</span>
+                          <span className="text-xs text-muted-foreground">{formatDate(session.last_activity)}</span>
                         </div>
                         <div className="space-y-1 text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <Mail className="w-3 h-3" />
-                            <span>{contact.email}</span>
+                            <Clock className="w-3 h-3" />
+                            <span>Messaggi totali: {session.message_count}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>Servizio: {contact.service}</span>
-                          </div>
-                          <p className="text-foreground line-clamp-2 mt-2">{contact.message}</p>
+                          <p className="text-foreground line-clamp-2 mt-2 font-medium">
+                            Ultimo messaggio: {session.last_user_message || "(Nessun messaggio utente)"}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -304,88 +285,72 @@ export default function AdminMessagesPage() {
           </CardContent>
         </Card>
 
-        {/* Message Details */}
+        {/* Conversation Details */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5" />
-              Dettagli Messaggio
+              Conversazione Dettagliata
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedContact ? (
+            {selectedSession ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-semibold text-lg">{selectedContact.name}</span>
-                  <Badge variant="outline" className={`${getStatusColor(selectedContact.status)} text-white`}>
-                    {getStatusIcon(selectedContact.status)}
-                    {selectedContact.status}
+                  <span className="font-semibold text-lg">
+                    ID Sessione: {selectedSession.session_id.substring(8, 16)}...
+                  </span>
+                  <Badge variant="outline" className={`${getStatusColor(selectedSession.in_booking_mode)} text-white`}>
+                    {getStatusText(selectedSession.in_booking_mode)}
                   </Badge>
                 </div>
 
                 <Separator />
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Email:</span>
-                    <span>{selectedContact.email}</span>
+                {loadingDetails ? (
+                  <div className="flex items-center justify-center h-[500px]">
+                    <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                    <span className="ml-2">Caricamento conversazione...</span>
                   </div>
-
-                  {selectedContact.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Telefono:</span>
-                      <span>{selectedContact.phone}</span>
+                ) : (
+                  <ScrollArea className="h-[500px] p-2 pr-4">
+                    <div className="space-y-4">
+                      {sessionMessages.map((msg) => (
+                        <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[80%] p-3 rounded-lg shadow-md ${
+                              msg.sender === "user"
+                                ? "bg-primary text-primary-foreground rounded-br-none"
+                                : "bg-muted text-foreground rounded-tl-none"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              {msg.sender === "user" ? (
+                                <User className="w-3 h-3 mr-1" />
+                              ) : (
+                                <Bot className="w-3 h-3 mr-1" />
+                              )}
+                              <span className="font-semibold">{msg.sender === "user" ? "Utente" : "PraxisBot"}</span>
+                              <span className="text-xs ml-2 opacity-70">
+                                {new Date(msg.created_at).toLocaleTimeString("it-IT", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-
-                  {selectedContact.company && (
-                    <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Azienda:</span>
-                      <span>{selectedContact.company}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Servizio:</span>
-                    <Badge variant="secondary">{selectedContact.service}</Badge>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Data:</span>
-                    <span>{formatDate(selectedContact.createdAt)}</span>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-semibold mb-2">Messaggio:</h4>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm whitespace-pre-wrap">{selectedContact.message}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button size="sm" variant="outline">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Rispondi
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Chiama
-                  </Button>
-                </div>
+                  </ScrollArea>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Seleziona un messaggio per vedere i dettagli</p>
+                <p>Seleziona una sessione per vedere la cronologia completa</p>
               </div>
             )}
           </CardContent>
