@@ -1,5 +1,7 @@
 // lib/zoho-service.ts
 
+import { ZohoTokenManager } from "./zoho-token-manager"
+
 interface BookingData {
   service: string
   date: string
@@ -16,8 +18,7 @@ const ZOHO_BOOKINGS_BASE_URL = "https://www.zohoapis.eu/bookings/v1/json"
 const ZOHO_CRM_BASE_URL = "https://www.zohoapis.eu/crm/v6"
 
 export class ZohoService {
-  private accessToken: string | null = null
-  private tokenExpiryTime = 0
+  private tokenManager = new ZohoTokenManager()
 
   private getZohoServiceId(serviceName: string): string {
     // Usa la ZOHO_LIST_KEY come ID predefinito del servizio
@@ -30,29 +31,7 @@ export class ZohoService {
 
   // 1. Gestione Access Token (Refresh Token)
   private async getAccessToken(): Promise<string> {
-    const now = Date.now()
-    if (this.accessToken && this.tokenExpiryTime > now) {
-      return this.accessToken
-    }
-
-    try {
-      const response = await fetch(
-        `${ZOHO_AUTH_URL}?refresh_token=${process.env.ZOHO_REFRESH_TOKEN}&client_id=${process.env.ZOHO_CLIENT_ID}&client_secret=${process.env.ZOHO_CLIENT_SECRET}&grant_type=refresh_token`,
-        { method: "POST" },
-      )
-
-      if (!response.ok) {
-        throw new Error(`Failed to refresh Zoho token: ${response.status}`)
-      }
-
-      const data = await response.json()
-      this.accessToken = data.access_token
-      this.tokenExpiryTime = now + data.expires_in * 1000 - 5 * 60 * 1000
-      return this.accessToken
-    } catch (error) {
-      console.error("❌ ERRORE CRITICO: Impossibile ottenere il token Zoho.", error)
-      throw new Error("ZOHO_AUTH_FAILED")
-    }
+    return await this.tokenManager.getValidAccessToken()
   }
 
   // 2. Richiesta disponibilità (Zoho Bookings)
