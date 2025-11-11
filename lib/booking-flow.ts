@@ -131,16 +131,7 @@ export class BookingFlow {
     try {
       const allSlots = this.getTimeSlots()
 
-      console.log("[v0] Tentativo di recupero disponibilità da Zoho...")
-      const zohoSlots = await zohoService.getAvailableSlots(date, serviceName)
-
-      if (zohoSlots.length > 0) {
-        console.log("[v0] Disponibilità recuperata da Zoho:", zohoSlots)
-        return zohoSlots
-      }
-
-      // Fallback: usa il database locale se Zoho non risponde
-      console.log("[v0] Zoho non ha restituito slot, fallback su database locale")
+      // Use database to check occupied slots
       const occupiedSlots = await sql`
         SELECT DISTINCT time 
         FROM appointments 
