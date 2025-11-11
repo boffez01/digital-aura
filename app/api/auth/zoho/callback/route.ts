@@ -1,73 +1,134 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
-
-// Zoho OAuth endpoints per il dominio europeo
-const ZOHO_TOKEN_URL = "https://accounts.zoho.eu/oauth/v2/token"
-
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const code = searchParams.get("code")
-  const error = searchParams.get("error")
-
-  if (error) {
-    console.error("[v0] Zoho OAuth error:", error)
-    return NextResponse.redirect(new URL(`/admin?error=oauth_failed&details=${error}`, request.url))
-  }
-
-  if (!code) {
-    return NextResponse.redirect(new URL("/admin?error=missing_code", request.url))
-  }
-
+export async function GET(request: Request) {
   try {
-    const tokenResponse = await fetch(ZOHO_TOKEN_URL, {
+    const { searchParams } = new URL(request.url)
+    const code = searchParams.get("code")
+    const error = searchParams.get("error")
+
+    if (error) {
+      console.error("[v0] OAuth error:", error)
+      return NextResponse.json({ error: "OAuth authorization failed", details: error }, { status: 400 })
+    }
+
+    if (!code) {
+      return NextResponse.json({ error: "No authorization code received" }, { status: 400 })
+    }
+
+    const clientId = process.env.ZOHO_CLIENT_ID
+    const clientSecret = process.env.ZOHO_CLIENT_SECRET
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+    const databaseUrl = process.env.DATABASE_URL
+
+    if (!clientId || !clientSecret) {
+      return NextResponse.json({ error: "Zoho credentials not configured" }, { status: 500 })
+    }
+
+    if (!baseUrl) {
+      return NextResponse.json({ error: "NEXT_PUBLIC_BASE_URL not configured" }, { status: 500 })
+    }
+
+    const redirectUri = `${baseUrl}/api/auth/zoho/callback`
+
+    const tokenResponse = await fetch("https://accounts.zoho.eu/oauth/v2/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
         grant_type: "authorization_code",
-        client_id: process.env.ZOHO_CLIENT_ID!,
-        client_secret: process.env.ZOHO_CLIENT_SECRET!,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         code: code,
-        redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/zoho/callback`,
       }),
     })
 
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text()
-      console.error("[v0] Zoho token exchange failed:", errorData)
-      throw new Error("TOKEN_EXCHANGE_FAILED")
+      const errorText = await tokenResponse.text()
+      console.error("[v0] Token exchange failed:", errorText)
+      return NextResponse.json(
+        { error: "Failed to exchange code for tokens", details: errorText },
+        { status: tokenResponse.status },
+      )
     }
 
-    const tokenData = await tokenResponse.json()
+    const tokens = await tokenResponse.json()
 
-    await sql`
-      INSERT INTO zoho_tokens (
-        access_token, 
-        refresh_token, 
-        expires_at, 
-        created_at
-      ) VALUES (
-        ${tokenData.access_token},
-        ${tokenData.refresh_token},
-        NOW() + INTERVAL '${tokenData.expires_in} seconds',
-        NOW()
-      )
-      ON CONFLICT (id) 
-      DO UPDATE SET
-        access_token = EXCLUDED.access_token,
-        refresh_token = EXCLUDED.refresh_token,
-        expires_at = EXCLUDED.expires_at,
-        updated_at = NOW()
-    `
+    if (databaseUrl) {
+      try {
+        const sql = neon(databaseUrl)
+        const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
-    console.log("[v0] Zoho OAuth tokens saved successfully")
+        await sql`
+          INSERT INTO zoho_tokens (service, access_token, refresh_token, expires_at)
+          VALUES ('bookings', ${tokens.access_token}, ${tokens.refresh_token}, ${expiresAt.toISOString()})
+          ON CONFLICT (service) 
+          DO UPDATE SET 
+            access_token = ${tokens.access_token},
+            refresh_token = ${tokens.refresh_token},
+            expires_at = ${expiresAt.toISOString()},
+            updated_at = NOW()
+        `
 
-    return NextResponse.redirect(new URL("/admin?oauth=success", request.url))
+        console.log("[v0] Tokens saved to database successfully")
+      } catch (dbError) {
+        console.error("[v0] Failed to save tokens to database:", dbError)
+      }
+    }
+
+    return new NextResponse(
+      `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Authorization Successful</title>
+            <style>
+              body {
+                font-family: system-ui, -apple-system, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              }
+              .container {
+                background: white;
+                padding: 3rem;
+                border-radius: 1rem;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 500px;
+              }
+              h1 { color: #667eea; margin-bottom: 1rem; }
+              p { color: #666; line-height: 1.6; }
+              .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="success-icon">✅</div>
+              <h1>Authorization Successful!</h1>
+              <p>Your Zoho Bookings integration has been configured successfully.</p>
+              <p>You can now close this window and return to your application.</p>
+            </div>
+          </body>
+        </html>
+      `,
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html",
+        },
+      },
+    )
   } catch (error) {
-    console.error("[v0] Zoho OAuth callback error:", error)
-    return NextResponse.redirect(new URL("/admin?error=oauth_callback_failed", request.url))
+    console.error("[v0] Error in Zoho callback route:", error)
+    return NextResponse.json(
+      { error: "Failed to process OAuth callback", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    )
   }
 }
