@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
-export async function GET(request: Request) {
+export const dynamic = "force-dynamic"
+export const runtime = "edge"
+
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const searchParams = request.nextUrl.searchParams
     const code = searchParams.get("code")
     const error = searchParams.get("error")
 
