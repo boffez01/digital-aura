@@ -21,8 +21,17 @@ export class ZohoService {
   private tokenManager = new ZohoTokenManager()
 
   private getZohoServiceId(serviceName: string): string {
-    // Usa la ZOHO_LIST_KEY come ID predefinito del servizio
-    return process.env.ZOHO_LIST_KEY || ""
+    // Map service names to actual Zoho Bookings Service IDs
+    // These IDs need to be retrieved from Zoho Bookings dashboard
+    const serviceMap: Record<string, string> = {
+      "AI Automation": process.env.ZOHO_SERVICE_ID_AI_AUTOMATION || "",
+      "Intelligent Chatbots": process.env.ZOHO_SERVICE_ID_CHATBOTS || "",
+      "Web Development": process.env.ZOHO_SERVICE_ID_WEB || "",
+      "AI Marketing": process.env.ZOHO_SERVICE_ID_MARKETING || "",
+    }
+
+    // Fallback to a default service ID if not mapped
+    return serviceMap[serviceName] || process.env.ZOHO_DEFAULT_SERVICE_ID || ""
   }
 
   private getZohoOrgId(): string {

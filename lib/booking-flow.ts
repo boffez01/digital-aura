@@ -285,7 +285,7 @@ Write your preferred date:
 
 📝 **Examples:**
 - **3/10** (October 3rd)
-- **20/12** (December 20th)
+- **20 December**
 - **December 25**
 - **01/15/2025**
 
@@ -350,7 +350,6 @@ We work only **Mon-Fri**. Choose a working day.`
           }
         }
 
-        // DOPO (CORRETTO):
         const year = parsedDate.getFullYear()
         const month = String(parsedDate.getMonth() + 1).padStart(2, "0")
         const day = String(parsedDate.getDate()).padStart(2, "0")
@@ -364,6 +363,12 @@ We work only **Mon-Fri**. Choose a working day.`
         bookingData.date = formattedDate
 
         console.log(`✅ Saving date to database: ${formattedDate}`)
+
+        await sql`
+          UPDATE chat_sessions 
+          SET flow_step = 'time_selection', booking_data = ${JSON.stringify(bookingData)}
+          WHERE session_id = ${sessionId}
+        `
 
         const availableSlots = await this.getAvailableSlots(formattedDate, bookingData.service!)
 
