@@ -1,9 +1,25 @@
 // in lib/support-flow.ts
 
 // Support Flow with Intelligent Escalation
-// Version 244 - Automatic escalation after 3 attempts
+// Version 245 - Using Gemini 2.5 Flash Lite
 
 import { SessionManager } from "./session-manager"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+
+let genAI: GoogleGenerativeAI | null = null
+let model: any = null
+
+try {
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+    console.log("✅ Gemini 2.5 Flash Lite initialized in support flow")
+  } else {
+    console.warn("⚠️ GOOGLE_GENERATIVE_AI_API_KEY not found in support flow")
+  }
+} catch (error) {
+  console.error("❌ Failed to initialize Gemini AI in support flow:", error)
+}
 
 export interface SupportResponse {
   message: string
@@ -19,32 +35,37 @@ export class SupportFlow {
     this.sessionManager = SessionManager.getInstance()
   }
 
-  async handleSupportRequest(sessionId: string, message: string, language = "it"): Promise<SupportResponse> {
+  async handleSupportRequest(sessionId: string, message: string, language: "it" | "en"): Promise<SupportResponse> {
     try {
-      console.log(`🔧 Processing support request: ${sessionId}`)
+      console.log(`[v0] 🔧 Processing support request: ${sessionId}, language param: ${language}`)
 
-      // Get current session
       const session = await this.sessionManager.getSession(sessionId)
       if (!session) {
         throw new Error("Session not found")
       }
 
-      // Activate support mode if not already active
+      const sessionLanguage = (session as any).language
+      const finalLanguage = language || sessionLanguage || "en"
+
+      console.log(
+        `[v0] 🌐 Language resolution - param: ${language}, session: ${sessionLanguage}, final: ${finalLanguage}`,
+      )
+
       if (!session.support_mode) {
         await this.sessionManager.activateSupportMode(sessionId)
       }
 
-      // Increment attempt count
       const attemptCount = await this.sessionManager.incrementAttemptCount(sessionId)
 
-      console.log(`📊 Support attempt #${attemptCount} for session ${sessionId}`)
+      console.log(`[v0] 📊 Support attempt #${attemptCount} for session ${sessionId}`)
 
-      // Provide support response with booking option always available
-      const supportMessage = this.getSupportMessage(message, attemptCount, language)
+      const aiResponse = await this.generateAISupportResponse(message, attemptCount, finalLanguage, session)
+
+      console.log(`[v0] 🤖 Gemini AI generated support response in ${finalLanguage}`)
 
       return {
-        message: supportMessage,
-        needsEscalation: false,
+        message: aiResponse,
+        needsEscalation: attemptCount >= 5, // Suggest escalation after 5 attempts
         escalated: false,
         attemptCount,
       }
@@ -57,7 +78,7 @@ export class SupportFlow {
       }
 
       return {
-        message: errorMessages[language as keyof typeof errorMessages] || errorMessages.it,
+        message: errorMessages[language] || errorMessages.en,
         needsEscalation: false,
         escalated: false,
         attemptCount: 0,
@@ -65,8 +86,101 @@ export class SupportFlow {
     }
   }
 
-  private getSupportMessage(message: string, attemptCount: number, language: string): string {
+  private async generateAISupportResponse(
+    message: string,
+    attemptCount: number,
+    language: "it" | "en",
+    session: any,
+  ): Promise<string> {
+    const bookingFooter = {
+      it: '\n\n💡 **Vuoi supporto immediato?** Prenota una consulenza supporto con il nostro team. Scrivi **"prenota supporto"** per iniziare la prenotazione.',
+      en: '\n\n💡 **Want immediate support?** Book a support consultation with our team. Write **"book support"** to start booking.',
+    }
+
+    const systemPrompts = {
+      it: `Sei un assistente di supporto tecnico esperto per Praxis Futura, un'agenzia di AI automation, chatbot intelligenti, sviluppo web e AI marketing.
+
+**IL TUO RUOLO:**
+- Analizza il problema tecnico dell'utente
+- Fornisci soluzioni pratiche e specifiche
+- Fai domande di chiarimento se necessario
+- Sii empatico e professionale
+- Usa emoji appropriati 🔧 🚀 ✅
+
+**CONTESTO:**
+- Tentativo supporto #${attemptCount}
+- Servizi: AI Automation, Intelligent Chatbots, Web Development, AI Marketing
+- Lingua: Italiano
+
+**ISTRUZIONI:**
+1. Analizza attentamente il problema descritto
+2. Fornisci soluzioni step-by-step
+3. Chiedi dettagli specifici se necessario
+4. Suggerisci test diagnostici
+5. Sii conciso ma completo (max 300 parole)
+
+Rispondi SEMPRE in italiano, anche se l'utente scrive in inglese.
+
+**PROBLEMA UTENTE:**
+${message}
+
+**LA TUA RISPOSTA SUPPORTO:**`,
+
+      en: `You are an expert technical support assistant for Praxis Futura, an AI automation, intelligent chatbots, web development and AI marketing agency.
+
+**YOUR ROLE:**
+- Analyze the user's technical problem
+- Provide practical and specific solutions
+- Ask clarifying questions if needed
+- Be empathetic and professional
+- Use appropriate emojis 🔧 🚀 ✅
+
+**CONTEXT:**
+- Support attempt #${attemptCount}
+- Services: AI Automation, Intelligent Chatbots, Web Development, AI Marketing
+- Language: English
+
+**INSTRUCTIONS:**
+1. Carefully analyze the described problem
+2. Provide step-by-step solutions
+3. Ask for specific details if necessary
+4. Suggest diagnostic tests
+5. Be concise but complete (max 300 words)
+
+Always respond in English, even if the user writes in another language.
+
+**USER PROBLEM:**
+${message}
+
+**YOUR SUPPORT RESPONSE:**`,
+    }
+
+    if (model) {
+      try {
+        console.log(`[v0] 🤖 Calling Gemini 2.5 Flash Lite for support in ${language}`)
+
+        const result = await model.generateContent(systemPrompts[language])
+        const response = await result.response
+        const text = response.text()
+
+        console.log(`[v0] ✅ Gemini AI response generated successfully`)
+
+        return text + bookingFooter[language]
+      } catch (error) {
+        console.error("❌ Error generating AI response:", error)
+        // Fallback to template if AI fails
+        return this.getSupportMessage(message, attemptCount, language)
+      }
+    } else {
+      console.warn("⚠️ Gemini model not available, using template fallback")
+      return this.getSupportMessage(message, attemptCount, language)
+    }
+  }
+
+  private getSupportMessage(message: string, attemptCount: number, language: "it" | "en"): string {
     const lowerMessage = typeof message === "string" ? message.toLowerCase() : ""
+
+    console.log(`[v0] 📝 Generating support message in language: ${language}`)
 
     // Detect problem type
     let problemType = "general"
@@ -83,11 +197,11 @@ export class SupportFlow {
     }
 
     const bookingOptionFooter = {
-      it: '\n\n💡 **Vuoi supporto immediato?**\nPrenota una consulenza supporto con il nostro team. Scrivi "prenota supporto" per vedere gli orari disponibili.',
-      en: '\n\n💡 **Want immediate support?**\nBook a support consultation with our team. Write "book support" to see available times.',
+      it: '\n\n💡 **Vuoi supporto immediato?** Prenota una consulenza supporto con il nostro team. Scrivi **"prenota supporto"** per iniziare la prenotazione.',
+      en: '\n\n💡 **Want immediate support?** Book a support consultation with our team. Write **"book support"** to start booking.',
     }
 
-    const footer = bookingOptionFooter[language as keyof typeof bookingOptionFooter] || bookingOptionFooter.en
+    const footer = bookingOptionFooter[language]
 
     const responses = {
       it: {
@@ -230,17 +344,19 @@ Tell me more about the problem!${footer}`,
       },
     }
 
-    const langResponses = responses[language as keyof typeof responses] || responses.en
+    const langResponses = responses[language]
     const response = langResponses[problemType as keyof typeof langResponses] || langResponses.general
+
+    console.log(`[v0] ✅ Returning ${language} support message for ${problemType} problem`)
 
     return response
   }
 
-  async manualEscalation(sessionId: string, language: string): Promise<SupportResponse> {
+  async manualEscalation(sessionId: string, language: "it" | "en"): Promise<SupportResponse> {
     return await this.escalateToBooking(sessionId, language)
   }
 
-  private async escalateToBooking(sessionId: string, language: string): Promise<SupportResponse> {
+  private async escalateToBooking(sessionId: string, language: "it" | "en"): Promise<SupportResponse> {
     try {
       // Increment escalation count
       const escalationCount = await this.sessionManager.incrementEscalationCount(sessionId)
@@ -295,7 +411,7 @@ Reply "yes" to see available times.`,
       }
 
       return {
-        message: escalationMessages[language as keyof typeof escalationMessages] || escalationMessages.en,
+        message: escalationMessages[language] || escalationMessages.en,
         needsEscalation: true,
         escalated: true,
         attemptCount: escalationCount,
@@ -309,7 +425,7 @@ Reply "yes" to see available times.`,
       }
 
       return {
-        message: errorMessages[language as keyof typeof errorMessages] || errorMessages.en,
+        message: errorMessages[language] || errorMessages.en,
         needsEscalation: false,
         escalated: false,
         attemptCount: 0,
@@ -318,8 +434,11 @@ Reply "yes" to see available times.`,
   }
 }
 
-// Export functions for compatibility
-export async function handleSupportFlow(sessionId: string, message: string, language = "it"): Promise<SupportResponse> {
+export async function handleSupportFlow(
+  sessionId: string,
+  message: string,
+  language: "it" | "en",
+): Promise<SupportResponse> {
   const supportFlow = new SupportFlow()
   return supportFlow.handleSupportRequest(sessionId, message, language)
 }

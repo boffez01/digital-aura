@@ -218,6 +218,57 @@ Write the number (1, 2, 3, 4) or service name.`
       }
 
       case "service_selection": {
+        if (bookingData.service === "Priority Support") {
+          console.log("[v0] Priority Support already set, skipping service selection")
+
+          // Skip to date selection
+          await sql`
+            UPDATE chat_sessions 
+            SET flow_step = 'date_selection', booking_data = ${JSON.stringify(bookingData)}
+            WHERE session_id = ${sessionId}
+          `
+
+          const dateMessage =
+            language === "it"
+              ? `✅ **Servizio: Consulenza Supporto Tecnico**
+
+📅 **QUANDO VUOI PRENOTARE?**
+
+Scrivi la data che preferisci:
+
+📝 **Esempi:**
+- **3/10** (3 ottobre)
+- **20/12** (20 dicembre)  
+- **25 dicembre**
+- **15/01/2025**
+
+⚠️ **Nota:** Lavoriamo solo **Lun-Ven** (no weekend)
+
+**Quando vuoi prenotare?**`
+              : `✅ **Service: Technical Support Consultation**
+
+📅 **WHEN DO YOU WANT TO BOOK?**
+
+Write your preferred date:
+
+📝 **Examples:**
+- **3/10** (October 3rd)
+- **20 December**
+- **December 25**
+- **01/15/2025**
+
+⚠️ **Note:** We work only **Mon-Fri** (no weekends)
+
+**When do you want to book?**`
+
+          return {
+            message: dateMessage,
+            nextStep: "date_selection",
+            completed: false,
+            bookingData,
+          }
+        }
+
         let selectedService = ""
 
         if (lowerMessage.includes("1") || lowerMessage.includes("automation") || lowerMessage.includes("automazione")) {

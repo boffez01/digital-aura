@@ -77,7 +77,7 @@ const faqDatabase = {
 
     // Default responses
     default:
-      "🤖 Ciao! Sono qui per aiutarti con:\n\n✨ **Servizi AI** - Chatbot e automazione\n🌐 **Sviluppo Web** - Siti moderni\n📈 **Marketing AI** - Campagne intelligenti\n📅 **Consulenze** - Prenota qui!\n\nCosa ti interessa sapere? 💡",
+      "🤖 Ciao! Sono qui per aiutarti con:\n\n✨ **Servizi AI** - Chatbot e automazione\n🌐 **Sviluppo Web** - Siti moderni\n📈 **Marketing AI** - Campagne intelligenti\n📅 **Prenotazioni** - Prenota qui!\n\nCosa ti interessa? 💡",
   },
   en: {
     services:
@@ -150,6 +150,9 @@ function detectLanguage(message: string): "it" | "en" {
     "secondo",
     "terzo",
     "quarto",
+    "supporto",
+    "tecnico",
+    "problema",
   ]
 
   const englishKeywords = [
@@ -188,6 +191,11 @@ function detectLanguage(message: string): "it" | "en" {
     "second",
     "third",
     "fourth",
+    "need",
+    "technical",
+    "support",
+    "problem",
+    "issue",
   ]
 
   const lowerMessage = message.toLowerCase()
@@ -195,7 +203,7 @@ function detectLanguage(message: string): "it" | "en" {
   const italianMatches = italianKeywords.filter((keyword) => lowerMessage.includes(keyword)).length
   const englishMatches = englishKeywords.filter((keyword) => lowerMessage.includes(keyword)).length
 
-  return italianMatches >= englishMatches ? "it" : "en"
+  return italianMatches > englishMatches ? "it" : "en"
 }
 
 // Find best FAQ match
@@ -293,37 +301,90 @@ export async function POST(request: NextRequest) {
 
     let language: "it" | "en" = "it"
 
-    if (sessionData.length > 0 && sessionData[0].language) {
+    if (sessionData.length === 0) {
+      language = detectLanguage(message)
+      console.log(`[v0] 🆕 NEW session - Detected language from message: ${language}`)
+    } else if (sessionData[0].language) {
       language = sessionData[0].language as "it" | "en"
-      console.log(`🔄 Using stored language from session: ${language}`)
+      console.log(`[v0] 🔄 EXISTING session - Using stored language: ${language}`)
     } else {
       language = detectLanguage(message)
-      console.log(`🆕 Detected new language: ${language}`)
+      console.log(`[v0] 🔍 Session exists but no language stored - Detected: ${language}`)
     }
 
-    console.log(`📨 Message: "${message}", Language: ${language}, Session: ${currentSessionId}`)
+    console.log(`[v0] 📨 Message: "${message}", Language: ${language}, Session: ${currentSessionId}`)
 
     const isBookingMode = sessionData.length > 0 && sessionData[0].booking_mode === true
     const isSupportMode = sessionData.length > 0 && sessionData[0].support_mode === true
     const currentStep = sessionData.length > 0 ? sessionData[0].flow_step : null
 
-    console.log(`🔍 Booking mode: ${isBookingMode}, Support mode: ${isSupportMode}, Step: ${currentStep}`)
+    console.log(`[v0] 🔍 Booking mode: ${isBookingMode}, Support mode: ${isSupportMode}, Step: ${currentStep}`)
 
-    if (isSupportMode) {
-      console.log("🛠️ Processing support request...")
-      const supportFlow = new SupportFlow()
-      const supportResponse = await supportFlow.handleSupportRequest(currentSessionId, message, language)
+    const supportTriggers = [
+      "supporto tecnico",
+      "technical support",
+      "need help",
+      "problema tecnico",
+      "technical problem",
+      "technical issue",
+      "aiuto tecnico",
+      "help me",
+      "aiutami",
+    ]
+
+    const bookSupportTriggers = [
+      "prenota supporto",
+      "book support",
+      "book a support",
+      "book support consultation",
+      "prenota consulenza supporto",
+      "voglio prenotare supporto",
+    ]
+
+    const lowerMessage = message.toLowerCase()
+    const isSupportRequest = supportTriggers.some((trigger) => lowerMessage.includes(trigger))
+    const isBookSupportRequest = bookSupportTriggers.some((trigger) => lowerMessage.includes(trigger))
+
+    if (isBookSupportRequest) {
+      console.log(`[v0] 📞 User wants to book support consultation - Starting booking with Priority Support`)
+
+      // Create session if doesn't exist
+      if (sessionData.length === 0) {
+        console.log(`[v0] 📝 Creating new session for support booking with language: ${language}`)
+        await sql`
+          INSERT INTO chat_sessions (session_id, language, support_mode, created_at)
+          VALUES (${currentSessionId}, ${language}, false, NOW())
+        `
+      }
+
+      // Set booking data to Priority Support service
+      await sql`
+        UPDATE chat_sessions 
+        SET booking_data = ${JSON.stringify({ service: "Priority Support" })},
+            booking_mode = true,
+            flow_step = 'service_selection'
+        WHERE session_id = ${currentSessionId}
+      `
+
+      const bookingFlow = new BookingFlow()
+      const bookingResponse = await bookingFlow.handleBookingStep(
+        currentSessionId,
+        message,
+        "service_selection",
+        language,
+      )
 
       return NextResponse.json({
-        response: supportResponse.message,
-        type: "support",
+        response: bookingResponse.message,
+        type: "booking",
         language,
         sessionId: currentSessionId,
-        supportMode: !supportResponse.completed,
+        bookingMode: true,
+        nextStep: bookingResponse.nextStep,
       })
     }
 
-    // Handle booking flow
+    // Handle booking flow - THIS MUST BE CHECKED FIRST
     if (isBookingMode && currentStep) {
       console.log("📅 Processing booking step...")
       const bookingFlow = new BookingFlow()
@@ -339,26 +400,26 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const supportTriggers = [
-      "supporto tecnico",
-      "technical support",
-      "need help",
-      "problema tecnico",
-      "technical problem",
-      "technical issue",
-      "aiuto tecnico",
-      "support",
-      "help me",
-      "aiutami",
-    ]
-    const lowerMessage = message.toLowerCase()
-    const isSupportRequest = supportTriggers.some((trigger) => lowerMessage.includes(trigger))
+    // Handle support flow - THIS IS CHECKED AFTER BOOKING
+    if (isSupportMode) {
+      console.log(`[v0] 🛠️ Processing EXISTING support session with language: ${language}`)
+      const supportFlow = new SupportFlow()
+      const supportResponse = await supportFlow.handleSupportRequest(currentSessionId, message, language)
+
+      return NextResponse.json({
+        response: supportResponse.message,
+        type: "support",
+        language,
+        sessionId: currentSessionId,
+        supportMode: !supportResponse.completed,
+      })
+    }
 
     if (isSupportRequest) {
-      console.log("🛠️ Starting support flow...")
+      console.log(`[v0] 🛠️ Starting NEW support flow with language: ${language}`)
 
       if (sessionData.length === 0) {
-        console.log("📝 Creating new session for support request...")
+        console.log(`[v0] 📝 Creating new session for support request with language: ${language}`)
         await sql`
           INSERT INTO chat_sessions (session_id, language, support_mode, created_at)
           VALUES (${currentSessionId}, ${language}, false, NOW())
@@ -377,7 +438,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Check for booking trigger
     const faqResponse = findBestFAQMatch(message, language)
 
     if (faqResponse === "BOOKING_START") {
@@ -458,7 +518,7 @@ export async function POST(request: NextRequest) {
     // Fallback response
     const fallbackResponse =
       language === "it"
-        ? "🤖 Sono qui per aiutarti! Posso risponderti su:\n\n✨ **Servizi AI**\n🌐 **Web Development**\n📈 **Marketing AI**\n📅 **Prenotazioni**\n\nCosa ti interessa? 💡"
+        ? "🤖 Sono qui per aiutarti! Posso risponderti su:\n\n✨ **Servizi AI**\n🌐 **Web Development**\n📈 **Marketing AI**\n💰 **Costi e Tempistiche**\n📅 **Prenotazioni Consulenze**\n\nCosa ti interessa? 💡"
         : "🤖 I'm here to help! I can answer about:\n\n✨ **AI Services**\n🌐 **Web Development**\n📈 **AI Marketing**\n📅 **Bookings**\n\nWhat interests you? 💡"
 
     return NextResponse.json({
