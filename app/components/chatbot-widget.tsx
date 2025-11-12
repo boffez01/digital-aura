@@ -40,6 +40,7 @@ interface ChatResponse {
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -317,15 +318,15 @@ export default function ChatbotWidget() {
       {/* Widget chat */}
       {isOpen && (
         <Card
-          className={`w-96 bg-slate-800 shadow-2xl border-slate-700 rounded-2xl overflow-hidden transition-all duration-300 ${
-            isMinimized ? "h-16" : "h-[600px]"
-          }`}
+          className={`${isExpanded ? "w-[50vw] h-[calc(100vh-3rem)]" : "w-96 h-[600px]"} ${
+            isMinimized ? "!h-16" : ""
+          } bg-slate-800 shadow-2xl border-0 rounded-2xl overflow-hidden transition-all duration-300`}
         >
           {/* Header */}
-          <div className={`p-4 rounded-t-2xl ${getHeaderColor()} text-white`}>
+          <div className={`sticky top-0 z-10 p-4 rounded-tl-2xl rounded-tr-2xl ${getHeaderColor()} text-white`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-1 bg-white/20 rounded-full">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="p-1 bg-white/20 rounded-full flex-shrink-0">
                   {bookingMode ? (
                     <Calendar className="w-4 h-4" />
                   ) : supportMode.active ? (
@@ -334,33 +335,80 @@ export default function ChatbotWidget() {
                     <Bot className="w-4 h-4" />
                   )}
                 </div>
-                <div className="text-lg font-bold">{getTitle()}</div>
+                <div className="text-lg font-bold truncate">{getTitle()}</div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+                {!isMinimized && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-white hover:bg-white/40 active:bg-white/50 w-9 h-9 transition-all duration-200 backdrop-blur-sm"
+                    title={isExpanded ? "Riduci" : "Espandi"}
+                  >
+                    {isExpanded ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="4 14 10 14 10 20"></polyline>
+                        <polyline points="20 10 14 10 14 4"></polyline>
+                        <line x1="14" y1="10" x2="21" y2="3"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                      </svg>
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="text-white hover:bg-white/20 w-8 h-8"
+                  className="text-white hover:bg-white/40 active:bg-white/50 w-9 h-9 transition-all duration-200 backdrop-blur-sm"
+                  title="Minimizza"
                 >
-                  <Minimize2 className="w-4 h-4" />
+                  <Minimize2 className="w-5 h-5 stroke-[2.5]" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="text-white hover:bg-white/20 w-8 h-8 flex-shrink-0"
+                  className="text-white hover:bg-white/40 active:bg-white/50 w-9 h-9 flex-shrink-0 transition-all duration-200 backdrop-blur-sm"
+                  title="Chiudi"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5 stroke-[2.5]" />
                 </Button>
               </div>
             </div>
           </div>
 
           {!isMinimized && (
-            <div className="p-0 flex flex-col h-[536px] bg-slate-800">
-              {/* Azioni rapide */}
-              <div className="p-4 bg-slate-800 border-b border-slate-700">
+            <div className="flex flex-col h-[calc(100%-4rem)]">
+              {/* Quick actions - appears AFTER header */}
+              <div className="flex-shrink-0 p-4 bg-slate-800 border-b border-slate-700">
                 <div className="flex items-center mb-3">
                   <span className="text-sm font-semibold text-slate-300">🚀 {t.quickActions}</span>
                 </div>
@@ -396,8 +444,8 @@ export default function ChatbotWidget() {
                 </div>
               </div>
 
-              {/* Area messaggi */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900 scrollbar-hide">
+              {/* Messages area - scrollable */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[85%]">
@@ -427,7 +475,7 @@ export default function ChatbotWidget() {
                   </div>
                 ))}
 
-                {/* Indicatore di digitazione */}
+                {/* Loading indicator */}
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-2">
@@ -454,8 +502,8 @@ export default function ChatbotWidget() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Area input */}
-              <div className="p-4 bg-slate-800 border-t border-slate-700">
+              {/* Input area - fixed at bottom */}
+              <div className="flex-shrink-0 p-4 bg-slate-800 border-t border-slate-700">
                 <div className="flex space-x-2">
                   <Input
                     value={inputValue}

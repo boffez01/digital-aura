@@ -4,7 +4,6 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
 import CookieConsentBanner from "./components/cookie-consent-banner"
-import NewsletterPopup from "./components/newsletter-popup"
 import ChatbotWidget from "./components/chatbot-widget"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -30,7 +29,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "it_IT",
   },
-    generator: 'v0.app'
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -44,7 +43,6 @@ export default function RootLayout({
         <LanguageProvider>
           {children}
           <CookieConsentBanner />
-          <NewsletterPopup />
           <ChatbotWidget />
         </LanguageProvider>
       </body>

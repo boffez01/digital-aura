@@ -10,6 +10,7 @@ interface BookingData {
   email: string
   phone: string
   message?: string
+  language?: "it" | "en"
 }
 
 // Punti di accesso API per il dominio Europeo (zohoapis.eu)
@@ -20,9 +21,18 @@ const ZOHO_CRM_BASE_URL = "https://www.zohoapis.eu/crm/v6"
 export class ZohoService {
   private tokenManager = new ZohoTokenManager()
 
-  private getZohoServiceId(serviceName: string): string {
-    // Map service names to actual Zoho Bookings Service IDs
-    const serviceMap: Record<string, string> = {
+  private getZohoServiceId(serviceName: string, language: "it" | "en" = "en"): string {
+    // Italian Service IDs (from screenshots)
+    const italianServiceMap: Record<string, string> = {
+      "AI Automation": "251678000000045068",
+      "Intelligent Chatbots": "251678000000045096",
+      "Web Development": "251678000000045082",
+      "AI Marketing": "251678000000045110",
+      "Priority Support": "251678000000051010",
+    }
+
+    // English Service IDs (existing environment variables)
+    const englishServiceMap: Record<string, string> = {
       "AI Automation": process.env.ZOHO_SERVICE_ID_AI_AUTOMATION || "",
       "Intelligent Chatbots": process.env.ZOHO_SERVICE_ID_CHATBOTS || "",
       "Web Development": process.env.ZOHO_SERVICE_ID_WEB_DEVELOPMENT || "",
@@ -30,23 +40,37 @@ export class ZohoService {
       "Priority Support": process.env.ZOHO_SERVICE_ID_PRIORITY_SUPPORT || "",
     }
 
-    // Fallback to a default service ID if not mapped
+    // Choose the correct map based on language
+    const serviceMap = language === "it" ? italianServiceMap : englishServiceMap
+
+    // Fallback to default service ID if not mapped
     return serviceMap[serviceName] || process.env.ZOHO_DEFAULT_SERVICE_ID || ""
   }
 
-  private getZohoOrgId(): string {
+  private getZohoOrgId(language: "it" | "en" = "en"): string {
+    if (language === "it") {
+      return process.env.ZOHO_ORGANIZATION_ID_IT || process.env.ZOHO_ORGANIZATION_ID || ""
+    }
     return process.env.ZOHO_ORGANIZATION_ID || ""
   }
 
   // 1. Gestione Access Token (Refresh Token)
-  private async getAccessToken(): Promise<string> {
-    return await this.tokenManager.getValidAccessToken()
+  private async getAccessToken(language: "it" | "en" = "en"): Promise<string> {
+    return await this.tokenManager.getValidAccessToken(language)
   }
 
   // 3. Prenotazione finale (Zoho Bookings)
   public async bookAppointment(data: BookingData): Promise<string> {
-    const zohoServiceId = this.getZohoServiceId(data.service)
-    const token = await this.getAccessToken()
+    const language = data.language || "en"
+
+    console.log("[v0] 🌍 bookAppointment called with language:", language)
+    console.log("[v0] 🎯 Service name:", data.service)
+
+    const zohoServiceId = this.getZohoServiceId(data.service, language)
+    const orgId = this.getZohoOrgId(language)
+
+    console.log("[v0] 📋 Using Zoho Service ID:", zohoServiceId, "for language:", language)
+    console.log("[v0] 🏢 Using Organization ID:", orgId, "for language:", language)
 
     // URL: https://www.zohoapis.eu/bookings/v1/json/appointment (datacenter EU)
     const zohoApiUrl = `https://www.zohoapis.eu/bookings/v1/json/appointment`
@@ -71,10 +95,13 @@ export class ZohoService {
     }
 
     try {
+      const token = await this.getAccessToken(language)
+
       const response = await fetch(zohoApiUrl, {
         method: "POST",
         headers: {
           Authorization: `Zoho-oauthtoken ${token}`,
+          ...(orgId && { "X-ZOHO-ORGANIZATION": orgId }),
         },
         body: formData,
       })
@@ -111,7 +138,7 @@ export class ZohoService {
   // 4. Invio Contatto (Zoho CRM)
   public async createLead(contactData: any): Promise<void> {
     try {
-      const token = await this.getAccessToken()
+      const token = await this.getAccessToken("en")
       const zohoApiUrl = `${ZOHO_CRM_BASE_URL}/Leads`
 
       const zohoPayload = {
@@ -157,7 +184,7 @@ export class ZohoService {
     }
 
     try {
-      const token = await this.getAccessToken()
+      const token = await this.getAccessToken("en")
       // Ricerca un Contatto nel CRM tramite email
       const searchUrl = `${ZOHO_CRM_BASE_URL}/Contacts/search?email=${encodeURIComponent(email)}`
 

@@ -300,32 +300,6 @@ export default function BlogPage() {
             )}
           </div>
         </section>
-
-        {/* Newsletter CTA */}
-        <section className="py-16 px-4 bg-gradient-to-r from-cyan-600 to-blue-600">
-          <div className="container mx-auto max-w-4xl text-center">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                {language === "it" ? "Non perdere i nostri aggiornamenti" : "Don't miss our updates"}
-              </h2>
-              <p className="text-xl text-cyan-100 mb-8">
-                {language === "it"
-                  ? "Ricevi i migliori articoli su AI e tecnologia direttamente nella tua inbox"
-                  : "Get the best articles on AI and technology directly in your inbox"}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                <Input
-                  type="email"
-                  placeholder={language === "it" ? "La tua email" : "Your email"}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white"
-                />
-                <Button className="bg-white text-cyan-600 hover:bg-slate-100 font-semibold">
-                  {language === "it" ? "Iscriviti" : "Subscribe"}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
       </div>
     </div>
   )
