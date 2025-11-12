@@ -27,6 +27,7 @@ export class ZohoService {
       "Intelligent Chatbots": process.env.ZOHO_SERVICE_ID_CHATBOTS || "",
       "Web Development": process.env.ZOHO_SERVICE_ID_WEB_DEVELOPMENT || "",
       "AI Marketing": process.env.ZOHO_SERVICE_ID_AI_MARKETING || "",
+      "Priority Support": process.env.ZOHO_SERVICE_ID_PRIORITY_SUPPORT || "",
     }
 
     // Fallback to a default service ID if not mapped

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { BookingFlow } from "@/lib/booking-flow"
+import { SupportFlow } from "@/lib/support-flow"
 import { neon } from "@neondatabase/serverless"
 import { ZohoService } from "@/lib/zoho-service"
 
@@ -285,7 +286,7 @@ export async function POST(request: NextRequest) {
 
     const currentSessionId = sessionId || `session_${Date.now()}`
     const sessionData = await sql`
-      SELECT booking_mode, flow_step, booking_data, language
+      SELECT booking_mode, flow_step, booking_data, language, support_mode, attempt_count
       FROM chat_sessions
       WHERE session_id = ${currentSessionId}
     `
@@ -293,11 +294,9 @@ export async function POST(request: NextRequest) {
     let language: "it" | "en" = "it"
 
     if (sessionData.length > 0 && sessionData[0].language) {
-      // Use previously detected language from session
       language = sessionData[0].language as "it" | "en"
       console.log(`🔄 Using stored language from session: ${language}`)
     } else {
-      // Detect language for new session
       language = detectLanguage(message)
       console.log(`🆕 Detected new language: ${language}`)
     }
@@ -305,9 +304,24 @@ export async function POST(request: NextRequest) {
     console.log(`📨 Message: "${message}", Language: ${language}, Session: ${currentSessionId}`)
 
     const isBookingMode = sessionData.length > 0 && sessionData[0].booking_mode === true
+    const isSupportMode = sessionData.length > 0 && sessionData[0].support_mode === true
     const currentStep = sessionData.length > 0 ? sessionData[0].flow_step : null
 
-    console.log(`🔍 Booking mode: ${isBookingMode}, Step: ${currentStep}`)
+    console.log(`🔍 Booking mode: ${isBookingMode}, Support mode: ${isSupportMode}, Step: ${currentStep}`)
+
+    if (isSupportMode) {
+      console.log("🛠️ Processing support request...")
+      const supportFlow = new SupportFlow()
+      const supportResponse = await supportFlow.handleSupportRequest(currentSessionId, message, language)
+
+      return NextResponse.json({
+        response: supportResponse.message,
+        type: "support",
+        language,
+        sessionId: currentSessionId,
+        supportMode: !supportResponse.completed,
+      })
+    }
 
     // Handle booking flow
     if (isBookingMode && currentStep) {
@@ -322,6 +336,44 @@ export async function POST(request: NextRequest) {
         sessionId: currentSessionId,
         bookingMode: !bookingResponse.completed,
         nextStep: bookingResponse.nextStep,
+      })
+    }
+
+    const supportTriggers = [
+      "supporto tecnico",
+      "technical support",
+      "need help",
+      "problema tecnico",
+      "technical problem",
+      "technical issue",
+      "aiuto tecnico",
+      "support",
+      "help me",
+      "aiutami",
+    ]
+    const lowerMessage = message.toLowerCase()
+    const isSupportRequest = supportTriggers.some((trigger) => lowerMessage.includes(trigger))
+
+    if (isSupportRequest) {
+      console.log("🛠️ Starting support flow...")
+
+      if (sessionData.length === 0) {
+        console.log("📝 Creating new session for support request...")
+        await sql`
+          INSERT INTO chat_sessions (session_id, language, support_mode, created_at)
+          VALUES (${currentSessionId}, ${language}, false, NOW())
+        `
+      }
+
+      const supportFlow = new SupportFlow()
+      const supportResponse = await supportFlow.handleSupportRequest(currentSessionId, message, language)
+
+      return NextResponse.json({
+        response: supportResponse.message,
+        type: "support",
+        language,
+        sessionId: currentSessionId,
+        supportMode: true,
       })
     }
 
