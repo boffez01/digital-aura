@@ -1,0 +1,29 @@
+{
+  "name": "Praxis Futura - Soluzioni AI & Sviluppo Web",
+  "short_name": "Praxis Futura",
+  "description": "Trasforma il tuo business con soluzioni AI personalizzate, chatbot intelligenti e sviluppo web professionale",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e293b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "technology"],
+  "lang": "it-IT",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

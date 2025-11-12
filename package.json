@@ -59,6 +59,7 @@
     "three": "^0.169.0",
     "tw-animate-css": "latest",
     "twilio": "latest",
+    "web-vitals": "latest",
     "zod": "^4.1.8"
   },
   "devDependencies": {
