@@ -1,12 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const workspace = searchParams.get("workspace") || "english" // Added workspace parameter
-
     const clientId = process.env.ZOHO_CLIENT_ID
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
 
@@ -18,7 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "NEXT_PUBLIC_BASE_URL not configured" }, { status: 500 })
     }
 
-    const redirectUri = `${baseUrl}/api/auth/zoho/callback?workspace=${workspace}`
+    const redirectUri = `${baseUrl}/api/auth/zoho/callback`
 
     const scope = [
       "AaaServer.profile.READ",
@@ -34,9 +31,8 @@ export async function GET(request: NextRequest) {
     authUrl.searchParams.set("scope", scope)
     authUrl.searchParams.set("access_type", "offline")
     authUrl.searchParams.set("prompt", "consent")
-    authUrl.searchParams.set("state", workspace) // Store workspace in state
 
-    console.log(`[v0] Redirecting to Zoho OAuth for ${workspace} workspace:`, authUrl.toString())
+    console.log("[v0] Redirecting to Zoho OAuth:", authUrl.toString())
 
     return NextResponse.redirect(authUrl.toString())
   } catch (error) {

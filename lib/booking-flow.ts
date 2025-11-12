@@ -749,6 +749,8 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
           }
 
           try {
+            console.log(`💾 TENTATIVO 1: Prenotazione su Zoho Bookings...`)
+
             const zohoBookingId = await zohoService.bookAppointment({
               service: bookingData.service!,
               date: bookingData.date!,
@@ -757,8 +759,9 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
               email: bookingData.email!,
               phone: bookingData.phone!,
               message: bookingData.message,
-              language: language,
             })
+
+            console.log(`✅ Zoho Booking successful. ID: ${zohoBookingId}`)
 
             await sql`
               INSERT INTO appointments (
@@ -836,6 +839,7 @@ ${bookingData.message ? `💬 **Message:** ${bookingData.message}` : ""}
               }
             }
 
+            // Errore generico
             const errorMessage =
               language === "it"
                 ? "❌ Errore nel salvare la prenotazione su Zoho. Contattaci: info@praxisfutura.it"
