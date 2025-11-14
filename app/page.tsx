@@ -1364,15 +1364,7 @@ function Footer() {
               </Link>
             </div>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              {/* CHANGE: Updated social media links */}
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-cyan-300 transition-colors"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
+              {/* CHANGE: Removed Facebook icon */}
               <a
                 href="https://www.tiktok.com/@praxisfutura?is_from_webapp=1&sender_device=pc"
                 target="_blank"
