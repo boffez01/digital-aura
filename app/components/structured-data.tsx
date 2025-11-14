@@ -26,7 +26,7 @@ export function OrganizationStructuredData() {
     sameAs: [
       "https://www.linkedin.com/company/praxisfutura",
       "https://twitter.com/praxisfutura",
-      "https://www.instagram.com/praxisfutura",
+      "https://www.instagram.com/praxis_futura?igsh=cjd6cmFveDJxN3Vz&utm_source=qr",
     ],
     "@id": "https://praxisfutura.com/#organization",
   }
