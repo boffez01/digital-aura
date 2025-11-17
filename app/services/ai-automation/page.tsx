@@ -4,30 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Zap,
-  Cpu,
-  BarChart3,
-  Play,
-  Sparkles,
-  Brain,
-  Shield,
-  Cog,
-  Database,
-  Workflow,
-  CheckCircle,
-  Clock,
-  Settings,
-  Users,
-  Target,
-  Lightbulb,
-  Factory,
-  Building,
-  ShoppingBag,
-  Stethoscope,
-  GraduationCap,
-  Banknote,
-} from "lucide-react"
+import { Zap, Cpu, BarChart3, Play, Sparkles, Brain, Shield, Cog, Database, Workflow, CheckCircle, Clock, Settings, Users, Target, Lightbulb, Factory, Building, ShoppingBag, Stethoscope, GraduationCap, Banknote } from 'lucide-react'
 import Link from "next/link"
 import { useLanguage } from "../../contexts/language-context"
 import Navbar from "../../components/navbar"
@@ -407,14 +384,6 @@ export default function AIAutomationPage() {
                     {language === "it" ? "Richiedi Consulenza" : "Request Consultation"}
                   </Button>
                 </Link>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold bg-slate-800/50"
-                >
-                  <Play className="h-6 w-6 mr-3" />
-                  {language === "it" ? "Guarda Demo" : "Watch Demo"}
-                </Button>
               </div>
 
               <div className="grid grid-cols-4 gap-8 max-w-3xl mx-auto">

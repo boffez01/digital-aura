@@ -442,17 +442,6 @@ export default function DigitalAuraPortfolio() {
                 </Link>
               </motion.div>
 
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-white hover:bg-white/10 text-lg px-8 py-4 rounded-full bg-transparent backdrop-blur-sm"
-                  onClick={() => scrollToSection("services")}
-                >
-                  <Play className="mr-2 w-5 h-5" />
-                  {language === "it" ? "Guarda Demo" : "Watch Demo"}
-                </Button>
-              </motion.div>
             </div>
 
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
