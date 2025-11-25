@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     "meeting online",
     "consulenza gratuita",
   ],
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: {
     title: "Prenota Consulenza Gratuita - Praxis Futura",
     description: "Prenota una consulenza gratuita con i nostri esperti di AI e sviluppo web.",

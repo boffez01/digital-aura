@@ -35,10 +35,6 @@ export default function Navbar() {
       label: language === "it" ? "Servizi" : "Services",
     },
     {
-      href: "/blog",
-      label: language === "it" ? "Blog" : "Blog",
-    },
-    {
       href: "#contact",
       label: language === "it" ? "Contatti" : "Contact",
     },
