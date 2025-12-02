@@ -14,56 +14,46 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Praxis Futura - Soluzioni AI & Sviluppo Web",
+  title: "Praxis Futura | Automazione AI & Sviluppo Web per PMI",
   description:
-    "Trasforma il tuo business con soluzioni AI personalizzate, chatbot intelligenti e sviluppo web professionale. Consulenza specializzata e formazione.",
+    "Agenzia di Automazione AI e Chatbot Intelligenti. Recupera 15+ ore a settimana e aumenta i profitti automatizzando i processi aziendali.",
   keywords: [
-    "AI",
-    "Intelligenza Artificiale",
-    "Chatbot",
-    "Sviluppo Web",
-    "Automazione",
-    "Marketing AI",
-    "Consulenza Digitale",
-    "Formazione AI",
+    "Agenzia AI Italia",
+    "Chatbot Intelligenza Artificiale",
+    "Automazione Processi Aziendali",
+    "Sviluppo Web Next.js",
+    "Voice AI Receptionist",
+    "Zoho Partner Italia",
+    "Lead Generation Automatizzata",
   ],
   authors: [{ name: "Praxis Futura" }],
   openGraph: {
-    title: "Praxis Futura - Soluzioni AI & Sviluppo Web",
-    description: "Trasforma il tuo business con soluzioni AI personalizzate",
+    title: "Praxis Futura | Il Tuo Business col Pilota Automatico",
+    description: "Smetti di perdere tempo in task manuali. Scopri come l'AI può scalare la tua azienda.",
     type: "website",
     locale: "it_IT",
     url: "https://praxisfutura.com",
     siteName: "Praxis Futura",
+    images: [
+      {
+        url: "/og-image.jpg", // Assicurati di avere un'immagine carina in public/
+        width: 1200,
+        height: 630,
+        alt: "Praxis Futura AI Automation",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Praxis Futura - Soluzioni AI & Sviluppo Web",
-    description: "Trasforma il tuo business con soluzioni AI personalizzate",
+    title: "Praxis Futura | Automazione AI",
+    description: "Recupera tempo e profitti con l'Intelligenza Artificiale.",
   },
-  metadataBase: new URL("https://praxisfutura.com"),
-  alternates: {
-    canonical: "/",
-    languages: {
-      "it-IT": "/",
-      "en-US": "/",
-    },
-  },
-  verification: {
-    google: "google-site-verification-code",
-  },
+  metadataBase: new URL("https://praxisfutura.com"), // CAMBIA SE HAI UN DOMINIO DIVERSO
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
   },
-  generator: "v0.app",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -76,18 +66,8 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://crm.zoho.com" />
-        <link rel="preconnect" href="https://bookings.zoho.com" />
-
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-
-        <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-
+        
+        <meta name="theme-color" content="#0f172a" />
         <link rel="manifest" href="/site.webmanifest" />
 
         <OrganizationStructuredData />

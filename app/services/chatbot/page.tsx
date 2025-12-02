@@ -1,14 +1,23 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Clock, Target, Play, XCircle, CheckCircle2, Calendar, Database, Globe, ArrowRight } from "lucide-react"
+import { 
+  MessageSquare, Clock, Target, Play, XCircle, CheckCircle2, 
+  Calendar, Database, Globe, ArrowDownRight, Zap, ShieldCheck, 
+  Cpu, Settings 
+} from "lucide-react"
 import Link from "next/link"
 import Navbar from "../../components/navbar"
 import ServiceNavbar from "../../components/service-navbar"
 import ChatbotWidget from "../../components/chatbot-widget"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function ChatbotPage() {
   const features = [
@@ -17,11 +26,25 @@ export default function ChatbotPage() {
     { icon: <Target className="h-8 w-8" />, title: "Conversione Lead", description: "Trasforma i visitatori anonimi in contatti qualificati chiedendo le cose giuste.", color: "text-orange-400", bgColor: "bg-orange-900/20" },
   ]
 
-  const integrations = [
-    { name: "Google Calendar", icon: <Calendar className="w-6 h-6" /> },
-    { name: "WhatsApp Business", icon: <MessageSquare className="w-6 h-6" /> },
-    { name: "HubSpot / Salesforce", icon: <Database className="w-6 h-6" /> },
-    { name: "Sito Web & E-commerce", icon: <Globe className="w-6 h-6" /> },
+  const processSteps = [
+    { 
+      step: "01", 
+      title: "Analisi & Knowledge Base", 
+      desc: "Analizziamo le tue telefonate/chat storiche e creiamo il 'cervello' del bot con le tue risposte migliori.",
+      icon: <Database className="w-6 h-6 text-purple-400"/> 
+    },
+    { 
+      step: "02", 
+      title: "Training & Tuning", 
+      desc: "Addestriamo l'AI a parlare col tuo tono di voce (formale o amichevole) e a gestire le obiezioni.",
+      icon: <Cpu className="w-6 h-6 text-cyan-400"/> 
+    },
+    { 
+      step: "03", 
+      title: "Integrazione & Go Live", 
+      desc: "Colleghiamo il bot al tuo numero di telefono, al sito e al tuo calendario. Sei operativo.",
+      icon: <Zap className="w-6 h-6 text-yellow-400"/> 
+    },
   ]
 
   const scenarios = [
@@ -65,14 +88,21 @@ export default function ChatbotPage() {
     }
   ]
 
+  const integrations = [
+    { name: "Google Calendar", icon: <Calendar className="w-6 h-6" /> },
+    { name: "WhatsApp Business", icon: <MessageSquare className="w-6 h-6" /> },
+    { name: "HubSpot / Salesforce", icon: <Database className="w-6 h-6" /> },
+    { name: "Sito Web & E-commerce", icon: <Globe className="w-6 h-6" /> },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <Navbar />
       <ServiceNavbar currentService="chatbot" />
 
       {/* HERO SECTION */}
-      <section className="relative py-20 px-6">
-        <div className="container mx-auto max-w-7xl text-center">
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div className="container mx-auto max-w-7xl text-center relative z-10">
           <Badge className="mb-6 bg-blue-500/20 text-blue-300 border-blue-500/30 px-4 py-2">
             Chatbot & Voice AI
           </Badge>
@@ -82,34 +112,48 @@ export default function ChatbotPage() {
           </h1>
           <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
             Smetti di perdere clienti con form statici noiosi o telefoni che squillano a vuoto.
-            I nostri <strong>Chatbot Intelligenti</strong> e <strong>Assistenti Vocali</strong> dialogano con i visitatori, rispondono alle domande e fissano appuntamenti in autonomia. <br />
-            Su Sito Web, WhatsApp e Telefono.
+            I nostri <strong>Chatbot Intelligenti</strong> e <strong>Assistenti Vocali</strong> dialogano con i visitatori, rispondono alle domande e fissano appuntamenti in autonomia.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
-            <Link href="/appointments">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-blue-500/25 transition-all">
-                Voglio una Demo Live
-              </Button>
-            </Link>
+          {/* LIVE DEMO CTA */}
+          <div className="max-w-2xl mx-auto mt-8 bg-blue-900/20 p-8 rounded-3xl border border-blue-500/30 backdrop-blur-sm relative">
+            <div className="absolute -top-4 -right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce">
+              LIVE DEMO
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
+              <Zap className="w-6 h-6 text-yellow-400" />
+              Non fidarti delle parole. Provalo ora.
+            </h3>
+            <p className="text-slate-300 mb-6">
+              Il nostro Chatbot è attivo proprio su questa pagina. <br/>
+              Clicca l'icona in basso a destra e prova a chiedergli qualsiasi cosa o a <strong>prenotare un appuntamento</strong>.
+            </p>
+            <div className="flex justify-center items-center gap-2 text-blue-400 font-bold animate-pulse">
+              <span>Clicca qui sotto</span>
+              <ArrowDownRight className="w-6 h-6" />
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* VIDEO DEMO REALE */}
-          <div className="max-w-4xl mx-auto mt-8 bg-slate-800/50 p-2 rounded-3xl border border-slate-700">
-            <div className="text-center mb-6 pt-4">
-              <h3 className="text-2xl font-bold text-white">Ascolta la Differenza 🎧</h3>
-              <p className="text-slate-400 text-sm">Registrazione reale: Nessuno script, solo AI.</p>
-            </div>
-            
-            <div className="aspect-video rounded-2xl overflow-hidden bg-black relative flex items-center justify-center group cursor-pointer">
-              {/* Sostituisci questo div con il tuo iframe quando hai il video */}
-              <div className="text-center group-hover:scale-105 transition-transform">
-                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 pl-1 shadow-2xl">
-                  <Play className="w-8 h-8 text-white fill-current" />
-                </div>
-                <p className="text-slate-500 font-mono">Demo Video (In arrivo)</p>
-              </div>
-            </div>
+      {/* PROCESS SECTION (NUOVA) */}
+      <section className="py-20 px-6 bg-slate-800/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">Come lo Costruiamo</h2>
+            <p className="text-slate-400">Un processo collaudato per portarti online in meno di una settimana.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {processSteps.map((step, i) => (
+              <Card key={i} className="bg-slate-900 border-slate-700 relative overflow-hidden">
+                <div className="absolute top-0 left-0 p-4 text-6xl font-bold text-slate-800 select-none opacity-50">{step.step}</div>
+                <CardContent className="p-8 relative z-10 pt-12">
+                  <div className="mb-6 bg-slate-800 w-fit p-3 rounded-xl border border-slate-700">{step.icon}</div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-slate-400 leading-relaxed">{step.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -117,38 +161,34 @@ export default function ChatbotPage() {
       {/* CONFRONTO BRUTALE */}
       <section className="py-20 px-6 bg-slate-900">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Il Vecchio Modo vs Il Nuovo Modo</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Umano vs AI: Il Confronto</h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* The Old Way */}
             <Card className="bg-red-900/10 border-red-900/50">
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <XCircle className="w-8 h-8 text-red-500" />
-                  <h3 className="text-2xl font-bold text-white">Form & Segreteria</h3>
+                  <h3 className="text-2xl font-bold text-white">Segreteria Umana</h3>
                 </div>
                 <ul className="space-y-4">
-                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> I clienti odiano compilare form lunghi</li>
-                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Rispondi alle email dopo ore (o giorni)</li>
-                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Perdi le chiamate quando sei occupato</li>
-                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Costi fissi elevati per il personale</li>
+                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Disponibile solo 8 ore al giorno</li>
+                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Costa 25.000€+ l'anno</li>
+                  <li className="flex gap-3 text-slate-300"><span className="text-red-500 font-bold">✗</span> Gestisce 1 chiamata alla volta</li>
                 </ul>
               </CardContent>
             </Card>
 
-            {/* The New Way */}
             <Card className="bg-green-900/10 border-green-500/50 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-green-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg">VINCENTE</div>
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  <h3 className="text-2xl font-bold text-white">Ecosistema AI</h3>
+                  <h3 className="text-2xl font-bold text-white">Assistente AI</h3>
                 </div>
                 <ul className="space-y-4">
-                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Il Chatbot qualifica il cliente in 30 secondi</li>
-                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Risposte istantanee h24 su Sito e WhatsApp</li>
-                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> L'Assistente Vocale risponde se non puoi</li>
-                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Paghi una frazione rispetto a un umano</li>
+                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Disponibile 24/7/365</li>
+                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Costa una frazione</li>
+                  <li className="flex gap-3 text-white"><span className="text-green-500 font-bold">✓</span> Gestisce infiniti clienti contemporaneamente</li>
                 </ul>
               </CardContent>
             </Card>
@@ -160,8 +200,8 @@ export default function ChatbotPage() {
       <section className="py-20 px-6 bg-slate-800/30 border-y border-slate-800">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">Chatbot o Voce? Abbiamo entrambi.</h2>
-            <p className="text-slate-400">Esempi reali di come l'AI gestisce le conversazioni per te.</p>
+            <h2 className="text-3xl font-bold text-white mb-4">Esempi di Conversazione</h2>
+            <p className="text-slate-400">Ecco come l'AI gestisce i tuoi clienti in modo naturale.</p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -196,6 +236,52 @@ export default function ChatbotPage() {
         </div>
       </section>
 
+      {/* SECURITY & TRUST (NUOVA) */}
+      <section className="py-12 px-6 border-b border-slate-800 bg-slate-900">
+         <div className="container mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-900/20 border border-green-500/30 text-green-400 mb-6">
+               <ShieldCheck className="w-5 h-5" /> Sicurezza Garantita
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">I tuoi dati sono al sicuro.</h3>
+            <p className="text-slate-400">
+               I nostri sistemi sono conformi al <strong>GDPR</strong>. Le conversazioni sono criptate e i dati vengono salvati solo sul tuo CRM proprietario.
+            </p>
+         </div>
+      </section>
+
+      {/* FAQ SECTION (NUOVA) */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Domande Frequenti</h2>
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-blue-400">Sembrerà un robot?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                No. Usiamo modelli vocali avanzati (come ElevenLabs) che hanno intonazione, pause e "respiro" umani. Spesso i clienti non si accorgono della differenza.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-blue-400">Cosa succede se l'AI non sa rispondere?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Abbiamo un protocollo di sicurezza. Se l'AI è confusa, dice gentilmente: "Per questa domanda specifica preferisco farla contattare da un mio collega umano" e ti inoltra la notifica.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-blue-400">Posso collegarlo al mio calendario?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Assolutamente sì. Si integra con Google Calendar, Outlook, Calendly e i principali CRM. Controlla la tua disponibilità in tempo reale.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-blue-400">Quanto tempo ci vuole per il setup?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Per un chatbot standard, siamo operativi in 3-5 giorni lavorativi. Per automazioni complesse, circa 2 settimane.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       {/* INTEGRATIONS */}
       <section className="py-16 px-6 border-t border-slate-800 bg-slate-900">
         <div className="container mx-auto max-w-6xl text-center">
@@ -210,7 +296,7 @@ export default function ChatbotPage() {
         </div>
       </section>
 
-      {/* FINAL CTA - IL REMINDER */}
+      {/* FINAL CTA */}
       <section className="py-24 px-6 bg-gradient-to-b from-slate-900 to-blue-900/20 text-center">
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
@@ -221,11 +307,18 @@ export default function ChatbotPage() {
             Ogni visitatore che esce senza contattarti è un cliente regalato alla concorrenza.
             <br />Blocca questa emorragia oggi stesso.
           </p>
-          <Link href="/appointments">
-            <Button size="lg" className="bg-white text-blue-900 hover:bg-slate-100 font-bold px-10 py-6 text-lg rounded-full shadow-2xl hover:scale-105 transition-transform">
-              Installa Chatbot Ora <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
+          <div className="flex justify-center">
+             <Button 
+               size="lg" 
+               className="bg-white text-blue-900 hover:bg-slate-100 font-bold px-10 py-6 text-lg rounded-full shadow-2xl hover:scale-105 transition-transform"
+               onClick={() => {
+                 const widgetBtn = document.querySelector('button[class*="fixed bottom-6"]'); 
+                 if(widgetBtn instanceof HTMLElement) widgetBtn.click();
+               }}
+             >
+               Prova la Chatbot Live <ArrowDownRight className="ml-2 w-5 h-5" />
+             </Button>
+          </div>
           <p className="mt-6 text-sm text-slate-500">Setup completo in meno di 48 ore.</p>
         </div>
       </section>

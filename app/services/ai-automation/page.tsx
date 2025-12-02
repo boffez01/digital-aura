@@ -7,6 +7,12 @@ import Link from "next/link"
 import Navbar from "../../components/navbar"
 import ServiceNavbar from "../../components/service-navbar"
 import ChatbotWidget from "../../components/chatbot-widget"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function AIAutomationPage() {
   const automationTypes = [
@@ -204,7 +210,41 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* FINAL CTA - IL REMINDER */}
+      {/* FAQ SECTION */}
+      <section className="py-20 px-6 bg-slate-800/30 border-y border-slate-800">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Domande sull'Automazione</h2>
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-purple-400">Devo cambiare il mio software attuale?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Assolutamente no. Noi creiamo "ponti" tra i software che usi già (es. Gmail, Excel, Gestionale, WhatsApp). Non devi imparare nulla di nuovo.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-purple-400">E se qualcosa si rompe?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Tutti i nostri sistemi hanno un monitoraggio attivo. Se un'automazione fallisce (es. server di posta giù), veniamo notificati istantaneamente e interveniamo noi.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-purple-400">È sicuro per i dati dei miei clienti?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                Sì. Usiamo standard di crittografia bancaria e siamo conformi al GDPR. I dati non vengono "venduti" all'AI, ma processati in ambienti sicuri e privati.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4" className="border-slate-700">
+              <AccordionTrigger className="text-white hover:text-purple-400">Quanto costa un'automazione?</AccordionTrigger>
+              <AccordionContent className="text-slate-400">
+                {/* CORREZIONE QUI SOTTO: Freccia HTML invece di carattere > */}
+                Dipende dalla complessità. Un&apos;automazione semplice (es. Email &rarr; Excel) parte da poche centinaia di euro. Un sistema completo di gestione aziendale è un investimento che si ripaga in 3 mesi.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
       <section className="py-24 px-6 bg-gradient-to-t from-slate-900 to-purple-900/20 text-center">
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
