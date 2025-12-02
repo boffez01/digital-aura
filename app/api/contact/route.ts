@@ -10,7 +10,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log("📝 Request body:", body)
 
-    const { name, email, phone, company, service_type, message } = body
+    const { name, email, phone, company, service_type, message, recaptchaToken } = body
+
+    if (!recaptchaToken) {
+      console.log("❌ Missing reCAPTCHA token")
+      return NextResponse.json({ error: "Verifica reCAPTCHA mancante" }, { status: 400 })
+    }
+
+    // Verify reCAPTCHA token with Google
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`
+    const recaptchaRes = await fetch(verifyUrl, { method: "POST" })
+    const recaptchaJson = await recaptchaRes.json()
+
+    console.log("🔒 reCAPTCHA verification:", recaptchaJson)
+
+    if (!recaptchaJson.success || recaptchaJson.score < 0.5) {
+      console.error("❌ Bot detected or low score:", recaptchaJson)
+      return NextResponse.json({ error: "Verifica di sicurezza fallita" }, { status: 400 })
+    }
 
     // Validation
     if (!name || !email || !message) {

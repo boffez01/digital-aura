@@ -2,12 +2,30 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Zap, ArrowRight, Mail, Phone, MapPin, TrendingUp, Clock, Lightbulb, Target, Handshake, Rocket, Twitter, Instagram, Monitor, Cpu, BarChart3, MessageSquare, Eye, Sparkles, Play, Globe, Facebook } from 'lucide-react'
+import {
+  Zap,
+  ArrowRight,
+  Mail,
+  Phone,
+  MapPin,
+  Lightbulb,
+  Target,
+  Handshake,
+  Rocket,
+  Twitter,
+  Instagram,
+  Cpu,
+  BarChart3,
+  MessageSquare,
+  Sparkles,
+  Globe,
+  CheckCircle2,
+} from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ProjectModal from "./components/project-modal"
@@ -16,6 +34,7 @@ import ROICalculatorSection from "./components/roi-calculator"
 import ProcessSection from "./components/process-section"
 import { useLanguage } from "./contexts/language-context"
 import Navbar from "./components/navbar"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export default function DigitalAuraPortfolio() {
   const [currentSection, setCurrentSection] = useState("home")
@@ -32,7 +51,7 @@ export default function DigitalAuraPortfolio() {
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const { t, language } = useLanguage()
 
-  // SERVIZI COME NELL'IMMAGINE - 4 COLONNE CON ICONE
+  // SERVIZI
   const services = [
     {
       icon: <MessageSquare className="w-12 h-12" />,
@@ -84,236 +103,163 @@ export default function DigitalAuraPortfolio() {
     },
   ]
 
+  // PROGETTI AGGIORNATI: VERITÀ > FINZIONE
+  // Qui descriviamo SCENARI D'USO (Use Cases) invece di fingere di avere clienti passati.
   const projects = [
     {
       id: 1,
-      title: language === "it" ? "E-commerce AI Assistant" : "E-commerce AI Assistant",
+      title: language === "it" ? "E-commerce Revenue System" : "E-commerce Revenue System",
       category: language === "it" ? "AI Automation" : "AI Automation",
       description:
         language === "it"
-          ? "Sistema di raccomandazioni AI avanzato che ha aumentato le vendite del 40% per un e-commerce fashion con oltre 10.000 prodotti, migliorando significativamente l'esperienza utente"
-          : "Advanced AI recommendation system that increased sales by 40% for a fashion e-commerce with over 10,000 products, significantly improving user experience",
-      tags:
-        language === "it"
-          ? ["AI", "Machine Learning", "E-commerce", "Raccomandazioni", "Analytics"]
-          : ["AI", "Machine Learning", "E-commerce", "Recommendations", "Analytics"],
-      timeline: language === "it" ? "3 mesi" : "3 months",
-      roi: "320%",
+          ? "Sistema di recupero carrelli e raccomandazioni prodotti per e-commerce."
+          : "Cart recovery and product recommendation system for e-commerce.",
+      tags: ["AI", "Automation", "E-commerce", "Sales"],
+      timeline: language === "it" ? "Setup: 3 Settimane" : "Setup: 3 Weeks",
+      roi: "Automazione",
       image: "/ecommerce-project.png",
       problem:
         language === "it"
-          ? "L'e-commerce aveva difficoltà a personalizzare l'esperienza utente e le vendite erano stagnanti nonostante il traffico elevato. I clienti abbandonavano spesso il carrello senza completare l'acquisto."
-          : "The e-commerce had difficulty personalizing the user experience and sales were stagnant despite high traffic. Customers often abandoned their cart without completing the purchase.",
+          ? "SCENARIO TIPICO: Molti e-commerce hanno traffico ma bassi tassi di conversione. I clienti aggiungono al carrello e poi spariscono."
+          : "TYPICAL SCENARIO: Many e-commerce sites have traffic but low conversion rates. Customers add to cart and then disappear.",
       solution:
         language === "it"
-          ? "Abbiamo implementato un sistema di raccomandazioni AI avanzato che analizza il comportamento degli utenti in tempo reale, suggerendo prodotti personalizzati e ottimizzando il customer journey."
-          : "We implemented an advanced AI recommendation system that analyzes user behavior in real time, suggesting personalized products and optimizing the customer journey.",
+          ? "SOLUZIONE: Implementiamo flussi automatici che inseguono il cliente su email e SMS, proponendo prodotti correlati e sconti personalizzati al momento giusto."
+          : "SOLUTION: We implement automated flows that chase the customer via email and SMS, offering related products and personalized discounts at the right time.",
       results:
         language === "it"
           ? [
-              "40% aumento vendite",
-              "60% miglior engagement",
-              "25% carrelli abbandonati in meno",
-              "35% aumento valore medio ordine",
+              "Recupero automatico carrelli",
+              "Email marketing personalizzato",
+              "Upselling automatico",
+              "Analisi comportamento utenti",
             ]
           : [
-              "40% sales increase",
-              "60% better engagement",
-              "25% fewer abandoned carts",
-              "35% increase in average order value",
+              "Automatic cart recovery",
+              "Personalized email marketing",
+              "Automatic upselling",
+              "User behavior analysis",
             ],
-      technologies: ["TensorFlow", "Python", "React", "Node.js", "MongoDB", "AWS"],
+      technologies: ["Klaviyo AI", "Shopify API", "Make.com"],
     },
     {
       id: 2,
-      title: language === "it" ? "Customer Support Bot" : "Customer Support Bot",
+      title: language === "it" ? "Customer Support AI" : "Customer Support AI",
       category: language === "it" ? "Chatbot" : "Chatbot",
       description:
         language === "it"
-          ? "Chatbot multilingue intelligente che gestisce oltre 1000 query giornaliere con 95% di soddisfazione per una multinazionale, riducendo drasticamente i tempi di risposta"
-          : "Intelligent multilingual chatbot that handles over 1000 daily queries with 95% satisfaction for a multinational company, drastically reducing response times",
-      tags:
-        language === "it"
-          ? ["NLP", "Customer Service", "Automation", "Multilingue", "Analytics"]
-          : ["NLP", "Customer Service", "Automation", "Multilingual", "Analytics"],
-      timeline: language === "it" ? "2 mesi" : "2 months",
-      roi: "280%",
+          ? "Assistente intelligente che filtra e risolve l'80% delle richieste di supporto."
+          : "Intelligent assistant that filters and resolves 80% of support requests.",
+      tags: ["NLP", "Customer Service", "24/7 Support"],
+      timeline: language === "it" ? "Setup: 2 Settimane" : "Setup: 2 Weeks",
+      roi: "Efficienza",
       image: "/chatbot-project.png",
       problem:
         language === "it"
-          ? "Il supporto clienti era sovraccarico con tempi di risposta lunghi e costi operativi elevati. I clienti erano frustrati dalle attese e la soddisfazione era in calo."
-          : "Customer support was overloaded with long response times and high operational costs. Customers were frustrated with waiting times and satisfaction was declining.",
+          ? "SCENARIO TIPICO: Il team di supporto è sommerso dalle stesse 5 domande ripetitive (spedizioni, resi, orari), sprecando tempo prezioso."
+          : "TYPICAL SCENARIO: The support team is overwhelmed by the same 5 repetitive questions (shipping, returns, hours), wasting precious time.",
       solution:
         language === "it"
-          ? "Sviluppato un chatbot intelligente con NLP avanzato per gestire automaticamente le richieste più comuni, con escalation seamless agli operatori umani per casi complessi."
-          : "Developed an intelligent chatbot with advanced NLP to automatically handle the most common requests, with seamless escalation to human operators for complex cases.",
+          ? "SOLUZIONE: Un Chatbot addestrato sulla tua Knowledge Base che risponde istantaneamente h24, passando all'umano solo i problemi complessi."
+          : "SOLUTION: A Chatbot trained on your Knowledge Base that responds instantly 24/7, passing only complex problems to a human.",
       results:
         language === "it"
           ? [
-              "95% soddisfazione clienti",
-              "70% riduzione tempi risposta",
-              "50% riduzione costi supporto",
-              "24/7 disponibilità",
+              "Risposte istantanee h24",
+              "Filtro richieste base",
+              "Migliore esperienza cliente",
+              "Riduzione costi personale",
             ]
-          : [
-              "95% customer satisfaction",
-              "70% response time reduction",
-              "50% support cost reduction",
-              "24/7 availability",
-            ],
-      technologies: ["OpenAI GPT", "Node.js", "React", "WebSocket", "MongoDB", "Docker"],
+          : ["Instant 24/7 responses", "Basic request filtering", "Better customer experience", "Staff cost reduction"],
+      technologies: ["OpenAI GPT-4", "Intercom/Zendesk", "Node.js"],
     },
     {
       id: 3,
-      title: language === "it" ? "Corporate Website Redesign" : "Corporate Website Redesign",
+      title: language === "it" ? "Lead Gen Website" : "Lead Gen Website",
       category: language === "it" ? "Web Development" : "Web Development",
       description:
         language === "it"
-          ? "Sito web aziendale moderno con CMS personalizzato che ha triplicato il traffico organico per una startup B2B, migliorando drasticamente la generazione di lead"
-          : "Modern corporate website with custom CMS that tripled organic traffic for a B2B startup, drastically improving lead generation",
-      tags:
-        language === "it"
-          ? ["React", "Next.js", "CMS", "SEO", "Performance", "Analytics"]
-          : ["React", "Next.js", "CMS", "SEO", "Performance", "Analytics"],
-      timeline: language === "it" ? "6 settimane" : "6 weeks",
-      roi: "250%",
+          ? "Sito web ad alte prestazioni progettato specificamente per convertire visitatori in contatti."
+          : "High-performance website designed specifically to convert visitors into leads.",
+      tags: ["Next.js", "SEO", "Conversion Rate"],
+      timeline: language === "it" ? "4 Settimane" : "4 Weeks",
+      roi: "Velocità",
       image: "/web-development-project.png",
       problem:
         language === "it"
-          ? "Il sito esistente era obsoleto, lento e non generava lead qualificati per l'azienda. La presenza online non rifletteva la qualità dei servizi offerti."
-          : "The existing site was outdated, slow and did not generate qualified leads for the company. The online presence did not reflect the quality of services offered.",
+          ? "SCENARIO TIPICO: Il sito aziendale è lento, vecchio e non è ottimizzato per i cellulari. I clienti entrano ed escono senza contattare."
+          : "TYPICAL SCENARIO: The company website is slow, old, and not optimized for mobile. Customers enter and leave without contacting.",
       solution:
         language === "it"
-          ? "Creato un sito moderno, veloce e ottimizzato SEO con funzionalità avanzate di lead generation, analytics integrate e CMS user-friendly per gestione autonoma."
-          : "Created a modern, fast and SEO-optimized site with advanced lead generation features, integrated analytics and user-friendly CMS for autonomous management.",
+          ? "SOLUZIONE: Sviluppo di un sito ultra-veloce in Next.js con copy persuasivo, call-to-action chiare e ottimizzazione SEO locale."
+          : "SOLUTION: Development of an ultra-fast Next.js site with persuasive copy, clear call-to-actions, and local SEO optimization.",
       results:
         language === "it"
-          ? [
-              "300% aumento traffico",
-              "150% più lead qualificati",
-              "80% miglior velocità caricamento",
-              "95% punteggio PageSpeed",
-            ]
-          : ["300% traffic increase", "150% more qualified leads", "80% better loading speed", "95% PageSpeed score"],
-      technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Strapi CMS", "Vercel", "Google Analytics"],
+          ? ["Caricamento < 1 secondo", "Design orientato alla vendita", "SEO Tecnico avanzato", "Mobile First"]
+          : ["Load time < 1 second", "Sales-oriented design", "Advanced Technical SEO", "Mobile First"],
+      technologies: ["Next.js", "Tailwind CSS", "Vercel Analytics"],
     },
     {
       id: 4,
-      title: language === "it" ? "AI Marketing Campaign" : "AI Marketing Campaign",
+      title: language === "it" ? "AI Content Strategy" : "AI Content Strategy",
       category: language === "it" ? "AI Marketing" : "AI Marketing",
       description:
         language === "it"
-          ? "Campagna di marketing AI-driven per un influencer che ha aumentato i follower del 500% e i ricavi del 300% in 6 mesi attraverso strategie personalizzate"
-          : "AI-driven marketing campaign for an influencer that increased followers by 500% and revenue by 300% in 6 months through personalized strategies",
-      tags:
-        language === "it"
-          ? ["AI Marketing", "Social Media", "Influencer", "Growth", "Analytics"]
-          : ["AI Marketing", "Social Media", "Influencer", "Growth", "Analytics"],
-      timeline: language === "it" ? "6 mesi" : "6 months",
-      roi: "400%",
+          ? "Sistema per generare e programmare contenuti social di qualità in scala."
+          : "System to generate and schedule quality social content at scale.",
+      tags: ["Content AI", "Social Media", "Growth"],
+      timeline: language === "it" ? "Setup: 1 Settimana" : "Setup: 1 Week",
+      roi: "Visibilità",
       image: "/ai-marketing-project.png",
       problem:
         language === "it"
-          ? "L'influencer aveva raggiunto un plateau nella crescita e faticava a monetizzare efficacemente la propria audience, con engagement in calo."
-          : "The influencer had reached a growth plateau and struggled to effectively monetize their audience, with declining engagement.",
+          ? "SCENARIO TIPICO: L'azienda sa di dover pubblicare sui social ma non ha tempo o idee, risultando in una pagina morta."
+          : "TYPICAL SCENARIO: The company knows it needs to post on social media but lacks time or ideas, resulting in a dead page.",
       solution:
         language === "it"
-          ? "Implementata una strategia AI-driven con content optimization, timing perfetto per i post, targeting avanzato e partnership strategiche per massimizzare reach e engagement."
-          : "Implemented an AI-driven strategy with content optimization, perfect timing for posts, advanced targeting and strategic partnerships to maximize reach and engagement.",
+          ? "SOLUZIONE: Workflow AI che prende i tuoi argomenti chiave e genera post, immagini e copy ottimizzati, pronti per la revisione e pubblicazione."
+          : "SOLUTION: AI workflow that takes your key topics and generates optimized posts, images, and copy, ready for review and publishing.",
       results:
         language === "it"
-          ? ["500% crescita follower", "300% aumento ricavi", "250% miglior engagement", "15 brand partnership"]
-          : ["500% follower growth", "300% revenue increase", "250% better engagement", "15 brand partnerships"],
-      technologies: ["Python", "TensorFlow", "Social Media APIs", "Analytics Tools", "Automation Scripts"],
-    },
-    {
-      id: 5,
-      title: language === "it" ? "Manufacturing Process Automation" : "Manufacturing Process Automation",
-      category: language === "it" ? "AI Automation" : "AI Automation",
-      description:
-        language === "it"
-          ? "Sistema di automazione completo per azienda manifatturiera che ha ridotto i costi del 45% e aumentato la produttività del 200% attraverso AI predittiva"
-          : "Complete automation system for manufacturing company that reduced costs by 45% and increased productivity by 200% through predictive AI",
-      tags:
-        language === "it"
-          ? ["IoT", "Predictive AI", "Manufacturing", "Automation", "Quality Control"]
-          : ["IoT", "Predictive AI", "Manufacturing", "Automation", "Quality Control"],
-      timeline: language === "it" ? "4 mesi" : "4 months",
-      roi: "380%",
-      image: "/ai-automation-project.png",
-      problem:
-        language === "it"
-          ? "L'azienda manifatturiera aveva processi manuali inefficienti, sprechi elevati e difficoltà nel prevedere guasti alle macchine, causando fermi produzione costosi."
-          : "The manufacturing company had inefficient manual processes, high waste and difficulty predicting machine failures, causing production downtime.",
-      solution:
-        language === "it"
-          ? "Sviluppato un sistema IoT integrato con AI predittiva per monitoraggio in tempo reale, manutenzione preventiva e ottimizzazione automatica dei processi produttivi."
-          : "Developed an integrated IoT system with predictive AI for real-time monitoring, preventive maintenance and automatic optimization of production processes.",
-      results:
-        language === "it"
-          ? ["45% riduzione costi", "200% aumento produttività", "80% meno fermi macchina", "60% riduzione sprechi"]
-          : ["45% cost reduction", "200% productivity increase", "80% less machine downtime", "60% waste reduction"],
-      technologies: ["Python", "TensorFlow", "IoT Sensors", "MQTT", "InfluxDB", "Grafana"],
-    },
-    {
-      id: 6,
-      title: language === "it" ? "Healthcare Chatbot System" : "Healthcare Chatbot System",
-      category: language === "it" ? "Chatbot" : "Chatbot",
-      description:
-        language === "it"
-          ? "Sistema di chatbot medico per clinica privata che ha migliorato l'efficienza del 60% nella gestione appuntamenti e triage pazienti"
-          : "Medical chatbot system for private clinic that improved efficiency by 60% in appointment management and patient triage",
-      tags:
-        language === "it"
-          ? ["Healthcare", "Medical AI", "Appointment", "Triage", "GDPR Compliant"]
-          : ["Healthcare", "Medical AI", "Appointment", "Triage", "GDPR Compliant"],
-      timeline: language === "it" ? "3 mesi" : "3 months",
-      roi: "290%",
-      image: "/healthcare-project.png",
-      problem:
-        language === "it"
-          ? "La clinica aveva difficoltà nella gestione degli appuntamenti e nel triage iniziale dei pazienti, con lunghe attese telefoniche e inefficienze operative."
-          : "The clinic had difficulties in appointment management and initial patient triage, with long phone waits and operational inefficiencies.",
-      solution:
-        language === "it"
-          ? "Creato un chatbot medico specializzato per gestione appuntamenti, triage sintomi, informazioni mediche di base e integrazione con sistema gestionale clinica."
-          : "Created a specialized medical chatbot for appointment management, symptom triage, basic medical information and integration with clinic management system.",
-      results:
-        language === "it"
-          ? ["60% efficienza gestione", "40% riduzione chiamate", "90% soddisfazione pazienti", "24/7 disponibilità"]
-          : ["60% management efficiency", "40% call reduction", "90% patient satisfaction", "24/7 availability"],
-      technologies: ["OpenAI GPT", "Medical APIs", "FHIR", "Node.js", "React", "PostgreSQL"],
+          ? ["Presenza social costante", "Piano editoriale automatico", "Brand awareness", "Zero tempo perso"]
+          : ["Constant social presence", "Automatic editorial plan", "Brand awareness", "Zero wasted time"],
+      technologies: ["ChatGPT", "Midjourney", "Buffer/Hootsuite"],
     },
   ]
 
   const values = [
     {
       icon: <Lightbulb className="w-8 h-8" />,
-      title: language === "it" ? "Innovazione Continua" : "Continuous Innovation",
+      title: language === "it" ? "Innovazione Pratica" : "Practical Innovation",
       description:
         language === "it"
-          ? "Sempre all'avanguardia con le ultime tecnologie AI"
-          : "Always at the forefront with the latest AI technologies",
+          ? "Niente teoria. Usiamo l'AI per risolvere problemi concreti."
+          : "No theory. We use AI to solve concrete problems.",
       color: "text-cyan-400",
     },
     {
       icon: <Target className="w-8 h-8" />,
-      title: language === "it" ? "Risultati Misurabili" : "Measurable Results",
-      description: language === "it" ? "Focus su ROI concreto e KPI verificabili" : "Focus on concrete ROI and verifiable KPIs",
+      title: language === "it" ? "Focus sul ROI" : "Focus on ROI",
+      description:
+        language === "it"
+          ? "Ogni automazione deve generare un ritorno economico."
+          : "Every automation must generate an economic return.",
       color: "text-cyan-400",
     },
     {
       icon: <Handshake className="w-8 h-8" />,
-      title: language === "it" ? "Partnership Durature" : "Lasting Partnerships",
+      title: language === "it" ? "Partner Tecnologico" : "Tech Partner",
       description:
-        language === "it" ? "Relazioni a lungo termine basate sulla fiducia" : "Long-term relationships based on trust",
+        language === "it"
+          ? "Siamo il tuo reparto IT esterno, sempre disponibile."
+          : "We are your external IT department, always available.",
       color: "text-cyan-400",
     },
     {
       icon: <Rocket className="w-8 h-8" />,
-      title: language === "it" ? "Crescita Accelerata" : "Accelerated Growth",
+      title: language === "it" ? "Velocità di Esecuzione" : "Execution Speed",
       description:
-        language === "it" ? "Soluzioni che scalano con il tuo business" : "Solutions that scale with your business",
+        language === "it" ? "Progetti consegnati in settimane, non mesi." : "Projects delivered in weeks, not months.",
       color: "text-cyan-400",
     },
   ]
@@ -324,12 +270,21 @@ export default function DigitalAuraPortfolio() {
     element?.scrollIntoView({ behavior: "smooth" })
   }
 
+  const { executeRecaptcha } = useGoogleReCaptcha()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      console.log("🚀 Submitting contact form:", formData)
+      if (!executeRecaptcha) {
+        console.error("❌ Recaptcha not available")
+        alert("Sistema di sicurezza non disponibile. Riprova.")
+        setIsSubmitting(false)
+        return
+      }
+
+      const token = await executeRecaptcha("contact_form")
 
       const response = await fetch("/api/contact", {
         method: "POST",
@@ -343,21 +298,18 @@ export default function DigitalAuraPortfolio() {
           company: formData.company.trim() || null,
           service_type: formData.service || null,
           message: formData.message.trim(),
+          recaptchaToken: token,
         }),
       })
 
-      console.log("📡 Response status:", response.status)
-
       if (response.ok) {
         const result = await response.json()
-        console.log("✅ Contact form submitted successfully:", result)
         setSubmitSuccess(true)
         setFormData({ name: "", email: "", phone: "", company: "", service: "", message: "" })
 
         setTimeout(() => setSubmitSuccess(false), 5000)
       } else {
         const errorData = await response.json()
-        console.error("❌ Contact form error:", errorData)
         throw new Error(errorData.error || "Network error")
       }
     } catch (error) {
@@ -397,24 +349,24 @@ export default function DigitalAuraPortfolio() {
           >
             <Badge className="mb-6 bg-white/10 text-white px-6 py-3 rounded-full backdrop-blur-sm shadow-lg font-semibold text-base">
               <Sparkles className="w-4 h-4 mr-2" />
-              {language === "it" ? "Innovazione Digitale AI-Powered" : "AI-Powered Digital Innovation"}
+              {language === "it" ? "Automazione AI per il Business" : "AI Business Automation"}
             </Badge>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-white leading-tight">
               {language === "it" ? (
                 <>
-                  Trasforma il Tuo
+                  Porta la Tua Azienda
                   <br />
-                  Business con{" "}
+                  Nel Futuro con{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
                     l'Intelligenza Artificiale
                   </span>
                 </>
               ) : (
                 <>
-                  Transform Your
+                  Take Your Business
                   <br />
-                  Business with{" "}
+                  Into the Future with{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
                     Artificial Intelligence
                   </span>
@@ -424,8 +376,8 @@ export default function DigitalAuraPortfolio() {
 
             <p className="text-lg text-white/80 mb-10 leading-relaxed max-w-3xl mx-auto">
               {language === "it"
-                ? "Chatbot intelligenti, automazione avanzata e soluzioni web innovative per portare la tua azienda nel futuro digitale. Unisciti a oltre 500 aziende che hanno già trasformato il loro business."
-                : "Intelligent chatbots, advanced automation and innovative web solutions to bring your company into the digital future. Join over 500 companies that have already transformed their business."}
+                ? "Siamo nativi digitali. Aiutiamo le PMI a eliminare il lavoro inutile e scalare i profitti usando Chatbot, Automazioni e Siti Web di nuova generazione."
+                : "We are digital natives. We help SMEs eliminate useless work and scale profits using Chatbots, Automations, and next-gen Websites."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -436,19 +388,29 @@ export default function DigitalAuraPortfolio() {
                     className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-lg px-8 py-4 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300"
                   >
                     <Sparkles className="mr-2 w-5 h-5" />
-                    {language === "it" ? "Richiedi Consulenza Gratuita" : "Request Free Consultation"}
+                    {language === "it" ? "Analisi Gratuita" : "Free Analysis"}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
               </motion.div>
-
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="#projects">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/20 hover:bg-white/10 text-white text-lg px-8 py-4 rounded-full backdrop-blur-sm transition-all duration-300 bg-transparent"
+                  >
+                    {language === "it" ? "Cosa Facciamo" : "What We Do"}
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
 
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               {[
-                { value: "24/7", label: language === "it" ? "Assistenza Continua" : "Continuous Support" },
-                { value: "95%", label: language === "it" ? "Tasso Successo" : "Success Rate" },
-                { value: "ROI+", label: language === "it" ? "Crescita Garantita" : "Guaranteed Growth" },
+                { value: "24/7", label: language === "it" ? "Operatività" : "Operations" },
+                { value: "100%", label: language === "it" ? "Dedizione" : "Dedication" },
+                { value: "Fast", label: language === "it" ? "Implementazione" : "Implementation" },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -507,8 +469,9 @@ function BusinessTransformationCTA() {
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: language === "it" ? "ROI garantito entro 6 mesi" : "ROI guaranteed within 6 months",
-      description: language === "it" ? "Risultati misurabili e concreti" : "Measurable and concrete results",
+      title: language === "it" ? "Risparmio immediato" : "Immediate savings",
+      description:
+        language === "it" ? "Identifichiamo dove perdi soldi oggi" : "We identify where you lose money today",
     },
   ]
 
@@ -532,9 +495,7 @@ function BusinessTransformationCTA() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-slate-300 mb-6"
           >
-            {language === "it"
-              ? "Non hai trovato la risposta che cercavi?"
-              : "Haven't found the answer you were looking for?"}
+            {language === "it" ? "Non lasciare soldi sul tavolo." : "Don't leave money on the table."}
           </motion.p>
 
           <motion.h2
@@ -544,7 +505,7 @@ function BusinessTransformationCTA() {
             className="text-4xl md:text-5xl font-bold mb-8"
           >
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              {language === "it" ? "Pronto a trasformare il tuo business?" : "Ready to transform your business?"}
+              {language === "it" ? "Pronto a digitalizzare la tua azienda?" : "Ready to digitize your business?"}
             </span>
           </motion.h2>
 
@@ -555,8 +516,8 @@ function BusinessTransformationCTA() {
             className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed mb-12"
           >
             {language === "it"
-              ? "Scopri come l'intelligenza artificiale può rivoluzionare la tua azienda. Prenota una consulenza gratuita e personalizzata con i nostri esperti."
-              : "Discover how artificial intelligence can revolutionize your business. Book a free and personalized consultation with our experts."}
+              ? "La concorrenza si sta già muovendo. Prenota una consulenza gratuita e scopri come superarla."
+              : "Competition is already moving. Book a free consultation and find out how to beat them."}
           </motion.p>
         </motion.div>
 
@@ -597,7 +558,7 @@ function BusinessTransformationCTA() {
                 size="lg"
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/20 transition-all duration-300"
               >
-                {language === "it" ? "Prenota Consulenza Gratuita" : "Book Free Consultation"}
+                {language === "it" ? "Prenota Consulenza" : "Book Consultation"}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -613,7 +574,7 @@ function BusinessTransformationCTA() {
                 element?.scrollIntoView({ behavior: "smooth" })
               }}
             >
-              {language === "it" ? "Contattaci Ora" : "Contact Us Now"}
+              {language === "it" ? "Scrivici un Messaggio" : "Write a Message"}
             </Button>
           </motion.div>
         </motion.div>
@@ -651,8 +612,8 @@ function ServicesSection({ services }: { services: any[] }) {
             className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
-              ? "Soluzioni digitali complete su misura per i tuoi obiettivi aziendali"
-              : "Complete digital solutions tailored to your business objectives"}
+              ? "Soluzioni digitali su misura per i tuoi obiettivi aziendali"
+              : "Digital solutions tailored to your business objectives"}
           </motion.p>
         </motion.div>
 
@@ -729,7 +690,7 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
-            {language === "it" ? "I Nostri Progetti" : "Our Projects"}
+            {language === "it" ? "Sistemi Pronti all'Uso" : "Ready-to-Use Systems"}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -738,43 +699,19 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
             className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             {language === "it"
-              ? "Scopri come abbiamo trasformato il business dei nostri clienti con soluzioni AI innovative e risultati misurabili"
-              : "Discover how we transformed our clients' business with innovative AI solutions and measurable results"}
+              ? "Non vendiamo esperimenti. Vendiamo soluzioni testate che risolvono problemi specifici."
+              : "We don't sell experiments. We sell tested solutions that solve specific problems."}
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {projects.map((project, index) => (
             <motion.div
               key={index}
-              initial={{
-                opacity: 0,
-                y: 50,
-                scale: 0.9,
-              }}
-              animate={
-                isInView
-                  ? {
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                    }
-                  : {
-                      opacity: 0,
-                      y: 50,
-                      scale: 0.9,
-                    }
-              }
-              transition={{
-                duration: 0.6,
-                delay: index * 0.2,
-                ease: "easeOut",
-              }}
-              whileHover={{
-                y: -15,
-                scale: 1.03,
-                transition: { duration: 0.3 },
-              }}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
+              transition={{ duration: 0.6, delay: index * 0.2, ease: "easeOut" }}
+              whileHover={{ y: -15, scale: 1.03, transition: { duration: 0.3 } }}
               onClick={() => onProjectClick(project)}
               className="cursor-pointer h-full"
             >
@@ -790,51 +727,21 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                       alt={project.title}
                       fill
                       className="object-cover"
-                      placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                      quality={80}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-6xl opacity-20 text-slate-500">
-                        {project.category === "AI Automation" && <Cpu />}
-                        {project.category === "Chatbot" && <MessageSquare />}
-                        {project.category === "Web Development" && <Monitor />}
-                        {project.category === "AI Marketing" && <BarChart3 />}
+                        <Cpu />
                       </div>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/90 rounded-full p-4 shadow-lg">
-                      <Eye className="w-6 h-6 text-slate-900" />
-                    </div>
-                  </div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 border-0 shadow-sm text-sm">ROI: {project.roi}</Badge>
+                    <Badge className="bg-white/90 text-slate-900 border-0 shadow-sm text-sm">{project.roi}</Badge>
                   </div>
                 </motion.div>
                 <CardHeader className="flex-shrink-0">
                   <div className="flex items-center justify-between mb-3">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={isInView ? { scale: 1 } : { scale: 0 }}
-                      transition={{ delay: index * 0.1 + 0.5, duration: 0.3 }}
-                    >
-                      <Badge
-                        className={`text-sm ${
-                          project.category === "AI Automation"
-                            ? "bg-purple-900/50 text-purple-300 border-purple-700"
-                            : project.category === "Chatbot"
-                              ? "bg-blue-900/50 text-blue-300 border-blue-700"
-                              : project.category === "Web Development"
-                                ? "bg-green-900/50 text-green-300 border-green-700"
-                                : "bg-orange-900/50 text-orange-300 border-orange-700"
-                        }`}
-                      >
-                        {project.category}
-                      </Badge>
-                    </motion.div>
+                    <Badge className="bg-slate-700/50 text-cyan-400 border-cyan-500/30">{project.category}</Badge>
                     <div className="text-sm text-slate-500">{project.timeline}</div>
                   </div>
                   <CardTitle className="text-xl text-white group-hover:text-cyan-400 transition-colors">
@@ -845,44 +752,8 @@ function ProjectsSection({ projects, onProjectClick }: { projects: any[]; onProj
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
-                      <motion.div
-                        key={tagIndex}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                        transition={{
-                          duration: 0.3,
-                          delay: index * 0.2 + tagIndex * 0.1 + 0.7,
-                        }}
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
-                          {tag}
-                        </Badge>
-                      </motion.div>
-                    ))}
-                    {project.tags.length > 3 && (
-                      <Badge variant="outline" className="text-slate-300 text-sm bg-slate-700/50">
-                        +{project.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between mb-4 text-sm">
-                    <div className="flex items-center text-slate-500">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {project.timeline}
-                    </div>
-                    <div className="flex items-center text-slate-500">
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                      {project.roi} ROI
-                    </div>
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white group-hover:shadow-lg transition-all mt-auto text-base">
-                    {language === "it" ? "Visualizza Case Study" : "View Case Study"}
-                    <ArrowRight className="ml-2 w-4 h-4 text-cyan-300" />
+                  <Button className="w-full bg-slate-700 hover:bg-cyan-600 text-white mt-auto">
+                    Scopri i Dettagli <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </CardContent>
               </Card>
@@ -908,66 +779,15 @@ function OurStorySection({ values }: { values: any[] }) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <motion.h2
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-8"
-          >
-            {language === "it" ? "La Nostra Storia" : "Our Story"}
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-slate-400 max-w-4xl mx-auto leading-relaxed mb-12"
-          >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
+            {language === "it" ? "Perché Praxis Futura?" : "Why Praxis Futura?"}
+          </h2>
+          <p className="text-lg text-slate-400 max-w-4xl mx-auto leading-relaxed mb-12">
             {language === "it"
-              ? "Siamo un team di esperti appassionati di tecnologia e innovazione, dedicati a trasformare le aziende attraverso soluzioni AI all'avanguardia. La nostra missione è democratizzare l'accesso all'intelligenza artificiale, rendendo queste potenti tecnologie accessibili a business di ogni dimensione."
-              : "We are a team of experts passionate about technology and innovation, dedicated to transforming businesses through cutting-edge AI solutions. Our mission is to democratize access to artificial intelligence, making these powerful technologies accessible to businesses of all sizes."}
-          </motion.p>
+              ? "Siamo una nuova realtà, affamata e tecnologicamente avanzata. A differenza delle grandi agenzie lente e costose, noi offriamo velocità, attenzione personale e tecnologie che sono uscite il mese scorso, non 10 anni fa."
+              : "We are a new reality, hungry and technologically advanced. Unlike big slow and expensive agencies, we offer speed, personal attention, and technologies that came out last month, not 10 years ago."}
+          </p>
         </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="relative"
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-full"></div>
-            <div className="pl-6">
-              <h3 className="text-2xl font-bold text-cyan-400 mb-4">
-                {language === "it" ? "La Nostra Visione" : "Our Vision"}
-              </h3>
-              <p className="text-slate-400 leading-relaxed text-base">
-                {language === "it"
-                  ? "Crediamo in un futuro dove l'intelligenza artificiale non sostituisce l'uomo, ma lo potenzia, creando opportunità di crescita e innovazione senza precedenti. Vogliamo essere il ponte tra la tecnologia avanzata e il successo aziendale."
-                  : "We believe in a future where artificial intelligence does not replace humans, but empowers them, creating unprecedented opportunities for growth and innovation. We want to be the bridge between advanced technology and business success."}
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="relative"
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-full"></div>
-            <div className="pl-6">
-              <h3 className="text-2xl font-bold text-green-400 mb-4">
-                {language === "it" ? "Il Nostro Impegno" : "Our Commitment"}
-              </h3>
-              <p className="text-slate-400 leading-relaxed text-base">
-                {language === "it"
-                  ? "Ogni progetto è un'opportunità per creare valore reale. Lavoriamo fianco a fianco con i nostri clienti per garantire risultati concreti e misurabili, con un approccio trasparente e orientato al ROI."
-                  : "Every project is an opportunity to create real value. We work side by side with our clients to ensure concrete and measurable results, with a transparent and ROI-oriented approach."}
-              </p>
-            </div>
-          </motion.div>
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value, index) => (
@@ -1017,77 +837,6 @@ function ContactSection({
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const { language } = useLanguage()
 
-  useEffect(() => {
-    // Determine which form to load based on language
-    const isEnglish = language === "en"
-    const targetDivId = isEnglish
-      ? "zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
-      : "zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
-
-    const targetDiv = document.getElementById(targetDivId)
-    if (!targetDiv) return
-
-    try {
-      // Clear previous content
-      targetDiv.innerHTML = ""
-
-      // Create iframe
-      const iframe = document.createElement("iframe")
-
-      // Set form URL based on language
-      const ifrmSrc = isEnglish
-        ? "https://forms.zohopublic.eu/praxisfutura1/form/contactus/formperma/PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs?zf_rszfm=1"
-        : "https://forms.zohopublic.eu/praxisfutura1/form/Contattaci1/formperma/U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw?zf_rszfm=1"
-
-      iframe.src = ifrmSrc
-      iframe.style.border = "none"
-      iframe.style.height = isEnglish ? "915px" : "934px"
-      iframe.style.width = "90%"
-      iframe.style.transition = "all 0.5s ease"
-      iframe.setAttribute("aria-label", isEnglish ? "contact us" : "Contattaci")
-
-      targetDiv.appendChild(iframe)
-
-      // Handle iframe height adjustments
-      const handleMessage = (event: MessageEvent) => {
-        const evntData = event.data
-        if (evntData && evntData.constructor === String) {
-          const zf_ifrm_data = evntData.split("|")
-          if (zf_ifrm_data.length === 2 || zf_ifrm_data.length === 3) {
-            const zf_perma = zf_ifrm_data[0]
-            const zf_ifrm_ht_nw = Number.parseInt(zf_ifrm_data[1], 10) + 15 + "px"
-            const iframeElement = targetDiv.getElementsByTagName("iframe")[0]
-
-            if (
-              iframeElement &&
-              iframeElement.src.indexOf("formperma") > 0 &&
-              iframeElement.src.indexOf(zf_perma) > 0
-            ) {
-              const prevIframeHeight = iframeElement.style.height
-              if (prevIframeHeight !== zf_ifrm_ht_nw) {
-                if (zf_ifrm_data.length === 3) {
-                  setTimeout(() => {
-                    iframeElement.style.height = zf_ifrm_ht_nw
-                  }, 500)
-                } else {
-                  iframeElement.style.height = zf_ifrm_ht_nw
-                }
-              }
-            }
-          }
-        }
-      }
-
-      window.addEventListener("message", handleMessage)
-
-      return () => {
-        window.removeEventListener("message", handleMessage)
-      }
-    } catch (e) {
-      console.error("[v0] Error loading Zoho form:", e)
-    }
-  }, [language])
-
   const contactInfo = [
     {
       icon: <Mail className="w-5 h-5 text-white" />,
@@ -1121,55 +870,28 @@ function ContactSection({
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <motion.h2
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-6"
-          >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             {language === "it" ? "Contattaci" : "Contact Us"}
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed"
-          >
+          </h2>
+          <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
             {language === "it"
-              ? "Pronto a trasformare il tuo business? Contattaci per una consulenza gratuita e scopri come possiamo aiutarti a raggiungere i tuoi obiettivi."
-              : "Ready to transform your business? Contact us for a free consultation and discover how we can help you achieve your goals."}
-          </motion.p>
+              ? "Non aspettare che i problemi si risolvano da soli. Scrivici e capiamo se possiamo aiutarti."
+              : "Don't wait for problems to solve themselves. Write to us and let's see if we can help."}
+          </p>
         </motion.div>
 
         <div className="space-y-12">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="grid md:grid-cols-3 gap-6"
-          >
+          <div className="grid md:grid-cols-3 gap-6">
             {contactInfo.map((contact, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.2 + 0.5,
-                }}
+                transition={{ duration: 0.4, delay: index * 0.2 + 0.5 }}
                 whileHover={{ y: -10, scale: 1.02 }}
                 className="bg-slate-800/50 rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:border-cyan-500 transition-all duration-300"
               >
-                <motion.div
-                  whileHover={{
-                    scale: 1.2,
-                    rotate: 360,
-                    transition: { duration: 0.6 },
-                  }}
-                  className={`p-3 rounded-full ${contact.color} shadow-lg mb-4`}
-                >
-                  {contact.icon}
-                </motion.div>
+                <div className={`p-3 rounded-full ${contact.color} shadow-lg mb-4`}>{contact.icon}</div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">{contact.title}</h3>
                   <p className="text-slate-300 font-medium text-base mb-1">{contact.info}</p>
@@ -1177,42 +899,122 @@ function ContactSection({
                 </div>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="w-full"
-          >
+          <div className="w-full">
             <Card className="shadow-lg bg-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-white text-2xl">
-                  {language === "it" ? "Richiedi un Preventivo Gratuito" : "Request a Free Quote"}
+                  {language === "it" ? "Scrivici un Messaggio" : "Send a Message"}
                 </CardTitle>
                 <CardDescription className="text-slate-400 text-base">
-                  {language === "it"
-                    ? "Compila il form e ti ricontatteremo entro 2 ore lavorative con una proposta personalizzata"
-                    : "Fill out the form and we'll contact you within 2 business hours with a personalized proposal"}
+                  Compila il modulo qui sotto. Ti risponderemo velocemente.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {language === "en" ? (
-                  <div
-                    id="zf_div_PHkNQqzLmekv7BGmF3O6UF1g3v0kw8hrLZ7pJYtzrDs"
-                    style={{ minHeight: "915px" }}
-                    className="w-full flex justify-center"
-                  ></div>
-                ) : (
-                  <div
-                    id="zf_div_U8bRQgQnhMcvyGnKeTA_kNAPdLWm8Fm9LZpTSLzFYMw"
-                    style={{ minHeight: "934px" }}
-                    className="w-full flex justify-center"
-                  ></div>
-                )}
+                <form onSubmit={onSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Nome</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        placeholder="Il tuo nome"
+                        value={formData.name}
+                        onChange={(e) => onInputChange("name", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Email</label>
+                      <input
+                        type="email"
+                        className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        placeholder="tu@azienda.it"
+                        value={formData.email}
+                        onChange={(e) => onInputChange("email", e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Telefono</label>
+                      <input
+                        type="tel"
+                        className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        placeholder="+39..."
+                        value={formData.phone}
+                        onChange={(e) => onInputChange("phone", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Azienda</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        placeholder="Nome azienda"
+                        value={formData.company}
+                        onChange={(e) => onInputChange("company", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300">Messaggio</label>
+                    <textarea
+                      className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all h-32"
+                      placeholder="Come possiamo aiutarti?"
+                      value={formData.message}
+                      onChange={(e) => onInputChange("message", e.target.value)}
+                      required
+                    ></textarea>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white py-6 text-lg font-semibold shadow-lg transition-all"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Invio in corso...
+                      </span>
+                    ) : submitSuccess ? (
+                      <span className="flex items-center text-green-200">
+                        <CheckCircle2 className="mr-2 h-5 w-5" /> Messaggio Inviato!
+                      </span>
+                    ) : language === "it" ? (
+                      "Invia Messaggio"
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
@@ -1353,7 +1155,6 @@ function Footer() {
               </Link>
             </div>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              {/* CHANGE: Removed Facebook icon */}
               <a
                 href="https://www.tiktok.com/@praxisfutura?is_from_webapp=1&sender_device=pc"
                 target="_blank"
@@ -1361,7 +1162,7 @@ function Footer() {
                 className="text-slate-400 hover:text-cyan-300 transition-colors"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
                 </svg>
               </a>
               <a
@@ -1372,7 +1173,12 @@ function Footer() {
               >
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="https://x.com/PraxisFutura" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-green-300 transition-colors">
+              <a
+                href="https://x.com/PraxisFutura"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-green-300 transition-colors"
+              >
                 <Twitter className="w-5 h-5" />
               </a>
             </div>

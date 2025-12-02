@@ -5,6 +5,7 @@ import "./globals.css"
 import { LanguageProvider } from "./contexts/language-context"
 import CookieConsentBanner from "./components/cookie-consent-banner"
 import ChatbotWidget from "./components/chatbot-widget"
+import RecaptchaProvider from "./components/recaptcha-provider"
 import { OrganizationStructuredData, WebSiteStructuredData } from "./components/structured-data"
 
 const inter = Inter({
@@ -94,9 +95,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <LanguageProvider>
-          {children}
-          <CookieConsentBanner />
-          <ChatbotWidget />
+          <RecaptchaProvider>
+            {children}
+            <CookieConsentBanner />
+            <ChatbotWidget />
+          </RecaptchaProvider>
         </LanguageProvider>
       </body>
     </html>
