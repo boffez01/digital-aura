@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
+import { ZohoService } from "@/lib/zoho-service"
 
 const sql = neon(process.env.DATABASE_URL!)
+const zohoService = new ZohoService()
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,6 +72,21 @@ export async function POST(request: NextRequest) {
     `
 
     console.log("✅ Contact saved successfully:", result[0])
+
+    try {
+      console.log("📤 Sending lead to Zoho CRM...")
+      await zohoService.createLead({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone?.trim() || "",
+        company: company?.trim() || "",
+        message: `Servizio Richiesto: ${service_type || "N/A"}\n\nMessaggio:\n${message.trim()}`,
+      })
+      console.log("✅ Lead sent to Zoho CRM successfully")
+    } catch (zohoError) {
+      console.error("⚠️ Failed to send lead to Zoho CRM:", zohoError)
+      // Continue anyway, contact is already saved in database
+    }
 
     return NextResponse.json({
       success: true,
