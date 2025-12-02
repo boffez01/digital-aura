@@ -11,6 +11,17 @@ interface ZohoTokens {
 }
 
 export class ZohoTokenManager {
+  private static instance: ZohoTokenManager
+
+  private constructor() {}
+
+  public static getInstance(): ZohoTokenManager {
+    if (!ZohoTokenManager.instance) {
+      ZohoTokenManager.instance = new ZohoTokenManager()
+    }
+    return ZohoTokenManager.instance
+  }
+
   public async getValidAccessToken(): Promise<string> {
     try {
       const tokenResult = await sql`
@@ -56,6 +67,8 @@ export class ZohoTokenManager {
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] Token refresh failed:", errorText)
       throw new Error(`Token refresh failed: ${response.status}`)
     }
 
@@ -78,6 +91,8 @@ export class ZohoTokenManager {
       throw new Error("ZOHO_REFRESH_TOKEN not found in environment variables")
     }
 
+    console.log("[v0] Refreshing token from environment...")
+
     const response = await fetch(ZOHO_TOKEN_URL, {
       method: "POST",
       headers: {
@@ -92,10 +107,13 @@ export class ZohoTokenManager {
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] Token refresh from env failed:", errorText)
       throw new Error(`Token refresh from env failed: ${response.status}`)
     }
 
     const data = await response.json()
+    console.log("[v0] Token refreshed successfully from env")
     return data.access_token
   }
 }

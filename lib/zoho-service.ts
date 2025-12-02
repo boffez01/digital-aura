@@ -12,16 +12,14 @@ interface BookingData {
   message?: string
 }
 
-// Punti di accesso API per il dominio Europeo (zohoapis.eu)
 const ZOHO_AUTH_URL = "https://accounts.zoho.eu/oauth/v2/token"
 const ZOHO_BOOKINGS_BASE_URL = "https://www.zohoapis.eu/bookings/v1"
-const ZOHO_CRM_BASE_URL = "https://www.zohoapis.eu/crm/v6"
+const ZOHO_CRM_BASE_URL = "https://www.zohoapis.eu/crm/v2"
 
 export class ZohoService {
-  private tokenManager = new ZohoTokenManager()
+  private tokenManager = ZohoTokenManager.getInstance()
 
   private getZohoServiceId(serviceName: string): string {
-    // Map service names to actual Zoho Bookings Service IDs
     const serviceMap: Record<string, string> = {
       "AI Automation": process.env.ZOHO_SERVICE_ID_AI_AUTOMATION || "",
       "Intelligent Chatbots": process.env.ZOHO_SERVICE_ID_CHATBOTS || "",
@@ -30,7 +28,6 @@ export class ZohoService {
       "Priority Support": process.env.ZOHO_SERVICE_ID_PRIORITY_SUPPORT || "",
     }
 
-    // Fallback to a default service ID if not mapped
     return serviceMap[serviceName] || process.env.ZOHO_DEFAULT_SERVICE_ID || ""
   }
 
@@ -38,24 +35,20 @@ export class ZohoService {
     return process.env.ZOHO_ORGANIZATION_ID || ""
   }
 
-  // 1. Gestione Access Token (Refresh Token)
   private async getAccessToken(): Promise<string> {
     return await this.tokenManager.getValidAccessToken()
   }
 
-  // 3. Prenotazione finale (Zoho Bookings)
   public async bookAppointment(data: BookingData): Promise<string> {
     const zohoServiceId = this.getZohoServiceId(data.service)
     const token = await this.getAccessToken()
 
-    // URL: https://www.zohoapis.eu/bookings/v1/json/appointment (datacenter EU)
     const zohoApiUrl = `https://www.zohoapis.eu/bookings/v1/json/appointment`
 
     const formattedDate = this.formatDateForZoho(data.date, data.time)
 
     const formData = new FormData()
     formData.append("service_id", zohoServiceId)
-    // Nota: staff_id è opzionale, Zoho assegna automaticamente uno staff disponibile
     formData.append("from_time", formattedDate)
     formData.append("timezone", "Europe/Rome")
     formData.append(
@@ -100,15 +93,12 @@ export class ZohoService {
   }
 
   private formatDateForZoho(date: string, time: string): string {
-    // Input: date = "2024-11-12", time = "14:00"
-    // Output: "12-Nov-2024 14:00:00"
     const [year, month, day] = date.split("-")
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     const monthName = monthNames[Number.parseInt(month) - 1]
     return `${day}-${monthName}-${year} ${time}:00`
   }
 
-  // 4. Invio Contatto (Zoho CRM)
   public async createLead(contactData: any): Promise<void> {
     try {
       const token = await this.getAccessToken()
@@ -117,16 +107,18 @@ export class ZohoService {
       const zohoPayload = {
         data: [
           {
-            Company: contactData.company || "Praxis Futura Chatbot Lead",
+            Company: contactData.company || "Da Sito Web",
             Last_Name: contactData.name?.split(" ").pop() || contactData.name,
-            First_Name: contactData.name?.split(" ").slice(0, -1).join(" ") || contactData.name,
+            First_Name: contactData.name?.split(" ").slice(0, -1).join(" ") || "Guest",
             Email: contactData.email,
             Phone: contactData.phone,
-            Description: contactData.message,
-            Lead_Source: "Chatbot PraxisBot",
+            Description: `Messaggio: ${contactData.message}\nServizio: ${contactData.service_type || "Generico"}`,
+            Lead_Source: "Sito Web (Contact Form)",
           },
         ],
       }
+
+      console.log("[v0] Sending Lead to Zoho CRM:", contactData.email)
 
       const response = await fetch(zohoApiUrl, {
         method: "POST",
@@ -137,20 +129,22 @@ export class ZohoService {
         body: JSON.stringify(zohoPayload),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Zoho CRM Lead API Error:", errorData)
-      } else {
-        console.log("[v0] Lead inviato a Zoho CRM con successo")
+      const result = await response.json()
+
+      if (!response.ok || (result.data && result.data[0].status === "error")) {
+        console.error("[v0] Zoho CRM Lead API Error:", JSON.stringify(result))
+        throw new Error(`Zoho CRM Error: ${result.message || result.data?.[0]?.message}`)
       }
+
+      console.log("[v0] Lead salvato in Zoho CRM! ID:", result.data[0].details.id)
     } catch (error) {
-      console.error("❌ Errore durante la creazione del Lead su Zoho:", error)
+      console.error("[v0] Errore durante la creazione del Lead su Zoho:", error)
+      throw error
     }
   }
 
-  // 5. Recupero del Contesto Cliente (Dati Zia/CRM)
   public async getCustomerContext(email: string): Promise<any | null> {
-    console.log(`📞 Chiamata Zoho CRM: Ricerca Contesto per email: ${email}`)
+    console.log(`[v0] Chiamata Zoho CRM: Ricerca Contesto per email: ${email}`)
 
     if (!email) {
       return null
@@ -158,7 +152,6 @@ export class ZohoService {
 
     try {
       const token = await this.getAccessToken()
-      // Ricerca un Contatto nel CRM tramite email
       const searchUrl = `${ZOHO_CRM_BASE_URL}/Contacts/search?email=${encodeURIComponent(email)}`
 
       const response = await fetch(searchUrl, {
@@ -167,7 +160,7 @@ export class ZohoService {
       })
 
       if (!response.ok) {
-        console.error("Zoho Context Search failed:", response.status)
+        console.error("[v0] Zoho Context Search failed:", response.status)
         return null
       }
 
@@ -175,7 +168,6 @@ export class ZohoService {
       const customer = data.data?.[0]
 
       if (customer) {
-        // Mappa i campi rilevanti per l'AI
         return {
           status: customer.Status || "N/A",
           lead_score: customer.Zia_Score__c || "N/A",
@@ -185,7 +177,7 @@ export class ZohoService {
       }
       return null
     } catch (error) {
-      console.error("❌ Errore nel recupero contesto Zoho Zia/CRM:", error)
+      console.error("[v0] Errore nel recupero contesto Zoho Zia/CRM:", error)
       return null
     }
   }
