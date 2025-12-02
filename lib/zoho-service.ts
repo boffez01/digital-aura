@@ -104,21 +104,33 @@ export class ZohoService {
       const token = await this.getAccessToken()
       const zohoApiUrl = `${ZOHO_CRM_BASE_URL}/Leads`
 
+      const lastName = contactData.Last_Name || contactData.name?.split(" ").pop() || "Sconosciuto"
+      const firstName = contactData.First_Name || contactData.name?.split(" ").slice(0, -1).join(" ") || "Guest"
+      const email = contactData.Email || contactData.email
+      const phone = contactData.Phone || contactData.phone
+      const company = contactData.Company || contactData.company || "Da Sito Web"
+
+      // QUI ERA L'ERRORE: Ora controlliamo se c'è già una Description pronta
+      let description = contactData.Description
+      if (!description && contactData.message) {
+        description = `Messaggio: ${contactData.message}\nServizio: ${contactData.service_type || "Generico"}`
+      }
+
       const zohoPayload = {
         data: [
           {
-            Company: contactData.company || "Da Sito Web",
-            Last_Name: contactData.name?.split(" ").pop() || contactData.name,
-            First_Name: contactData.name?.split(" ").slice(0, -1).join(" ") || "Guest",
-            Email: contactData.email,
-            Phone: contactData.phone,
-            Description: `Messaggio: ${contactData.message}\nServizio: ${contactData.service_type || "Generico"}`,
+            Last_Name: lastName,
+            First_Name: firstName,
+            Email: email,
+            Phone: phone,
+            Company: company,
+            Description: description, // Ora questo campo non sarà mai vuoto se c'è un messaggio
             Lead_Source: "Sito Web (Contact Form)",
           },
         ],
       }
 
-      console.log("[v0] Sending Lead to Zoho CRM:", contactData.email)
+      console.log("[v0] Sending Lead to Zoho CRM:", email)
 
       const response = await fetch(zohoApiUrl, {
         method: "POST",
