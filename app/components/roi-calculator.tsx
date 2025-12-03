@@ -7,27 +7,26 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "../contexts/language-context"
 
 export default function ROICalculatorSection() {
+  const { language } = useLanguage()
+
   const [hoursPerWeek, setHoursPerWeek] = useState(10)
   const [hourlyRate, setHourlyRate] = useState(25)
   const [missedLeads, setMissedLeads] = useState(5)
   const [leadValue, setLeadValue] = useState(500)
-  
+
   const [savings, setSavings] = useState(0)
   const [revenueGained, setRevenueGained] = useState(0)
   const [totalBenefit, setTotalBenefit] = useState(0)
 
   useEffect(() => {
-    // Calcolo Costi Risparmiati (Automazione)
-    // Assumiamo che l'automazione faccia il lavoro di 1 persona part-time
     const weeklyCost = hoursPerWeek * hourlyRate
-    const yearlyCost = weeklyCost * 48 // 48 settimane lavorative
-    
-    // Calcolo Fatturato Perso (Chiamate perse/Lead)
-    // Assumiamo che l'automazione recuperi l'80% dei lead persi
+    const yearlyCost = weeklyCost * 48
+
     const recoveredLeads = missedLeads * 0.8
-    const yearlyRevenue = recoveredLeads * leadValue * 12 // 12 mesi
+    const yearlyRevenue = recoveredLeads * leadValue * 12
 
     setSavings(yearlyCost)
     setRevenueGained(yearlyRevenue)
@@ -38,8 +37,14 @@ export default function ROICalculatorSection() {
     <section className="py-20 px-4 bg-slate-900">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Calcolatore ROI</h2>
-          <p className="text-lg text-slate-400">Scopri quanti soldi stai lasciando sul tavolo ogni anno.</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            {language === "it" ? "Calcolatore ROI" : "ROI Calculator"}
+          </h2>
+          <p className="text-lg text-slate-400">
+            {language === "it"
+              ? "Scopri quanti soldi stai lasciando sul tavolo ogni anno."
+              : "Discover how much money you're leaving on the table each year."}
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -47,50 +52,71 @@ export default function ROICalculatorSection() {
           <div className="space-y-8 bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
             <div>
               <label className="text-white font-medium mb-4 block flex justify-between">
-                <span>Ore perse a settimana in task manuali</span>
-                <span className="text-cyan-400">{hoursPerWeek} ore</span>
+                <span>
+                  {language === "it"
+                    ? "Ore perse a settimana in task manuali"
+                    : "Hours wasted per week on manual tasks"}
+                </span>
+                <span className="text-cyan-400">
+                  {hoursPerWeek} {language === "it" ? "ore" : "hrs"}
+                </span>
               </label>
               <Slider
                 value={[hoursPerWeek]}
                 onValueChange={(val) => setHoursPerWeek(val[0])}
-                max={40} step={1}
+                max={40}
+                step={1}
                 className="py-4"
               />
-              <p className="text-xs text-slate-500">Es: Data entry, preventivi, gestione agenda</p>
+              <p className="text-xs text-slate-500">
+                {language === "it"
+                  ? "Es: Data entry, preventivi, gestione agenda"
+                  : "E.g.: Data entry, quotes, calendar management"}
+              </p>
             </div>
 
             <div>
               <label className="text-white font-medium mb-4 block flex justify-between">
-                <span>Costo orario medio dipendente (€)</span>
+                <span>
+                  {language === "it" ? "Costo orario medio dipendente (€)" : "Average employee hourly cost (€)"}
+                </span>
                 <span className="text-cyan-400">€{hourlyRate}/h</span>
               </label>
               <Slider
                 value={[hourlyRate]}
                 onValueChange={(val) => setHourlyRate(val[0])}
-                max={100} step={5}
+                max={100}
+                step={5}
                 className="py-4"
               />
             </div>
 
             <div className="pt-4 border-t border-slate-700">
               <label className="text-white font-medium mb-4 block flex justify-between">
-                <span>Clienti/Chiamate perse al mese</span>
+                <span>{language === "it" ? "Clienti/Chiamate perse al mese" : "Customers/Calls lost per month"}</span>
                 <span className="text-cyan-400">{missedLeads}</span>
               </label>
               <Slider
                 value={[missedLeads]}
                 onValueChange={(val) => setMissedLeads(val[0])}
-                max={50} step={1}
+                max={50}
+                step={1}
                 className="py-4"
               />
-              <p className="text-xs text-slate-500">Es: Chiamate a cui non rispondi, preventivi non inviati</p>
+              <p className="text-xs text-slate-500">
+                {language === "it"
+                  ? "Es: Chiamate a cui non rispondi, preventivi non inviati"
+                  : "E.g.: Unanswered calls, quotes not sent"}
+              </p>
             </div>
 
             <div>
-              <label className="text-white font-medium mb-2 block">Valore medio di un cliente (€)</label>
-              <Input 
-                type="number" 
-                value={leadValue} 
+              <label className="text-white font-medium mb-2 block">
+                {language === "it" ? "Valore medio di un cliente (€)" : "Average customer value (€)"}
+              </label>
+              <Input
+                type="number"
+                value={leadValue}
                 onChange={(e) => setLeadValue(Number(e.target.value))}
                 className="bg-slate-900 border-slate-600 text-white"
               />
@@ -101,30 +127,39 @@ export default function ROICalculatorSection() {
           <Card className="bg-gradient-to-br from-blue-900 to-slate-900 border-blue-500/30 overflow-hidden relative">
             <div className="absolute top-0 right-0 p-32 bg-blue-500/10 blur-3xl rounded-full"></div>
             <CardContent className="p-8 relative z-10 text-center flex flex-col justify-center h-full min-h-[400px]">
-              
-              <h3 className="text-xl text-slate-300 mb-2">Potenziale Annuo Sprecato</h3>
+              <h3 className="text-xl text-slate-300 mb-2">
+                {language === "it" ? "Potenziale Annuo Sprecato" : "Annual Wasted Potential"}
+              </h3>
               <div className="text-5xl md:text-6xl font-bold text-white mb-8 tracking-tight">
-                €{totalBenefit.toLocaleString('it-IT')}
+                €{totalBenefit.toLocaleString("it-IT")}
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-slate-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-slate-400 mb-1">Costi Sprechi</p>
-                  <p className="text-2xl font-bold text-red-400">€{savings.toLocaleString('it-IT')}</p>
+                  <p className="text-sm text-slate-400 mb-1">{language === "it" ? "Costi Sprechi" : "Wasted Costs"}</p>
+                  <p className="text-2xl font-bold text-red-400">€{savings.toLocaleString("it-IT")}</p>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-slate-400 mb-1">Mancato Incasso</p>
-                  <p className="text-2xl font-bold text-yellow-400">€{revenueGained.toLocaleString('it-IT')}</p>
+                  <p className="text-sm text-slate-400 mb-1">
+                    {language === "it" ? "Mancato Incasso" : "Lost Revenue"}
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-400">€{revenueGained.toLocaleString("it-IT")}</p>
                 </div>
               </div>
 
               <p className="text-slate-300 mb-8">
-                Con un investimento una tantum, puoi recuperare questo capitale e automatizzare la tua azienda per sempre.
+                {language === "it"
+                  ? "Con un investimento una tantum, puoi recuperare questo capitale e automatizzare la tua azienda per sempre."
+                  : "With a one-time investment, you can recover this capital and automate your business forever."}
               </p>
 
               <Link href="/appointments">
-                <Button size="lg" className="w-full bg-white text-blue-900 hover:bg-blue-50 font-bold text-lg py-6 shadow-xl">
-                  Smetti di Perdere Soldi <ArrowRight className="ml-2 w-5 h-5" />
+                <Button
+                  size="lg"
+                  className="w-full bg-white text-blue-900 hover:bg-blue-50 font-bold text-lg py-6 shadow-xl"
+                >
+                  {language === "it" ? "Smetti di Perdere Soldi" : "Stop Losing Money"}{" "}
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </CardContent>

@@ -528,17 +528,13 @@ function BusinessTransformationCTA() {
               initial={{ opacity: 0, y: 50 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
               transition={{ duration: 0.6, delay: index * 0.2 + 0.8 }}
-              whileHover={{ y: -10, scale: 1.02 }}
               className="text-center"
             >
               <Card className="bg-slate-800/50 shadow-lg hover:shadow-xl transition-all duration-300 h-full hover:border-cyan-500/50 p-8">
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                  className="inline-flex p-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg mb-6 text-white"
-                >
+                {/* CHANGE: Removed whileHover animation (scale, rotate) and gradient background from icon */}
+                <div className="inline-flex p-4 rounded-full bg-slate-700 shadow-lg mb-6 text-cyan-400">
                   {feature.icon}
-                </motion.div>
+                </div>
                 <h3 className="text-xl font-bold text-white mb-4">{feature.title}</h3>
                 <p className="text-slate-400 leading-relaxed">{feature.description}</p>
               </Card>
@@ -800,13 +796,8 @@ function OurStorySection({ values }: { values: any[] }) {
               className="h-full"
             >
               <Card className="h-full text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-slate-800/50 hover:border-cyan-500">
-                <motion.div
-                  whileHover={{ scale: 1.2, rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                  className={`inline-flex p-4 rounded-full bg-slate-700 mb-6 ${value.color}`}
-                >
-                  {value.icon}
-                </motion.div>
+                {/* CHANGE: Removed whileHover animation (scale, rotate) from icon */}
+                <div className={`inline-flex p-4 rounded-full bg-slate-700 mb-6 ${value.color}`}>{value.icon}</div>
                 <CardTitle className="text-xl text-white mb-3">{value.title}</CardTitle>
                 <CardDescription className="text-slate-400 leading-relaxed text-base">
                   {value.description}
@@ -908,18 +899,22 @@ function ContactSection({
                   {language === "it" ? "Scrivici un Messaggio" : "Send a Message"}
                 </CardTitle>
                 <CardDescription className="text-slate-400 text-base">
-                  Compila il modulo qui sotto. Ti risponderemo velocemente.
+                  {language === "it"
+                    ? "Compila il modulo qui sotto. Ti risponderemo velocemente."
+                    : "Fill out the form below. We'll respond quickly."}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={onSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-300">Nome</label>
+                      <label className="text-sm font-medium text-slate-300">
+                        {language === "it" ? "Nome" : "Name"}
+                      </label>
                       <input
                         type="text"
                         className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                        placeholder="Il tuo nome"
+                        placeholder={language === "it" ? "Il tuo nome" : "Your name"}
                         value={formData.name}
                         onChange={(e) => onInputChange("name", e.target.value)}
                         required
@@ -930,7 +925,7 @@ function ContactSection({
                       <input
                         type="email"
                         className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                        placeholder="tu@azienda.it"
+                        placeholder={language === "it" ? "tu@azienda.it" : "you@company.com"}
                         value={formData.email}
                         onChange={(e) => onInputChange("email", e.target.value)}
                         required
@@ -940,7 +935,9 @@ function ContactSection({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-300">Telefono</label>
+                      <label className="text-sm font-medium text-slate-300">
+                        {language === "it" ? "Telefono" : "Phone"}
+                      </label>
                       <input
                         type="tel"
                         className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
@@ -950,11 +947,13 @@ function ContactSection({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-300">Azienda</label>
+                      <label className="text-sm font-medium text-slate-300">
+                        {language === "it" ? "Azienda" : "Company"}
+                      </label>
                       <input
                         type="text"
                         className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                        placeholder="Nome azienda"
+                        placeholder={language === "it" ? "Nome azienda" : "Company name"}
                         value={formData.company}
                         onChange={(e) => onInputChange("company", e.target.value)}
                       />
@@ -962,10 +961,12 @@ function ContactSection({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Messaggio</label>
+                    <label className="text-sm font-medium text-slate-300">
+                      {language === "it" ? "Messaggio" : "Message"}
+                    </label>
                     <textarea
                       className="w-full p-3 rounded-md bg-slate-900/50 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all h-32"
-                      placeholder="Come possiamo aiutarti?"
+                      placeholder={language === "it" ? "Come possiamo aiutarti?" : "How can we help you?"}
                       value={formData.message}
                       onChange={(e) => onInputChange("message", e.target.value)}
                       required
@@ -999,11 +1000,12 @@ function ContactSection({
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Invio in corso...
+                        {language === "it" ? "Invio in corso..." : "Sending..."}
                       </span>
                     ) : submitSuccess ? (
                       <span className="flex items-center text-green-200">
-                        <CheckCircle2 className="mr-2 h-5 w-5" /> Messaggio Inviato!
+                        <CheckCircle2 className="mr-2 h-5 w-5" />{" "}
+                        {language === "it" ? "Messaggio Inviato!" : "Message Sent!"}
                       </span>
                     ) : language === "it" ? (
                       "Invia Messaggio"
