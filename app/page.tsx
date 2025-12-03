@@ -55,11 +55,11 @@ export default function DigitalAuraPortfolio() {
   const services = [
     {
       icon: <MessageSquare className="w-12 h-12" />,
-      title: language === "it" ? "Chatbot Intelligenti" : "Intelligent Chatbots",
+      title: language === "it" ? "Chatbot & Voice AI" : "Chatbot & Voice AI",
       description:
         language === "it"
-          ? "Chatbot AI avanzati che comprendono il linguaggio naturale e forniscono risposte personalizzate 24/7"
-          : "Advanced AI chatbots that understand natural language and provide personalized responses 24/7",
+          ? "Il tuo miglior venditore, disponibile h24. Risponde al telefono e in chat, qualifica i clienti e fissa appuntamenti sul tuo calendario."
+          : "Your best salesperson, available 24/7. Answers phone and chat, qualifies leads, and books appointments on your calendar.",
       href: "/services/chatbot",
       gradient: "from-blue-500 to-cyan-500",
       bgGradient: "bg-gradient-to-br from-blue-500/10 to-cyan-500/10",
@@ -67,11 +67,11 @@ export default function DigitalAuraPortfolio() {
     },
     {
       icon: <Zap className="w-12 h-12" />,
-      title: language === "it" ? "Automazione AI" : "AI Automation",
+      title: language === "it" ? "Automazione Totale" : "Full Automation",
       description:
         language === "it"
-          ? "Soluzioni di automazione intelligente per ottimizzare i processi aziendali e aumentare l'efficienza"
-          : "Intelligent automation solutions to optimize business processes and increase efficiency",
+          ? "Colleghiamo i tuoi software (CRM, Email, Fatture). Elimina il copia-incolla e gli errori umani per sempre."
+          : "We connect your software (CRM, Email, Invoices). Eliminate copy-pasting and human errors forever.",
       href: "/services/ai-automation",
       gradient: "from-purple-500 to-pink-500",
       bgGradient: "bg-gradient-to-br from-purple-500/10 to-pink-500/10",
@@ -79,11 +79,11 @@ export default function DigitalAuraPortfolio() {
     },
     {
       icon: <Globe className="w-12 h-12" />,
-      title: language === "it" ? "Sviluppo Web" : "Web Development",
+      title: language === "it" ? "Siti Web Performanti" : "High-Performance Web",
       description:
         language === "it"
-          ? "Siti web moderni, responsive e ottimizzati per le performance con tecnologie all'avanguardia"
-          : "Modern, responsive and optimized websites with cutting-edge technology",
+          ? "Non semplici vetrine, ma macchine da guerra per generare contatti. Veloci, ottimizzati SEO e progettati per convertire."
+          : "Not just showcases, but lead generation machines. Fast, SEO optimized, and designed to convert.",
       href: "/services/web-development",
       gradient: "from-green-500 to-emerald-500",
       bgGradient: "bg-gradient-to-br from-green-500/10 to-emerald-500/10",
@@ -91,11 +91,11 @@ export default function DigitalAuraPortfolio() {
     },
     {
       icon: <BarChart3 className="w-12 h-12" />,
-      title: language === "it" ? "Marketing AI" : "AI Marketing",
+      title: language === "it" ? "Marketing Automatico" : "Automated Marketing",
       description:
         language === "it"
-          ? "Strategie di marketing potenziate dall'AI per targeting preciso e campagne ad alto ROI"
-          : "AI-powered marketing strategies for precise targeting and high ROI campaigns",
+          ? "Insegui i clienti in automatico. Email, SMS e messaggi per recuperare chi non ha comprato subito."
+          : "Chase customers automatically. Email, SMS, and messages to recover those who didn't buy immediately.",
       href: "/services/ai-marketing",
       gradient: "from-orange-500 to-red-500",
       bgGradient: "bg-gradient-to-br from-orange-500/10 to-red-500/10",
@@ -108,96 +108,77 @@ export default function DigitalAuraPortfolio() {
   const projects = [
     {
       id: 1,
-      title: language === "it" ? "E-commerce Revenue System" : "E-commerce Revenue System",
-      category: language === "it" ? "AI Automation" : "AI Automation",
+      title: "AI Voice Receptionist",
+      category: "AI Automation",
       description:
-        language === "it"
-          ? "Sistema di recupero carrelli e raccomandazioni prodotti per e-commerce."
-          : "Cart recovery and product recommendation system for e-commerce.",
-      tags: ["AI", "Automation", "E-commerce", "Sales"],
-      timeline: language === "it" ? "Setup: 3 Settimane" : "Setup: 3 Weeks",
-      roi: "Automazione",
-      image: "/ecommerce-project.png",
-      problem:
-        language === "it"
-          ? "SCENARIO TIPICO: Molti e-commerce hanno traffico ma bassi tassi di conversione. I clienti aggiungono al carrello e poi spariscono."
-          : "TYPICAL SCENARIO: Many e-commerce sites have traffic but low conversion rates. Customers add to cart and then disappear.",
-      solution:
-        language === "it"
-          ? "SOLUZIONE: Implementiamo flussi automatici che inseguono il cliente su email e SMS, proponendo prodotti correlati e sconti personalizzati al momento giusto."
-          : "SOLUTION: We implement automated flows that chase the customer via email and SMS, offering related products and personalized discounts at the right time.",
-      results:
-        language === "it"
-          ? [
-              "Recupero automatico carrelli",
-              "Email marketing personalizzato",
-              "Upselling automatico",
-              "Analisi comportamento utenti",
-            ]
-          : [
-              "Automatic cart recovery",
-              "Personalized email marketing",
-              "Automatic upselling",
-              "User behavior analysis",
-            ],
-      technologies: ["Klaviyo AI", "Shopify API", "Make.com"],
-    },
-    {
-      id: 2,
-      title: language === "it" ? "Customer Support AI" : "Customer Support AI",
-      category: language === "it" ? "Chatbot" : "Chatbot",
-      description:
-        language === "it"
-          ? "Assistente intelligente che filtra e risolve l'80% delle richieste di supporto."
-          : "Intelligent assistant that filters and resolves 80% of support requests.",
-      tags: ["NLP", "Customer Service", "24/7 Support"],
-      timeline: language === "it" ? "Setup: 2 Settimane" : "Setup: 2 Weeks",
-      roi: "Efficienza",
+        language === "it" ? "Il telefono non suona più a vuoto. Mai più." : "The phone never rings out. Ever again.",
+      tags: ["Vapi.ai", "Voice AI", "Booking"],
+      timeline: language === "it" ? "Setup: 3 Giorni" : "Setup: 3 Days",
+      roi: "100% Risposte",
       image: "/chatbot-project.png",
       problem:
         language === "it"
-          ? "SCENARIO TIPICO: Il team di supporto è sommerso dalle stesse 5 domande ripetitive (spedizioni, resi, orari), sprecando tempo prezioso."
-          : "TYPICAL SCENARIO: The support team is overwhelmed by the same 5 repetitive questions (shipping, returns, hours), wasting precious time.",
+          ? "SCENARIO: Sei in cantiere o in riunione. Il telefono squilla. Non rispondi. Il cliente chiama il concorrente."
+          : "SCENARIO: You are on site or in a meeting. The phone rings. You don't answer. The client calls the competitor.",
       solution:
         language === "it"
-          ? "SOLUZIONE: Un Chatbot addestrato sulla tua Knowledge Base che risponde istantaneamente h24, passando all'umano solo i problemi complessi."
-          : "SOLUTION: A Chatbot trained on your Knowledge Base that responds instantly 24/7, passing only complex problems to a human.",
+          ? "SOLUZIONE: Un'AI vocale risponde al primo squillo, capisce la richiesta e fissa l'appuntamento direttamente sul tuo Google Calendar."
+          : "SOLUTION: A voice AI answers on the first ring, understands the request, and books the appointment directly on your Google Calendar.",
       results:
         language === "it"
-          ? [
-              "Risposte istantanee h24",
-              "Filtro richieste base",
-              "Migliore esperienza cliente",
-              "Riduzione costi personale",
-            ]
-          : ["Instant 24/7 responses", "Basic request filtering", "Better customer experience", "Staff cost reduction"],
-      technologies: ["OpenAI GPT-4", "Intercom/Zendesk", "Node.js"],
+          ? ["Zero clienti persi", "Niente segreteria", "Agenda piena"]
+          : ["Zero lost clients", "No voicemail", "Full agenda"],
+      technologies: ["Vapi", "OpenAI", "Google Calendar"],
+    },
+    {
+      id: 2,
+      title: "E-commerce Support Bot",
+      category: "Chatbot",
+      description:
+        language === "it" ? "Il commesso virtuale che non dorme mai." : "The virtual shop assistant that never sleeps.",
+      tags: ["OpenAI", "Sales", "Support"],
+      timeline: language === "it" ? "Setup: 2 Settimane" : "Setup: 2 Weeks",
+      roi: "+20% Vendite",
+      image: "/ecommerce-project.png",
+      problem:
+        language === "it"
+          ? "SCENARIO: I clienti hanno dubbi su spedizioni o taglie alle 23:00. Nessuno risponde. Abbandonano il carrello."
+          : "SCENARIO: Customers have doubts about shipping or sizes at 11 PM. No one answers. They abandon the cart.",
+      solution:
+        language === "it"
+          ? "SOLUZIONE: Un Chatbot addestrato sui tuoi prodotti che risponde in 2 secondi, consiglia articoli e chiude la vendita."
+          : "SOLUTION: A Chatbot trained on your products that answers in 2 seconds, recommends items, and closes the sale.",
+      results:
+        language === "it"
+          ? ["Vendite notturne", "Meno ticket supporto", "Clienti felici"]
+          : ["Night sales", "Fewer support tickets", "Happy customers"],
+      technologies: ["OpenAI GPT-4", "Shopify", "Node.js"],
     },
     {
       id: 3,
-      title: language === "it" ? "Lead Gen Website" : "Lead Gen Website",
-      category: language === "it" ? "Web Development" : "Web Development",
+      title: "Sito Web Lead-Gen",
+      category: "Web Development",
       description:
         language === "it"
-          ? "Sito web ad alte prestazioni progettato specificamente per convertire visitatori in contatti."
-          : "High-performance website designed specifically to convert visitors into leads.",
-      tags: ["Next.js", "SEO", "Conversion Rate"],
-      timeline: language === "it" ? "4 Settimane" : "4 Weeks",
+          ? "Una macchina per generare contatti, non un biglietto da visita."
+          : "A lead generation machine, not a business card.",
+      tags: ["Next.js", "Conversion", "Speed"],
+      timeline: "4 Settimane",
       roi: "Velocità",
       image: "/web-development-project.png",
       problem:
         language === "it"
-          ? "SCENARIO TIPICO: Il sito aziendale è lento, vecchio e non è ottimizzato per i cellulari. I clienti entrano ed escono senza contattare."
-          : "TYPICAL SCENARIO: The company website is slow, old, and not optimized for mobile. Customers enter and leave without contacting.",
+          ? "SCENARIO: Hai un sito vecchio, lento, che non si vede bene sul cellulare. I clienti entrano ed escono subito."
+          : "SCENARIO: You have an old, slow site that doesn't look good on mobile. Customers enter and leave immediately.",
       solution:
         language === "it"
-          ? "SOLUZIONE: Sviluppo di un sito ultra-veloce in Next.js con copy persuasivo, call-to-action chiare e ottimizzazione SEO locale."
-          : "SOLUTION: Development of an ultra-fast Next.js site with persuasive copy, clear call-to-actions, and local SEO optimization.",
+          ? "SOLUZIONE: Rifacciamo tutto con tecnologia Next.js. Velocità istantanea, design che ispira fiducia e percorsi chiari per farti contattare."
+          : "SOLUTION: We rebuild everything with Next.js technology. Instant speed, design that inspires trust, and clear paths to get contacted.",
       results:
         language === "it"
-          ? ["Caricamento < 1 secondo", "Design orientato alla vendita", "SEO Tecnico avanzato", "Mobile First"]
-          : ["Load time < 1 second", "Sales-oriented design", "Advanced Technical SEO", "Mobile First"],
-      technologies: ["Next.js", "Tailwind CSS", "Vercel Analytics"],
+          ? ["Caricamento < 1s", "Design Premium", "Più contatti"]
+          : ["Load < 1s", "Premium Design", "More leads"],
+      technologies: ["Next.js", "Tailwind CSS", "Vercel"],
     },
     {
       id: 4,
@@ -230,36 +211,38 @@ export default function DigitalAuraPortfolio() {
   const values = [
     {
       icon: <Lightbulb className="w-8 h-8" />,
-      title: language === "it" ? "Innovazione Pratica" : "Practical Innovation",
+      title: language === "it" ? "Ingegneri, non Artisti" : "Engineers, not Artists",
       description:
         language === "it"
-          ? "Niente teoria. Usiamo l'AI per risolvere problemi concreti."
-          : "No theory. We use AI to solve concrete problems.",
+          ? "Non facciamo 'cose belle'. Facciamo cose che funzionano e portano fatturato."
+          : "We don't make 'pretty things'. We make things that work and bring revenue.",
       color: "text-cyan-400",
     },
     {
       icon: <Target className="w-8 h-8" />,
-      title: language === "it" ? "Focus sul ROI" : "Focus on ROI",
+      title: language === "it" ? "Ossessionati dal ROI" : "Obsessed with ROI",
       description:
         language === "it"
-          ? "Ogni automazione deve generare un ritorno economico."
-          : "Every automation must generate an economic return.",
+          ? "Se spendi 1€ con noi, devi riprenderne almeno 3. Altrimenti abbiamo fallito."
+          : "If you spend €1 with us, you must get at least 3 back. Otherwise, we failed.",
       color: "text-cyan-400",
     },
     {
       icon: <Handshake className="w-8 h-8" />,
-      title: language === "it" ? "Partner Tecnologico" : "Tech Partner",
+      title: language === "it" ? "Parliamo la tua Lingua" : "We Speak Your Language",
       description:
         language === "it"
-          ? "Siamo il tuo reparto IT esterno, sempre disponibile."
-          : "We are your external IT department, always available.",
+          ? "Niente termini tecnici incomprensibili. Ti spieghiamo tutto in modo semplice e chiaro."
+          : "No incomprehensible technical terms. We explain everything simply and clearly.",
       color: "text-cyan-400",
     },
     {
       icon: <Rocket className="w-8 h-8" />,
-      title: language === "it" ? "Velocità di Esecuzione" : "Execution Speed",
+      title: language === "it" ? "Velocità Startup" : "Startup Speed",
       description:
-        language === "it" ? "Progetti consegnati in settimane, non mesi." : "Projects delivered in weeks, not months.",
+        language === "it"
+          ? "Le grandi agenzie ci mettono mesi. Noi ci mettiamo giorni. Il business non aspetta."
+          : "Big agencies take months. We take days. Business doesn't wait.",
       color: "text-cyan-400",
     },
   ]
@@ -355,20 +338,18 @@ export default function DigitalAuraPortfolio() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-white leading-tight">
               {language === "it" ? (
                 <>
-                  Porta la Tua Azienda
+                  Smetti di Perdere Tempo.
                   <br />
-                  Nel Futuro con{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                    l'Intelligenza Artificiale
+                    Automatizza il Tuo Business.
                   </span>
                 </>
               ) : (
                 <>
-                  Take Your Business
+                  Stop Wasting Time.
                   <br />
-                  Into the Future with{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                    Artificial Intelligence
+                    Automate Your Business.
                   </span>
                 </>
               )}
@@ -376,8 +357,8 @@ export default function DigitalAuraPortfolio() {
 
             <p className="text-lg text-white/80 mb-10 leading-relaxed max-w-3xl mx-auto">
               {language === "it"
-                ? "Siamo nativi digitali. Aiutiamo le PMI a eliminare il lavoro inutile e scalare i profitti usando Chatbot, Automazioni e Siti Web di nuova generazione."
-                : "We are digital natives. We help SMEs eliminate useless work and scale profits using Chatbots, Automations, and next-gen Websites."}
+                ? "Recupera 15+ ore a settimana. Elimina il data-entry manuale, le chiamate perse e i processi lenti. Costruiamo sistemi che lavorano al posto tuo, h24."
+                : "Recover 15+ hours a week. Eliminate manual data entry, missed calls, and slow processes. We build systems that work for you, 24/7."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -400,7 +381,7 @@ export default function DigitalAuraPortfolio() {
                     variant="outline"
                     className="border-white/20 hover:bg-white/10 text-white text-lg px-8 py-4 rounded-full backdrop-blur-sm transition-all duration-300 bg-transparent"
                   >
-                    {language === "it" ? "Cosa Facciamo" : "What We Do"}
+                    {language === "it" ? "Vedi Soluzioni" : "See Solutions"}
                   </Button>
                 </Link>
               </motion.div>
