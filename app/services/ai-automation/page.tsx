@@ -335,8 +335,8 @@ export default function AIAutomationPage() {
               </AccordionTrigger>
               <AccordionContent className="text-slate-400">
                 {language === "it"
-                  ? "Dipende dalla complessità. Un'automazione semplice (es. Email → Excel) parte da poche centinaia di euro. Un sistema completo di gestione aziendale è un investimento che si ripaga in 3 mesi."
-                  : "It depends on complexity. A simple automation (e.g. Email → Excel) starts from a few hundred euros. A complete business management system is an investment that pays off in 3 months."}
+                  ? "Dipende dalla complessità. Un'automazione semplice (es. Email a Excel) parte da poche centinaia di euro. Un sistema completo di gestione aziendale è un investimento che si ripaga in 3 mesi."
+                  : "It depends on complexity. A simple automation (e.g. Email to Excel) starts from a few hundred euros. A complete business management system is an investment that pays off in 3 months."}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
