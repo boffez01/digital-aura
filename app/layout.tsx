@@ -7,6 +7,7 @@ import CookieConsentBanner from "./components/cookie-consent-banner"
 import ChatbotWidget from "./components/chatbot-widget"
 import RecaptchaProvider from "./components/recaptcha-provider"
 import { OrganizationStructuredData, WebSiteStructuredData } from "./components/structured-data"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,7 +67,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
+
         <meta name="theme-color" content="#0f172a" />
         <link rel="manifest" href="/site.webmanifest" />
 
@@ -79,6 +80,7 @@ export default function RootLayout({
             {children}
             <CookieConsentBanner />
             <ChatbotWidget />
+            <Analytics />
           </RecaptchaProvider>
         </LanguageProvider>
       </body>
