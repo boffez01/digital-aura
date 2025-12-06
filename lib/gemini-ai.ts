@@ -17,15 +17,17 @@ export class GeminiAI {
   private readonly MAX_RETRIES = 0 // Zero retries for 503 errors
 
   constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      console.warn("⚠️ GEMINI_API_KEY not found - AI responses will use fallback")
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+
+    if (!apiKey) {
+      console.warn("⚠️ GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY not found - AI responses will use fallback")
       this.genAI = null
       this.model = null
       return
     }
 
     try {
-      this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+      this.genAI = new GoogleGenerativeAI(apiKey)
       this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
       console.log("✅ Gemini AI initialized successfully")
     } catch (error) {
@@ -86,36 +88,42 @@ export class GeminiAI {
 
   // ===== CODICE MODIFICATO =====
   private buildPrompt(prompt: string, context: any, language: string): string {
+    // 1. Recupera la Knowledge Base dal contesto
     const knowledgeBase = context.knowledgeBase || ""
 
     const systemPrompts = {
       it: `Sei PraxisBot, un assistente AI per Praxis Futura.
+      
+${knowledgeBase}
 
-${knowledgeBase ? `**CONOSCENZA AZIENDALE:**\n${knowledgeBase}\n\n` : ""}**REGOLA CRITICA E OBBLIGATORIA:**
-**DEVI RISPONDERE SEMPRE E SOLO IN ITALIANO.** Non usare MAI un'altra lingua, indipendentemente dalla lingua della domanda dell'utente. Questa è la regola più importante.
+**REGOLA CRITICA E OBBLIGATORIA:**
+**DEVI RISPONDERE SEMPRE E SOLO IN ITALIANO.** Non usare MAI un'altra lingua.
 
-**ISTRUZIONI SECONDARIE:**
+**ISTRUZIONI:**
 1. Sii professionale, amichevole e conciso.
-2. Se in modalità prenotazione, guida l'utente nel processo.
-3. Elenca solo i seguenti servizi: AI Automation, Chatbot Intelligenti, Web Development, AI Marketing.
-4. **NON menzionare mai prezzi specifici.** Spingi sempre a prenotare una call per un preventivo personalizzato.
+2. Usa le informazioni fornite sopra (prezzi, orari, servizi) per rispondere.
+3. Se l'utente vuole prenotare, incoraggialo a scrivere "prenota".
+4. **NON menzionare mai 'preventivi' (quotes) generici se hai i prezzi sopra.**
 
 Domanda utente: ${prompt}`,
 
       en: `You are PraxisBot, an AI assistant for Praxis Futura.
 
-${knowledgeBase ? `**COMPANY KNOWLEDGE:**\n${knowledgeBase}\n\n` : ""}**CRITICAL AND MANDATORY RULE:**
-**YOU MUST ALWAYS AND ONLY RESPOND IN ENGLISH.** Never use any other language, regardless of the user's question language. This is the most important rule.
+${knowledgeBase}
 
-**SECONDARY INSTRUCTIONS:**
+**CRITICAL AND MANDATORY RULE:**
+**YOU MUST ALWAYS AND ONLY RESPOND IN ENGLISH.** Never use any other language.
+
+**INSTRUCTIONS:**
 1. Be professional, friendly, and concise.
-2. If in booking mode, guide the user through the process.
-3. Only list the following services: AI Automation, Intelligent Chatbots, Web Development, AI Marketing.
-4. **NEVER mention specific prices.** Always push to book a call for a personalized quote.
+2. Use the information provided above (prices, hours, services) to respond.
+3. If the user wants to book, encourage them to write "book".
+4. **NEVER mention generic 'quotes' if you have prices above.**
 
 User question: ${prompt}`,
     }
 
+    // Se la lingua passata non esiste (es. hai passato il prompt per sbaglio), usa IT
     return systemPrompts[language as keyof typeof systemPrompts] || systemPrompts.it
   }
   // ===== FINE CODICE MODIFICATO =====
