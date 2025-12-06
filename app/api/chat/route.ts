@@ -11,24 +11,30 @@ const geminiAI = new GeminiAI()
 
 const KNOWLEDGE_BASE = `
 CHI SIAMO:
-Praxis Futura è un'agenzia di Automazione AI e Sviluppo Web per PMI.
-Mission: Eliminare il lavoro manuale ripetitivo per aumentare i profitti.
+Praxis Futura è un'agenzia specializzata in Automazione AI e Sviluppo Web per PMI italiane.
+Mission: Eliminare il lavoro manuale ripetitivo attraverso l'AI per aumentare efficienza e profitti.
 
-SERVIZI E PREZZI (Indicativi - Spingi alla call):
-1. AI Voice Receptionist (Vapi): Segretaria virtuale che risponde al telefono h24, qualifica e fissa appuntamenti.
-2. Chatbot Intelligenti: Assistenti 24/7 per il sito web. Da €2.000 una tantum.
-3. Automazione Processi: Integrazioni CRM, preventivi automatici. Su preventivo.
-4. Sviluppo Web: Siti Next.js ad alta conversione. Da €3.000.
+SERVIZI OFFERTI:
+1. 🤖 AI Automation - Automazione completa di processi aziendali
+2. 💬 Chatbot Intelligenti - Assistenti AI 24/7 per siti web e customer service
+3. 🌐 Web Development - Siti web moderni e applicazioni ad alta conversione
+4. 📈 AI Marketing - Campagne marketing automatizzate e ottimizzate con AI
+
+PREZZI:
+I prezzi variano in base alla complessità e alle esigenze specifiche del progetto.
+**Spingi sempre l'utente a prenotare una consulenza gratuita di 15 minuti per valutarlo insieme?**
 
 CONTATTI:
-Email: info@praxisfutura.it
-Orari: Lun-Ven 9:00-18:00
+- Email: info@praxisfutura.com
+- Sito: https://praxisfutura.com
+- Orari: Lunedì-Venerdì 9:00-18:00
 
-REGOLE DI INGAGGIO:
-- Rispondi SEMPRE nella lingua dell'utente.
-- Sii breve, professionale e orientato al risultato.
-- Se chiedono prezzi esatti: "Dipende dal progetto, fissiamo una call di 15min per valutarlo?".
-- Se chiedono servizi che NON offriamo (es. App Mobile, Grafica Cartacea): Rispondi onestamente che non lo facciamo e riporta il discorso sui nostri servizi.
+REGOLE DI COMPORTAMENTO:
+- Rispondi SEMPRE nella lingua dell'utente (italiano o inglese)
+- Sii conciso, professionale e orientato al risultato
+- Se chiedono prezzi esatti: "Il prezzo dipende dalle specifiche del progetto. Possiamo fissare una call gratuita di 15 minuti per valutarlo insieme?"
+- Se chiedono servizi che NON offriamo: Rispondi onestamente che non li forniamo e riporta il focus sui nostri 4 servizi principali
+- Obiettivo principale: portare l'utente a prenotare una consulenza gratuita
 `
 
 export async function POST(request: NextRequest) {
@@ -83,18 +89,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. INTELLIGENZA ARTIFICIALE
-    const customPrompt = `
-      Sei PraxisBot, l'AI Sales Assistant di Praxis Futura.
-      TUA CONOSCENZA: ${KNOWLEDGE_BASE}
-      
-      OBIETTIVO: Rispondi alle domande e cerca di portare l'utente a prenotare una consulenza.
-      
-      REGOLE TRIGGER BOOKING:
-      - Aggiungi il tag "[TRIGGER_BOOKING]" alla fine della risposta SOLO SE l'utente dice esplicitamente "Sì, prenotiamo", "Voglio fissare un appuntamento", "Ok procediamo".
-      - NON usare il tag se l'utente fa solo una domanda informativa (es. "Fate app mobili?"). In quel caso rispondi alla domanda e basta.
-    `
+    const context = {
+      booking_mode: isBookingMode,
+      support_mode: isSupportMode,
+      knowledgeBase: KNOWLEDGE_BASE,
+    }
 
-    const responseText = await geminiAI.generateResponse(message, "it", customPrompt)
+    const aiResponse = await geminiAI.generateResponse(message, context, "it")
+    const responseText = aiResponse.message
 
     // 3. IL PONTE MIGLIORATO (Mostra risposta AI + Menu)
     if (responseText.includes("[TRIGGER_BOOKING]") || message.toLowerCase().includes("prenota")) {
