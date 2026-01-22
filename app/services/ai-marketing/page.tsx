@@ -13,7 +13,6 @@ import {
   MessageSquare,
   Search,
   Megaphone,
-  Star,
 } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "../../contexts/language-context"
@@ -171,39 +170,7 @@ export default function AIMarketingPage() {
     },
   ]
 
-  // MANTENIAMO LE TESTIMONIANZE PER AI MARKETING
-  const testimonials = [
-    {
-      name: "Marco Rossi",
-      role: language === "it" ? "CEO, TechStart" : "CEO, TechStart",
-      content:
-        language === "it"
-          ? "Digital Aura ha trasformato completamente il nostro marketing. ROI aumentato del 300% in soli 4 mesi."
-          : "Digital Aura completely transformed our marketing. ROI increased by 300% in just 4 months.",
-      rating: 5,
-      company: "TechStart",
-    },
-    {
-      name: "Laura Bianchi",
-      role: language === "it" ? "Marketing Director, Fashion Co" : "Marketing Director, Fashion Co",
-      content:
-        language === "it"
-          ? "Le strategie AI hanno rivoluzionato le nostre campagne. Risultati incredibili e automazione perfetta."
-          : "AI strategies revolutionized our campaigns. Incredible results and perfect automation.",
-      rating: 5,
-      company: "Fashion Co",
-    },
-    {
-      name: "Giuseppe Verde",
-      role: language === "it" ? "Founder, E-commerce Plus" : "Founder, E-commerce Plus",
-      content:
-        language === "it"
-          ? "Crescita follower del 500% e ricavi triplicati. Il marketing AI funziona davvero."
-          : "500% follower growth and tripled revenue. AI marketing really works.",
-      rating: 5,
-      company: "E-commerce Plus",
-    },
-  ]
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -425,52 +392,7 @@ export default function AIMarketingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIANZE - MANTENUTE PER AI MARKETING */}
-      <section className="py-20 px-6 bg-slate-900/50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-slate-800/80 text-yellow-400 border-yellow-500/30">
-              <Star className="h-4 w-4 mr-2" />
-              {language === "it" ? "Testimonianze" : "Testimonials"}
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              {language === "it" ? "Cosa Dicono i Nostri Clienti" : "What Our Clients Say"}
-            </h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              {language === "it"
-                ? "Storie di successo reali da aziende che hanno trasformato il loro marketing con le nostre soluzioni AI"
-                : "Real success stories from companies that have transformed their marketing with our AI solutions"}
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-              >
-                <Card className="h-full bg-slate-800/80 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
-                  <CardContent className="p-8">
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-slate-300 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
-                    <div>
-                      <div className="font-semibold text-white">{testimonial.name}</div>
-                      <div className="text-sm text-slate-400">{testimonial.role}</div>
-                      <div className="text-sm text-orange-400">{testimonial.company}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 px-6 bg-slate-800/50">
